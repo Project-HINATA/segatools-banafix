@@ -233,7 +233,7 @@ static HRESULT touch_handle_get_sync_board_ver(const struct touch_req *req)
 {
     struct touch_resp_get_sync_board_ver resp;
     HRESULT hr;
-
+    memset(&resp, 0, sizeof(resp));
     dprintf("Wacca Touch%d: Get sync board version\n", req->side);
 
     resp.cmd = 0xa0;
@@ -256,7 +256,7 @@ static HRESULT touch_handle_next_read(const struct touch_req *req)
     struct touch_resp_startup resp;
     HRESULT hr;
     char *rev;
-
+    memset(&resp, 0, sizeof(resp));
     dprintf("Wacca Touch%d: Read section %2hx\n", req->side, req->data[2]);
 
 
@@ -293,7 +293,7 @@ static HRESULT touch_handle_get_unit_board_ver(const struct touch_req *req)
 {
     struct touch_resp_get_unit_board_ver resp;
     HRESULT hr;
-
+    memset(&resp, 0, sizeof(resp));
     dprintf("Wacca Touch%d: get unit board version\n", req->side);
 
     memset(resp.version, 0, sizeof(resp.version));
@@ -339,7 +339,7 @@ static HRESULT touch_handle_mystery1(const struct touch_req *req)
 {
     struct touch_resp_mystery1 resp;
     HRESULT hr;
-
+    memset(&resp, 0, sizeof(resp));
     dprintf("Wacca Touch%d: Command A2\n", req->side);
 
     resp.cmd = 0xa2;
@@ -360,7 +360,7 @@ static HRESULT touch_handle_mystery2(const struct touch_req *req)
 {
     struct touch_resp_mystery2 resp;
     HRESULT hr;
-
+    memset(&resp, 0, sizeof(resp));
     dprintf("Wacca Touch%d: Command 94\n", req->side);
 
     resp.cmd = 0x94;
@@ -423,6 +423,8 @@ static void touch_res_auto_scan(const bool *state)
 {
     struct touch_input_frame frame0;
     struct touch_input_frame frame1;
+    memset(&frame0, 0, sizeof(frame0));
+    memset(&frame1, 0, sizeof(frame1));
     uint8_t dataR[24] = { 0 };
     uint8_t dataL[24] = { 0 };
     // this changes every input on a real board but
