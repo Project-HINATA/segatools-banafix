@@ -13,19 +13,13 @@ if ERRORLEVEL 1 (
     goto failure
 )
 
-docker create --name %CONTAINER_NAME% %IMAGE_NAME%
+docker run -it --rm -v %~dp0:/segatools --name %CONTAINER_NAME% %IMAGE_NAME%
 
 if ERRORLEVEL 1 (
     goto failure
 )
 
-rd /s /q "!BUILD_OUTPUT_PATH!"
-mkdir "!BUILD_OUTPUT_PATH!"
-
-docker cp %CONTAINER_NAME%:/segatools/build/zip %BUILD_OUTPUT_PATH%
-
-docker rm -f %CONTAINER_NAME% > nul
-docker image rm -f %IMAGE_NAME% > nul
+docker image rm -f %IMAGE_NAME%
 
 goto success
 
