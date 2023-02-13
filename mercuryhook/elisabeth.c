@@ -33,8 +33,11 @@ static const struct hook_symbol win32_hooks[] = {
     }
 };
 
-HRESULT elisabeth_hook_init()
+HRESULT elisabeth_hook_init(struct elisabeth_config *cfg)
 {
+    if (!cfg->enable) {
+        return S_OK;
+    }
     dll_hook_insert_hooks(NULL);
     dprintf("Elisabeth: Init\n");
     return S_OK;

@@ -9,6 +9,7 @@
 
 #include "mercuryhook/mercury-dll.h"
 #include "mercuryhook/touch.h"
+#include "mercuryhook/elisabeth.h"
 
 #include "platform/config.h"
 
@@ -20,6 +21,7 @@ struct mercury_hook_config {
     struct gfx_config gfx;
     struct mercury_dll_config dll;
     struct touch_config touch;
+    struct elisabeth_config elisabeth;
 };
 
 void mercury_dll_config_load(

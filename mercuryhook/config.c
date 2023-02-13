@@ -41,6 +41,21 @@ void touch_config_load(
             filename);
 }
 
+void elisabeth_config_load(
+        struct elisabeth_config *cfg,
+        const wchar_t *filename)
+{
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    cfg->enable = GetPrivateProfileIntW(
+            L"elisabeth",
+            L"enable",
+            1,
+            filename);
+}
+
+
 void mercury_hook_config_load(
         struct mercury_hook_config *cfg,
         const wchar_t *filename)
@@ -55,4 +70,5 @@ void mercury_hook_config_load(
     gfx_config_load(&cfg->gfx, filename);
     mercury_dll_config_load(&cfg->dll, filename);
     touch_config_load(&cfg->touch, filename);
+    elisabeth_config_load(&cfg->elisabeth, filename);
 }

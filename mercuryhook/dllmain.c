@@ -83,7 +83,7 @@ static DWORD CALLBACK mercury_pre_startup(void)
     }
 
     /* Start elisabeth Hooks for the LED and IO Board DLLs */
-    elisabeth_hook_init();
+    elisabeth_hook_init(&mercury_hook_cfg.elisabeth);
 
     touch_hook_init(&mercury_hook_cfg.touch);
 

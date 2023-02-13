@@ -1,8 +1,13 @@
 #pragma once
+#include <stdbool.h>
 
 struct led_data {
    DWORD unitCount;
    uint8_t rgba[480 * 4];
 };
 
-HRESULT elisabeth_hook_init();
+struct elisabeth_config {
+    bool enable;
+};
+
+HRESULT elisabeth_hook_init(struct elisabeth_config *cfg);
