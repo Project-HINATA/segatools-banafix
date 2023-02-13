@@ -29,7 +29,11 @@ build:
 	$(V)ninja -C $(BUILD_DIR_64)
 
 .PHONY: dist # Build and create a zip distribution package
-dist: build zip
+dist: build clean-zip zip
+
+.PHONY: clean-zip # Remove zip files from build dir before packaging
+clean-zip:
+	$(V)rm -Rf $(BUILD_DIR_ZIP)/*.zip
 
 .PHONY: zip # Create a zip distribution pacakge
 zip: $(BUILD_DIR_ZIP)/segatools.zip
