@@ -1,3 +1,5 @@
+SHELL = /bin/bash
+
 V               ?= @
 
 .DEFAULT_GOAL := help
