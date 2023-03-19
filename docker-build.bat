@@ -2,7 +2,6 @@
 setlocal enabledelayedexpansion
 
 :: Static Environment Variables
-set BUILD_OUTPUT_PATH=build\docker
 set IMAGE_NAME=djhackers/segatools-build:latest
 set CONTAINER_NAME=segatools-build
 

@@ -1,5 +1,3 @@
-SHELL = /bin/bash
-
 V               ?= @
 
 .DEFAULT_GOAL := help
@@ -7,15 +5,11 @@ V               ?= @
 BUILD_DIR := build
 BUILD_DIR_32 := $(BUILD_DIR)/build32
 BUILD_DIR_64 := $(BUILD_DIR)/build64
-BUILD_DIR_DOCKER := $(BUILD_DIR)/docker
 BUILD_DIR_ZIP := $(BUILD_DIR)/zip
 
 DOC_DIR := doc
 
 DIST_DIR := dist
-
-DOCKER_CONTAINER_NAME := "segatools-build"
-DOCKER_IMAGE_NAME     := "segatools:build"
 
 # -----------------------------------------------------------------------------
 # Targets
@@ -43,15 +37,6 @@ zip: $(BUILD_DIR_ZIP)/segatools.zip
 .PHONY: clean # Cleanup build output
 clean:
 	$(V)rm -rf $(BUILD_DIR) subprojects/capnhook
-
-.PHONY: build-docker # Build the project in a docker container
-build-docker:
-	$(V)docker rm -f $(DOCKER_CONTAINER_NAME) 2> /dev/null || true
-	$(V)docker build -t $(DOCKER_IMAGE_NAME) -f Dockerfile .
-	$(V)docker create --name $(DOCKER_CONTAINER_NAME) $(DOCKER_IMAGE_NAME)
-	$(V)rm -rf $(BUILD_DIR_DOCKER)
-	$(V)mkdir -p $(BUILD_DIR_DOCKER)
-	$(V)docker cp $(DOCKER_CONTAINER_NAME):/segatools/$(BUILD_DIR_ZIP) $(BUILD_DIR_DOCKER)
 
 # -----------------------------------------------------------------------------
 # Utility, combo and alias targets
