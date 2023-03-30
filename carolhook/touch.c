@@ -71,7 +71,7 @@ static HRESULT touch_handle_irp_locked(struct irp *irp)
         hr = carol_dll.touch_init();
 
         if (FAILED(hr)) {
-            dprintf("Touchscreen: Backend DLL error: %x\n", (int) hr);
+            dprintf("Touchscreen: Backend DLL error: %X\n", (int) hr);
 
             return hr;
         }
@@ -91,7 +91,7 @@ static HRESULT touch_handle_irp_locked(struct irp *irp)
         hr = touch_frame_decode(&req, &touch_uart.written);
 
         if (FAILED(hr)) {
-            dprintf("Touchscreen: Deframe Error: %x\n", (int) hr);
+            dprintf("Touchscreen: Deframe Error: %X\n", (int) hr);
 
             return hr;
         }
