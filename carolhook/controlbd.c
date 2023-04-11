@@ -18,8 +18,6 @@
 
 static HRESULT controlbd_handle_irp(struct irp *irp);
 static HRESULT controlbd_handle_irp_locked(struct irp *irp);
-//static HRESULT controlbd_frame_decode(struct controlbd_req *dest, struct iobuf *iobuf);
-//static HRESULT controlbd_frame_dispatch(struct controlbd_req *dest);
 
 static HRESULT controlbd_req_noop(uint8_t cmd);
 static HRESULT controlbd_req_unk7c(uint8_t cmd);
@@ -74,11 +72,11 @@ static HRESULT controlbd_handle_irp_locked(struct irp *irp)
     assert(carol_dll.controlbd_init != NULL);
 
     if (irp->op == IRP_OP_OPEN) {
-        dprintf("LED Board: Starting backend DLL\n");
+        dprintf("Control Board: Starting backend DLL\n");
         hr = carol_dll.controlbd_init();
 
         if (FAILED(hr)) {
-            dprintf("LED Board: Backend DLL error: 0X%X\n", (int) hr);
+            dprintf("Control Board: Backend DLL error: 0X%X\n", (int) hr);
 
             return hr;
         }
@@ -92,20 +90,18 @@ static HRESULT controlbd_handle_irp_locked(struct irp *irp)
 
     for (;;) {
 #if 1
-        dprintf("LED Board: TX Buffer:\n");
+        dprintf("Control Board: TX Buffer:\n");
         dump_iobuf(&controlbd_uart.written);
 #endif
-        //hr = controlbd_frame_decode(&req, &controlbd_uart.written);
 
         if (FAILED(hr)) {
-            dprintf("LED Board: Deframe Error: 0X%X\n", (int) hr);
+            dprintf("Control Board: Deframe Error: 0X%X\n", (int) hr);
 
             return hr;
         }
 
-        //hr = controlbd_frame_dispatch(&req);
         if (FAILED(hr)) {
-            dprintf("LED Board: Dispatch Error: 0X%X\n", (int) hr);
+            dprintf("Control Board: Dispatch Error: 0X%X\n", (int) hr);
 
             return hr;
         }
