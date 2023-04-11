@@ -16,4 +16,5 @@ EXPORTS
     carol_io_jvs_poll
     carol_io_jvs_read_coin_counter
     carol_io_touch_init
+    carol_io_ledbd_init
     carol_io_controlbd_init

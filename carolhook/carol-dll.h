@@ -10,6 +10,7 @@ struct carol_dll {
     void (*jvs_poll)(uint8_t *opbtn, uint8_t *beams);
     void (*jvs_read_coin_counter)(uint16_t *total);
     HRESULT (*touch_init)();
+    HRESULT (*ledbd_init)();
     HRESULT (*controlbd_init)();
 };
 

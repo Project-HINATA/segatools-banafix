@@ -73,6 +73,11 @@ HRESULT carol_io_touch_init()
     return S_OK;
 }
 
+HRESULT carol_io_ledbd_init()
+{
+    return S_OK;
+}
+
 HRESULT carol_io_controlbd_init()
 {
     return S_OK;

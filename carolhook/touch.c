@@ -96,6 +96,7 @@ static HRESULT touch_handle_irp_locked(struct irp *irp)
             return hr;
         }
 
+        touch_uart.written.pos = 0;
         return hr;
     }
 }

@@ -32,6 +32,8 @@ shared_library(
         'touch.h',
         'controlbd.c',
         'controlbd.h',
+        'ledbd.c',
+        'ledbd.h',
         'serial.c',
         'serial.h',
     ],

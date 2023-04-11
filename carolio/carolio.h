@@ -49,4 +49,6 @@ void carol_io_jvs_read_coin_counter(uint16_t *out);
 
 HRESULT carol_io_touch_init();
 
+HRESULT carol_io_ledbd_init();
+
 HRESULT carol_io_controlbd_init();

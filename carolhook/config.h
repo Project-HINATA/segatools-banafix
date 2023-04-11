@@ -13,6 +13,7 @@
 #include "gfxhook/gfx.h"
 
 #include "carolhook/touch.h"
+#include "carolhook/ledbd.h"
 #include "carolhook/controlbd.h"
 
 struct carol_hook_config {
@@ -22,6 +23,7 @@ struct carol_hook_config {
     struct carol_dll_config dll;
     struct gfx_config gfx;
     struct touch_config touch;
+    struct ledbd_config ledbd;
     struct controlbd_config controlbd;
 };
 

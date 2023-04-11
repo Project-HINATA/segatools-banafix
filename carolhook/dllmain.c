@@ -12,8 +12,9 @@
 #include "carolhook/carol-dll.h"
 #include "carolhook/jvs.h"
 #include "carolhook/touch.h"
-#include "carolhook/controlbd.h"
+#include "carolhook/ledbd.h"
 #include "carolhook/serial.h"
+#include "carolhook/controlbd.h"
 
 #include "hook/process.h"
 
@@ -30,10 +31,10 @@ static struct carol_hook_config carol_hook_cfg;
 
 /*
 COM Layout
-01:(?) Touchscreen
+01: Touchscreen
 10: Aime reader
-11: Control board
-12(?): LED Board
+11: LED board
+12: LED Board
 */
 
 static DWORD CALLBACK carol_pre_startup(void)
@@ -81,11 +82,15 @@ static DWORD CALLBACK carol_pre_startup(void)
     }
 
     gfx_hook_init(&carol_hook_cfg.gfx);
-    gfx_d3d9_hook_init(&carol_hook_cfg.gfx, carol_hook_mod);
-    //serial_init();
-    
+    gfx_d3d9_hook_init(&carol_hook_cfg.gfx, carol_hook_mod);    
 
     hr = touch_hook_init(&carol_hook_cfg.touch);
+    
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
+    hr = ledbd_hook_init(&carol_hook_cfg.ledbd);
     
     if (FAILED(hr)) {
         goto fail;

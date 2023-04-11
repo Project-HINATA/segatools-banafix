@@ -58,6 +58,20 @@ void controlbd_config_load(
             filename);
 }
 
+void ledbd_config_load(
+        struct ledbd_config *cfg,
+        const wchar_t *filename)
+{
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    cfg->enable = GetPrivateProfileIntW(
+            L"ledbd",
+            L"enable",
+            1,
+            filename);
+}
+
 
 void carol_hook_config_load(
         struct carol_hook_config *cfg,
@@ -73,4 +87,5 @@ void carol_hook_config_load(
     gfx_config_load(&cfg->gfx, filename);
     touch_config_load(&cfg->touch, filename);
     controlbd_config_load(&cfg->controlbd, filename);
+    ledbd_config_load(&cfg->ledbd, filename);
 }
