@@ -1,0 +1,125 @@
+#include <windows.h>
+
+#include <assert.h>
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "idacio/backend.h"
+#include "idacio/config.h"
+#include "idacio/di.h"
+#include "idacio/idacio.h"
+#include "idacio/xi.h"
+
+#include "util/dprintf.h"
+#include "util/str.h"
+
+static struct idac_io_config idac_io_cfg;
+static const struct idac_io_backend *idac_io_backend;
+static bool idac_io_coin;
+static uint16_t idac_io_coins;
+
+uint16_t idac_io_get_api_version(void)
+{
+    return 0x0100;
+}
+
+HRESULT idac_io_jvs_init(void)
+{
+    HINSTANCE inst;
+    HRESULT hr;
+
+    assert(idac_io_backend == NULL);
+
+    inst = GetModuleHandleW(NULL);
+
+    if (inst == NULL) {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        dprintf("GetModuleHandleW failed: %lx\n", hr);
+
+        return hr;
+    }
+
+    idac_io_config_load(&idac_io_cfg, L".\\segatools.ini");
+
+    if (wstr_ieq(idac_io_cfg.mode, L"dinput")) {
+        hr = idac_di_init(&idac_io_cfg.di, inst, &idac_io_backend);
+    } else if (wstr_ieq(idac_io_cfg.mode, L"xinput")) {
+        hr = idac_xi_init(&idac_io_cfg.xi, &idac_io_backend);
+    } else {
+        hr = E_INVALIDARG;
+        dprintf("IDZ IO: Invalid IO mode \"%S\", use dinput or xinput\n",
+                idac_io_cfg.mode);
+    }
+
+    return hr;
+}
+
+void idac_io_jvs_read_buttons(uint8_t *opbtn_out, uint8_t *gamebtn_out)
+{
+    uint8_t opbtn;
+
+    assert(idac_io_backend != NULL);
+    assert(opbtn_out != NULL);
+    assert(gamebtn_out != NULL);
+
+    opbtn = 0;
+
+    if (GetAsyncKeyState(idac_io_cfg.vk_test) & 0x8000) {
+        opbtn |= IDAC_IO_OPBTN_TEST;
+    }
+
+    if (GetAsyncKeyState(idac_io_cfg.vk_service) & 0x8000) {
+        opbtn |= IDAC_IO_OPBTN_SERVICE;
+    }
+
+    *opbtn_out = opbtn;
+
+    idac_io_backend->jvs_read_buttons(gamebtn_out);
+}
+
+void idac_io_jvs_read_shifter(uint8_t *gear)
+{
+    assert(gear != NULL);
+    assert(idac_io_backend != NULL);
+
+    idac_io_backend->jvs_read_shifter(gear);
+}
+
+void idac_io_jvs_read_analogs(struct idac_io_analog_state *out)
+{
+    struct idac_io_analog_state tmp;
+
+    assert(out != NULL);
+    assert(idac_io_backend != NULL);
+
+    idac_io_backend->jvs_read_analogs(&tmp);
+
+    /* Apply steering wheel restriction. Real cabs only report about 77% of
+       the IO-3's max ADC output value when the wheel is turned to either of
+       its maximum positions. To match this behavior we set the default value
+       for the wheel restriction config parameter to 97 (out of 128). This
+       scaling factor is applied using fixed-point arithmetic below. */
+
+    out->wheel = (tmp.wheel * idac_io_cfg.restrict_) / 128;
+    out->accel = tmp.accel;
+    out->brake = tmp.brake;
+}
+
+void idac_io_jvs_read_coin_counter(uint16_t *out)
+{
+    assert(out != NULL);
+
+    /* Coin counter is not backend-specific */
+
+    if (idac_io_cfg.vk_coin &&
+            (GetAsyncKeyState(idac_io_cfg.vk_coin) & 0x8000)) {
+        if (!idac_io_coin) {
+            idac_io_coin = true;
+            idac_io_coins++;
+        }
+    } else {
+        idac_io_coin = false;
+    }
+
+    *out = idac_io_coins;
+}
