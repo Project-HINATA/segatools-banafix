@@ -34,7 +34,5 @@ shared_library(
         'controlbd.h',
         'ledbd.c',
         'ledbd.h',
-        'serial.c',
-        'serial.h',
     ],
 )

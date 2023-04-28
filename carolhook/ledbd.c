@@ -16,10 +16,12 @@
 #include "util/dprintf.h"
 #include "util/dump.h"
 
+#include "board/slider-frame.h"
+#include "board/slider-cmd.h"
+
 static HRESULT ledbd_handle_irp(struct irp *irp);
 static HRESULT ledbd_handle_irp_locked(struct irp *irp);
-static HRESULT ledbd_frame_decode(struct ledbd_req *dest, struct iobuf *iobuf);
-static HRESULT ledbd_frame_dispatch(struct ledbd_req *dest);
+static HRESULT ledbd_frame_dispatch(const union slider_req_any *dest);
 
 static HRESULT ledbd_req_noop(uint8_t cmd);
 static HRESULT ledbd_req_unk7c(uint8_t cmd);
@@ -68,7 +70,8 @@ static HRESULT ledbd_handle_irp(struct irp *irp)
 
 static HRESULT ledbd_handle_irp_locked(struct irp *irp)
 {
-    struct ledbd_req req;
+    union slider_req_any req;
+    struct iobuf req_iobuf;
     HRESULT hr;
 
     assert(carol_dll.ledbd_init != NULL);
@@ -95,7 +98,11 @@ static HRESULT ledbd_handle_irp_locked(struct irp *irp)
         dprintf("LED Board: TX Buffer:\n");
         dump_iobuf(&ledbd_uart.written);
 #endif
-        hr = ledbd_frame_decode(&req, &ledbd_uart.written);
+        req_iobuf.bytes = req.bytes;
+        req_iobuf.nbytes = sizeof(req.bytes);
+        req_iobuf.pos = 0;
+
+        hr = slider_frame_decode(&req_iobuf, &ledbd_uart.written);
 
         if (FAILED(hr)) {
             dprintf("LED Board: Deframe Error: 0X%X\n", (int) hr);
@@ -114,26 +121,26 @@ static HRESULT ledbd_handle_irp_locked(struct irp *irp)
     }
 }
 
-static HRESULT ledbd_frame_dispatch(struct ledbd_req *req)
+static HRESULT ledbd_frame_dispatch(const union slider_req_any *req)
 {
-    switch (req->cmd) {
+    switch (req->hdr.cmd) {
     case LEDBD_CMD_UNK_10:
-        return ledbd_req_noop(req->cmd);
+        return ledbd_req_noop(req->hdr.cmd);
     case LEDBD_CMD_UNK_7C:
-        return ledbd_req_unk7c(req->cmd);
+        return ledbd_req_unk7c(req->hdr.cmd);
     case LEDBD_CMD_UNK_F0:
-        return ledbd_req_unkF0(req->cmd);
+        return ledbd_req_unkF0(req->hdr.cmd);
     case LEDBD_CMD_UNK_30:
-        return ledbd_req_noop(req->cmd);
+        return ledbd_req_noop(req->hdr.cmd);
     default:
-        dprintf("Unhandled command 0x%02X\n", req->cmd);
-        return ledbd_req_noop(req->cmd);
+        //dprintf("Unhandled command 0x%02X\n", req->cmd);
+        return ledbd_req_noop(req->hdr.cmd);
     }
 }
 
 static HRESULT ledbd_req_noop(uint8_t cmd)
 {
-    dprintf("LED Board: Noop cmd 0x%02X\n", cmd);
+    //dprintf("LED Board: Noop cmd 0x%02X\n", cmd);
     uint8_t resp[] = { 0xE0, 0x01, 0x11, 0x03, 0x01, 0x00, 0x01, 0x17 };
     resp[5] = cmd;
     resp[7] = 0x17 + cmd;
@@ -144,7 +151,7 @@ static HRESULT ledbd_req_noop(uint8_t cmd)
 
 static HRESULT ledbd_req_unk7c(uint8_t cmd)
 {
-    dprintf("LED Board: Cmd 0x7C\n");
+    //dprintf("LED Board: Cmd 0x7C\n");
     uint8_t resp[] = { 0xE0, 0x01, 0x11, 0x04, 0x01, 0x7C, 0x01, 0x07, 0x9B };
     iobuf_write(&ledbd_uart.readable, resp, 9);
 
@@ -153,71 +160,9 @@ static HRESULT ledbd_req_unk7c(uint8_t cmd)
 
 static HRESULT ledbd_req_unkF0(uint8_t cmd)
 {
-    dprintf("LED Board: Cmd 0xF0\n");
+    //dprintf("LED Board: Cmd 0xF0\n");
     uint8_t resp[] = { 0xE0, 0x01, 0x11, 0x0A, 0x01, 0xF0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0E };
     iobuf_write(&ledbd_uart.readable, resp, 16);
-
-    return S_OK;
-}
-
-/* Decodes the response into a struct that's easier to work with. TODO: Further validation */
-static HRESULT ledbd_frame_decode(struct ledbd_req *dest, struct iobuf *iobuf)
-{
-    int initial_pos = iobuf->pos;
-    int processed_pos = 0;
-    uint8_t check = 0; 
-    bool escape = false;
-
-    dest->sync = iobuf->bytes[0];
-
-    dest->dest = iobuf->bytes[1];
-    check += dest->dest;
-
-    dest->src = iobuf->bytes[2];
-    check += dest->src;
-
-    dest->data_len = iobuf->bytes[3];
-    check += dest->data_len;
-
-    dest->cmd = iobuf->bytes[4];
-    check += dest->cmd;
-
-    for (int i = 0; i < dest->data_len - 1; i++) {
-        if (iobuf->bytes[i+5] == 0xD0) {
-            escape = true;
-            check += 0xD0;
-            continue;
-        }
-        
-        dest->data[i] = iobuf->bytes[i+5];
-        
-        if (escape) {                
-            dest->data[i]++;
-            escape = false;
-        }
-        
-        check += iobuf->bytes[i+5];
-    }
-
-    dest->checksum = iobuf->bytes[iobuf->pos - 1];
-    if (escape) {
-        dest->checksum++;
-        escape = false;
-    }
-
-    iobuf->pos = 0;
-
-    if (dest->sync != 0xe0) {
-        dprintf("LED Board: Sync error, expected 0xe0, got 0X%02X\n", dest->sync);
-        dump_iobuf(iobuf);
-        return E_FAIL;
-    }
-    
-    if (dest->checksum != (check & 0xFF)) {
-        dprintf("LED Board: Checksum error, expected 0X%02X, got 0X%02X\n", dest->checksum, check);
-        dump_iobuf(iobuf);
-        return E_FAIL;
-    }
 
     return S_OK;
 }

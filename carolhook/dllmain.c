@@ -13,7 +13,6 @@
 #include "carolhook/jvs.h"
 #include "carolhook/touch.h"
 #include "carolhook/ledbd.h"
-#include "carolhook/serial.h"
 #include "carolhook/controlbd.h"
 
 #include "hook/process.h"
@@ -34,14 +33,36 @@ COM Layout
 01: Touchscreen
 10: Aime reader
 11: LED board
-12: LED Board
+12: Control Board
 */
 
 static DWORD CALLBACK carol_pre_startup(void)
 {
     HRESULT hr;
+    HMODULE d3dc;
+    HMODULE dbghelp;
 
     dprintf("--- Begin carol_pre_startup ---\n");
+    
+    /* Pin the D3D shader compiler. This makes startup much faster. */
+
+    d3dc = LoadLibraryW(L"D3DCompiler_43.dll");
+
+    if (d3dc != NULL) {
+        dprintf("Pinned shader compiler, hMod=%p\n", d3dc);
+    } else {
+        dprintf("Failed to load shader compiler!\n");
+    }
+
+    /* Pin dbghelp so the path hooks apply to it. */
+
+    dbghelp = LoadLibraryW(L"dbghelp.dll");
+
+    if (dbghelp != NULL) {
+        dprintf("Pinned debug helper library, hMod=%p\n", dbghelp);
+    } else {
+        dprintf("Failed to load debug helper library!\n");
+    }
 
     /* Config load */
 
