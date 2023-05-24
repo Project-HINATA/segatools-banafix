@@ -97,6 +97,10 @@ static BOOL WINAPI hook_RemoveDirectoryA(const char *lpFileName);
 
 static BOOL WINAPI hook_RemoveDirectoryW(const wchar_t *lpFileName);
 
+static BOOL WINAPI hook_PathFileExistsA(LPCSTR pszPath);
+
+static BOOL WINAPI hook_PathFileExistsW(LPCWSTR pszPath);
+
 /* Link pointers */
 
 static BOOL (WINAPI *next_CreateDirectoryA)(
@@ -177,6 +181,10 @@ static BOOL (WINAPI *next_RemoveDirectoryA)(const char *lpFileName);
 
 static BOOL (WINAPI *next_RemoveDirectoryW)(const wchar_t *lpFileName);
 
+static BOOL (WINAPI *next_PathFileExistsA)(LPCSTR pszPath);
+
+static BOOL (WINAPI *next_PathFileExistsW)(LPCWSTR pszPath);
+
 /* Hook table */
 
 static const struct hook_symbol path_hook_syms[] = {
@@ -244,6 +252,14 @@ static const struct hook_symbol path_hook_syms[] = {
         .name   = "RemoveDirectoryW",
         .patch  = hook_RemoveDirectoryW,
         .link   = (void **) &next_RemoveDirectoryW,
+    }, {
+        .name   = "PathFileExistsA",
+        .patch  = hook_PathFileExistsA,
+        .link   = (void **) &next_PathFileExistsA,
+    }, {
+        .name   = "PathFileExistsW",
+        .patch  = hook_PathFileExistsW,
+        .link   = (void **) &next_PathFileExistsW,
     }
 };
 
@@ -849,6 +865,42 @@ static BOOL WINAPI hook_RemoveDirectoryW(const wchar_t *lpFileName)
     }
 
     ok = next_RemoveDirectoryW(trans ? trans : lpFileName);
+
+    free(trans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_PathFileExistsA(LPCSTR pszPath)
+{
+    char *trans;
+    BOOL ok;
+
+    ok = path_transform_a(&trans, pszPath);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = next_PathFileExistsA(trans ? trans : pszPath);
+
+    free(trans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_PathFileExistsW(LPCWSTR pszPath)
+{
+    wchar_t *trans;
+    BOOL ok;
+
+    ok = path_transform_w(&trans, pszPath);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = next_PathFileExistsW(trans ? trans : pszPath);
 
     free(trans);
 
