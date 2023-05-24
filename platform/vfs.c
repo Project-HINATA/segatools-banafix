@@ -273,6 +273,8 @@ static HRESULT vfs_path_hook(const wchar_t *src, wchar_t *dest, size_t *count)
     }
 
     switch (src[0]) {
+    case L'D': // later AMDaemon versions default to D: for AMFS if it can't find it
+    case L'd':
     case L'e':
     case L'E':
         redir = vfs_config.amfs;
@@ -404,7 +406,7 @@ static HRESULT vfs_path_hook_option(
 
 static HRESULT vfs_reg_read_amfs(void *bytes, uint32_t *nbytes)
 {
-    return reg_hook_read_wstr(bytes, nbytes, vfs_config.amfs);
+    return reg_hook_read_wstr(bytes, nbytes, vfs_config.amfs); // seems to be busted?
 }
 
 static HRESULT vfs_reg_read_appdata(void *bytes, uint32_t *nbytes)
