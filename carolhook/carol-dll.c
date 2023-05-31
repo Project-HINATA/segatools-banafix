@@ -27,6 +27,12 @@ const struct dll_bind_sym carol_dll_syms[] = {
     }, {
         .sym = "carol_io_controlbd_init",
         .off = offsetof(struct carol_dll, controlbd_init),
+    }, {
+        .sym = "carol_io_touch_start",
+        .off = offsetof(struct carol_dll, touch_start),
+    }, {
+        .sym = "carol_io_touch_stop",
+        .off = offsetof(struct carol_dll, touch_stop),
     }
 };
 

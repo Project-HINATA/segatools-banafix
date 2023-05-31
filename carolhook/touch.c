@@ -32,12 +32,17 @@ static HRESULT touch_frame_decode(struct touch_req *dest, struct iobuf *iobuf);
 static HRESULT handle_touch_ack_cmd(const struct touch_req *req);
 static HRESULT handle_touch_name_cmd(const struct touch_req *req);
 static HRESULT handle_touch_id_cmd(const struct touch_req *req);
+static void touch_scan_auto(const bool is_pressed, const uint32_t mouse_x, const uint32_t mouse_y);
 
 static CRITICAL_SECTION touch_lock;
 static struct uart touch_uart;
-static uint8_t touch_written_bytes[520];
-static uint8_t touch_readable_bytes[520];
+static uint8_t touch_written_bytes[528];
+static uint8_t touch_readable_bytes[528];
 static bool should_stream = false;
+static bool last_pressed;
+static uint16_t last_x;
+static uint16_t last_y;
+
 
 HRESULT touch_hook_init(const struct touch_config *cfg)
 {
@@ -118,13 +123,13 @@ static HRESULT touch_handle_irp_locked(struct irp *irp)
         }
         else if (!strcmp("OI", (char *)req.cmd)) {
             hr = handle_touch_id_cmd(&req);
-            should_stream = true; // possibly send stuff after we get this?
+            //carol_dll.touch_start(touch_scan_auto);
         }
         else if (!strcmp("NM", (char *)req.cmd)) {
             hr = handle_touch_name_cmd(&req);
         }
         else if (!strcmp("R", (char *)req.cmd)) {
-            should_stream = false;
+            carol_dll.touch_stop();
             dprintf("Touch: Reset\n");
             hr = handle_touch_ack_cmd(&req);
         }
@@ -152,6 +157,58 @@ static HRESULT handle_touch_id_cmd(const struct touch_req *req)
 {
     dprintf("Touch: Get ID\n");
     return iobuf_write(&touch_uart.readable, "\001EX1234\015", 8);
+}
+
+static void touch_scan_auto(const bool is_pressed, const uint32_t mouse_x, const uint32_t mouse_y)
+{
+    struct touch_auto_resp resp;
+    uint16_t tmp_x;
+    uint16_t tmp_y;
+    bool flg = false;
+
+    memset(&resp, 0, sizeof(resp));
+    resp.rep_id = 0x17;
+    resp.touches[0].status = 0x04;
+    resp.count = 1;
+
+    if (is_pressed) {
+        resp.touches[0].status = 0x07;
+        resp.touches[0].touch_id = 1;
+        tmp_x = mouse_x & 0x7FFF;
+        tmp_y = mouse_y & 0x7FFF;
+        
+        // flip
+        resp.touches[0].x = (tmp_x << 8) | (tmp_x >> 8);
+        resp.touches[0].y = (tmp_y << 8) | (tmp_y >> 8);
+
+        flg = resp.touches[0].x != last_x || resp.touches[0].y != last_y;
+
+#if 1
+        if (flg)
+            dprintf("Touch: Mouse down! x %04X y: %04X\n", resp.touches[0].x, resp.touches[0].y);
+#endif
+
+    
+        last_x = resp.touches[0].x;
+        last_y = resp.touches[0].y;
+
+    } else if (last_pressed) {
+        resp.touches[0].x = last_x;
+        resp.touches[0].y = last_y;
+    }
+
+    last_pressed = is_pressed;
+
+    EnterCriticalSection(&touch_lock);
+    iobuf_write(&touch_uart.readable, &resp, sizeof(resp));
+    LeaveCriticalSection(&touch_lock);
+
+#if 1
+    //if (flg) {        
+        dprintf("Touch: RX Buffer: (pos %08x)\n", (uint32_t)touch_uart.readable.pos);
+        dump_iobuf(&touch_uart.readable);
+    //}
+#endif
 }
 
 /* Decodes the response into a struct that's easier to work with. */

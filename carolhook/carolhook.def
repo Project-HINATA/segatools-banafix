@@ -18,3 +18,5 @@ EXPORTS
     carol_io_touch_init
     carol_io_ledbd_init
     carol_io_controlbd_init
+    carol_io_touch_start
+    carol_io_touch_stop

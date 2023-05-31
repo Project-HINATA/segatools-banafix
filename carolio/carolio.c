@@ -8,9 +8,13 @@
 #include "carolio/carolio.h"
 #include "carolio/config.h"
 
+static unsigned int __stdcall carol_io_touch_thread_proc(void *ctx);
+
 static bool carol_io_coin;
 static uint16_t carol_io_coins;
 static struct carol_io_config carol_io_cfg;
+static bool carol_io_touch_stop_flag;
+static HANDLE carol_io_touch_thread;
 
 uint16_t carol_io_get_api_version(void)
 {
@@ -81,4 +85,55 @@ HRESULT carol_io_ledbd_init()
 HRESULT carol_io_controlbd_init()
 {
     return S_OK;
+}
+
+void carol_io_touch_start(carol_io_touch_callback_t callback)
+{
+    if (carol_io_touch_thread != NULL) {
+        return;
+    }
+
+    carol_io_touch_stop_flag = false;
+
+    carol_io_touch_thread = (HANDLE) _beginthreadex(
+        NULL,
+        0,
+        carol_io_touch_thread_proc,
+        callback,
+        0,
+        NULL
+    );
+}
+
+void carol_io_touch_stop()
+{
+    carol_io_touch_stop_flag = true;
+}
+
+static unsigned int __stdcall carol_io_touch_thread_proc(void *ctx)
+{
+    carol_io_touch_callback_t callback;
+    bool mouse_is_down = false;
+    uint32_t mX = 0;
+    uint32_t mY = 0;
+    POINT lpPoint;
+
+    callback = ctx;
+
+    while (!carol_io_touch_stop_flag) {
+        if (GetAsyncKeyState(VK_LBUTTON) & 0x8000) {
+            mouse_is_down = true;
+            if (GetCursorPos(&lpPoint)) {                
+                mX = lpPoint.x;
+                mY = lpPoint.y;
+            }
+        } else {
+            mouse_is_down = false;
+        }
+
+        callback(mouse_is_down, mX, mY);
+        Sleep(1);
+    }
+
+    return 0;
 }
