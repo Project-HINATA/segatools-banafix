@@ -12,6 +12,8 @@ struct carol_dll {
     HRESULT (*touch_init)();
     HRESULT (*ledbd_init)();
     HRESULT (*controlbd_init)();
+    void (*touch_start)(carol_io_touch_callback_t callback);
+    void (*touch_stop)();
 };
 
 struct carol_dll_config {
