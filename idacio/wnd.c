@@ -31,13 +31,13 @@ HRESULT idac_io_wnd_create(HINSTANCE inst, HWND *out)
     wcx.cbSize = sizeof(wcx);
     wcx.lpfnWndProc = idac_io_wnd_proc;
     wcx.hInstance = inst;
-    wcx.lpszClassName = L"IDZIO";
+    wcx.lpszClassName = L"IDACIO";
 
     atom = RegisterClassExW(&wcx);
 
     if (atom == 0) {
         hr = HRESULT_FROM_WIN32(GetLastError());
-        dprintf("IDZIO: RegisterClassExW failed: %08x\n", (int) hr);
+        dprintf("IDACIO: RegisterClassExW failed: %08x\n", (int) hr);
 
         goto fail;
     }
@@ -58,7 +58,7 @@ HRESULT idac_io_wnd_create(HINSTANCE inst, HWND *out)
 
     if (hwnd == NULL) {
         hr = HRESULT_FROM_WIN32(GetLastError());
-        dprintf("IDZIO: CreateWindowExW failed: %08x\n", (int) hr);
+        dprintf("IDACIO: CreateWindowExW failed: %08x\n", (int) hr);
 
         goto fail;
     }

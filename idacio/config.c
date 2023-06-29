@@ -77,7 +77,7 @@ void idac_xi_config_load(struct idac_xi_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     cfg->single_stick_steering = GetPrivateProfileIntW(
-                                L"io3",
+                                L"io4",
                                 L"singleStickSteering",
                                 0,
                                 filename);
@@ -88,13 +88,13 @@ void idac_io_config_load(struct idac_io_config *cfg, const wchar_t *filename)
     assert(cfg != NULL);
     assert(filename != NULL);
 
-    cfg->vk_test = GetPrivateProfileIntW(L"io3", L"test", '1', filename);
-    cfg->vk_service = GetPrivateProfileIntW(L"io3", L"service", '2', filename);
-    cfg->vk_coin = GetPrivateProfileIntW(L"io3", L"coin", '3', filename);
-    cfg->restrict_ = GetPrivateProfileIntW(L"io3", L"restrict", 97, filename);
+    cfg->vk_test = GetPrivateProfileIntW(L"io4", L"test", '1', filename);
+    cfg->vk_service = GetPrivateProfileIntW(L"io4", L"service", '2', filename);
+    cfg->vk_coin = GetPrivateProfileIntW(L"io4", L"coin", '3', filename);
+    cfg->restrict_ = GetPrivateProfileIntW(L"io4", L"restrict", 97, filename);
 
     GetPrivateProfileStringW(
-            L"io3",
+            L"io4",
             L"mode",
             L"xinput",
             cfg->mode,
@@ -114,7 +114,7 @@ void idac_shifter_config_load(
     assert(filename != NULL);
 
     cfg->auto_neutral = GetPrivateProfileIntW(
-            L"io3",
+            L"io4",
             L"autoNeutral",
             0,
             filename);

@@ -29,12 +29,12 @@ static BOOL CALLBACK idac_di_enum_callback(
 static BOOL CALLBACK idac_di_enum_callback_shifter(
         const DIDEVICEINSTANCEW *dev,
         void *ctx);
-static void idac_di_jvs_read_buttons(uint8_t *gamebtn_out);
+static void idac_di_get_buttons(uint8_t *gamebtn_out);
 static uint8_t idac_di_decode_pov(DWORD pov);
-static void idac_di_jvs_read_shifter(uint8_t *gear);
-static void idac_di_jvs_read_shifter_pos(uint8_t *gear);
-static void idac_di_jvs_read_shifter_virt(uint8_t *gear);
-static void idac_di_jvs_read_analogs(struct idac_io_analog_state *out);
+static void idac_di_get_shifter(uint8_t *gear);
+static void idac_di_get_shifter_pos(uint8_t *gear);
+static void idac_di_get_shifter_virt(uint8_t *gear);
+static void idac_di_get_analogs(struct idac_io_analog_state *out);
 
 static const struct idac_di_axis idac_di_axes[] = {
     /* Just map DIJOYSTATE for now, we can map DIJOYSTATE2 later if needed */
@@ -49,9 +49,9 @@ static const struct idac_di_axis idac_di_axes[] = {
 };
 
 static const struct idac_io_backend idac_di_backend = {
-    .jvs_read_buttons   = idac_di_jvs_read_buttons,
-    .jvs_read_shifter   = idac_di_jvs_read_shifter,
-    .jvs_read_analogs   = idac_di_jvs_read_analogs,
+    .get_gamebtns   = idac_di_get_buttons,
+    .get_shifter   = idac_di_get_shifter,
+    .get_analogs   = idac_di_get_analogs,
 };
 
 static HWND idac_di_wnd;
@@ -98,8 +98,8 @@ HRESULT idac_di_init(
     }
 
     /* Initial D Zero has some built-in DirectInput support that is not
-       particularly useful. idzhook shorts this out by redirecting dinput8.dll
-       to a no-op implementation of DirectInput. However, idzio does need to
+       particularly useful. idachook shorts this out by redirecting dinput8.dll
+       to a no-op implementation of DirectInput. However, idacio does need to
        talk to the real operating system implementation of DirectInput without
        the stub DLL interfering, so build a path to
        C:\Windows\System32\dinput.dll here. */
@@ -374,7 +374,7 @@ static BOOL CALLBACK idac_di_enum_callback_shifter(
     return DIENUM_STOP;
 }
 
-static void idac_di_jvs_read_buttons(uint8_t *gamebtn_out)
+static void idac_di_get_buttons(uint8_t *gamebtn_out)
 {
     union idac_di_state state;
     uint8_t gamebtn;
@@ -416,18 +416,18 @@ static uint8_t idac_di_decode_pov(DWORD pov)
     }
 }
 
-static void idac_di_jvs_read_shifter(uint8_t *gear)
+static void idac_di_get_shifter(uint8_t *gear)
 {
     assert(gear != NULL);
 
     if (idac_di_shifter != NULL) {
-        idac_di_jvs_read_shifter_pos(gear);
+        idac_di_get_shifter_pos(gear);
     } else {
-        idac_di_jvs_read_shifter_virt(gear);
+        idac_di_get_shifter_virt(gear);
     }
 }
 
-static void idac_di_jvs_read_shifter_pos(uint8_t *out)
+static void idac_di_get_shifter_pos(uint8_t *out)
 {
     union idac_di_state state;
     uint8_t btn_no;
@@ -457,7 +457,7 @@ static void idac_di_jvs_read_shifter_pos(uint8_t *out)
     *out = gear;
 }
 
-static void idac_di_jvs_read_shifter_virt(uint8_t *gear)
+static void idac_di_get_shifter_virt(uint8_t *gear)
 {
     union idac_di_state state;
     bool shift_dn;
@@ -489,7 +489,7 @@ static void idac_di_jvs_read_shifter_virt(uint8_t *gear)
     *gear = idac_shifter_current_gear();
 }
 
-static void idac_di_jvs_read_analogs(struct idac_io_analog_state *out)
+static void idac_di_get_analogs(struct idac_io_analog_state *out)
 {
     union idac_di_state state;
     const LONG *brake;

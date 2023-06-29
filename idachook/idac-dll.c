@@ -10,20 +10,23 @@
 
 const struct dll_bind_sym idac_dll_syms[] = {
     {
-        .sym = "idac_io_jvs_init",
-        .off = offsetof(struct idac_dll, jvs_init),
+        .sym = "idac_io_init",
+        .off = offsetof(struct idac_dll, init),
     }, {
-        .sym = "idac_io_jvs_read_analogs",
-        .off = offsetof(struct idac_dll, jvs_read_analogs),
+        .sym = "idac_io_poll",
+        .off = offsetof(struct idac_dll, poll),
     }, {
-        .sym = "idac_io_jvs_read_buttons",
-        .off = offsetof(struct idac_dll, jvs_read_buttons),
+        .sym = "idac_io_get_opbtns",
+        .off = offsetof(struct idac_dll, get_opbtns),
     }, {
-        .sym = "idac_io_jvs_read_shifter",
-        .off = offsetof(struct idac_dll, jvs_read_shifter),
+        .sym = "idac_io_get_gamebtns",
+        .off = offsetof(struct idac_dll, get_gamebtns),
     }, {
-        .sym = "idac_io_jvs_read_coin_counter",
-        .off = offsetof(struct idac_dll, jvs_read_coin_counter),
+        .sym = "idac_io_get_shifter",
+        .off = offsetof(struct idac_dll, get_shifter),
+    }, {
+        .sym = "idac_io_get_analogs",
+        .off = offsetof(struct idac_dll, get_analogs),
     }
 };
 
@@ -51,14 +54,14 @@ HRESULT idac_dll_init(const struct idac_dll_config *cfg, HINSTANCE self)
 
         if (owned == NULL) {
             hr = HRESULT_FROM_WIN32(GetLastError());
-            dprintf("IDZ IO: Failed to load IO DLL: %lx: %S\n",
+            dprintf("IDAC IO: Failed to load IO DLL: %lx: %S\n",
                     hr,
                     cfg->path);
 
             goto end;
         }
 
-        dprintf("IDZ IO: Using custom IO DLL: %S\n", cfg->path);
+        dprintf("IDAC IO: Using custom IO DLL: %S\n", cfg->path);
         src = owned;
     } else {
         owned = NULL;
@@ -78,7 +81,7 @@ HRESULT idac_dll_init(const struct idac_dll_config *cfg, HINSTANCE self)
 
     if (idac_dll.api_version >= 0x0200) {
         hr = E_NOTIMPL;
-        dprintf("IDZ IO: Custom IO DLL implements an unsupported "
+        dprintf("IDAC IO: Custom IO DLL implements an unsupported "
                 "API version (%#04x). Please update Segatools.\n",
                 idac_dll.api_version);
 
@@ -90,7 +93,7 @@ HRESULT idac_dll_init(const struct idac_dll_config *cfg, HINSTANCE self)
 
     if (FAILED(hr)) {
         if (src != self) {
-            dprintf("IDZ IO: Custom IO DLL does not provide function "
+            dprintf("IDAC IO: Custom IO DLL does not provide function "
                     "\"%s\". Please contact your IO DLL's developer for "
                     "further assistance.\n",
                     sym->sym);

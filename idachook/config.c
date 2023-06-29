@@ -1,13 +1,8 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include "amex/amex.h"
-#include "amex/config.h"
-
 #include "board/config.h"
 #include "board/sg-reader.h"
-
-#include "gfxhook/config.h"
 
 #include "hooklib/config.h"
 #include "hooklib/dvd.h"
@@ -26,7 +21,7 @@ void idac_dll_config_load(
     assert(filename != NULL);
 
     GetPrivateProfileStringW(
-            L"idzio",
+            L"idacio",
             L"path",
             L"",
             cfg->path,
@@ -42,12 +37,11 @@ void idac_hook_config_load(
     assert(filename != NULL);
 
     platform_config_load(&cfg->platform, filename);
-    amex_config_load(&cfg->amex, filename);
     aime_config_load(&cfg->aime, filename);
-    dvd_config_load(&cfg->dvd, filename);
-    // gfx_config_load(&cfg->gfx, filename);
     idac_dll_config_load(&cfg->dll, filename);
     zinput_config_load(&cfg->zinput, filename);
+    dvd_config_load(&cfg->dvd, filename);
+    io4_config_load(&cfg->io4, filename);
 }
 
 void zinput_config_load(struct zinput_config *cfg, const wchar_t *filename)

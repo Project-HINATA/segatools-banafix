@@ -1,14 +1,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "idzio/shifter.h"
+#include "idacio/shifter.h"
 
 static bool idac_shifter_shifting;
 static uint8_t idac_shifter_gear;
 
-void idac_shifter_reset(void)
+void idac_shifter_set(uint8_t gear)
 {
-    idac_shifter_gear = 0;
+    idac_shifter_gear = gear;
 }
 
 void idac_shifter_update(bool shift_dn, bool shift_up)

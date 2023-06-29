@@ -12,8 +12,9 @@ EXPORTS
     amDllVideoOpen @1
     amDllVideoSetResolution @3
     idac_io_get_api_version
-    idac_io_jvs_init
-    idac_io_jvs_read_analogs
-    idac_io_jvs_read_buttons
-    idac_io_jvs_read_coin_counter
-    idac_io_jvs_read_shifter
+    idac_io_init
+    idac_io_poll
+    idac_io_get_opbtns
+    idac_io_get_gamebtns
+    idac_io_get_shifter
+    idac_io_get_analogs

@@ -1,17 +1,5 @@
 #pragma once
 
-/* INITIAL D THE ARCADE CUSTOM IO API
-
-   This API definition allows custom driver DLLs to be defined for the
-   emulation of Initial D The Arcade cabinets. To be honest, there is very
-   little reason to want to do this, since driving game controllers are a
-   mostly-standardized PC peripheral which can be adequately controlled by the
-   built-in DirectInput and XInput support in idzhook. However, previous
-   versions of Segatools broke this functionality out into a separate DLL just
-   like all of the other supported games, so in the interests of maintaining
-   backwards compatibility we provide the option to load custom IDZIO
-   implementations as well. */
-
 #include <windows.h>
 
 #include <stdint.h>
@@ -19,6 +7,7 @@
 enum {
     IDAC_IO_OPBTN_TEST = 0x01,
     IDAC_IO_OPBTN_SERVICE = 0x02,
+    IDAC_IO_OPBTN_COIN = 0x04,
 };
 
 enum {
@@ -49,7 +38,7 @@ struct idac_io_analog_state {
     uint16_t brake;
 };
 
-/* Get the version of the IDZ IO API that this DLL supports. This
+/* Get the version of the IDAC IO API that this DLL supports. This
    function should return a positive 16-bit integer, where the high byte is
    the major version and the low byte is the minor version (as defined by the
    Semantic Versioning standard).
@@ -58,33 +47,48 @@ struct idac_io_analog_state {
 
 uint16_t idac_io_get_api_version(void);
 
-/* Initialize JVS-based input. This function will be called before any other
-   idac_io_jvs_*() function calls. Errors returned from this function will
-   manifest as a disconnected JVS bus.
+/* Initialize the IO DLL. This is the second function that will be called on
+   your DLL, after mu3_io_get_api_version.
 
-   All subsequent calls may originate from arbitrary threads and some may
-   overlap with each other. Ensuring synchronization inside your IO DLL is
-   your responsibility.
+   All subsequent calls to this API may originate from arbitrary threads.
 
    Minimum API version: 0x0100 */
 
-HRESULT idac_io_jvs_init(void);
+HRESULT idac_io_init(void);
+
+/* Send any queued outputs (of which there are currently none, though this may
+   change in subsequent API versions) and retrieve any new inputs.
+
+   Minimum API version: 0x0100 */
+
+HRESULT idac_io_poll(void);
+
+/* Get the state of the cabinet's operator buttons as of the last poll. See
+   MU3_IO_OPBTN enum above: this contains bit mask definitions for button
+   states returned in *opbtn. All buttons are active-high.
+
+   Minimum API version: 0x0100 */
+
+void idac_io_get_opbtns(uint8_t *opbtn);
+
+/* Get the state of the cabinet's gameplay buttons as of the last poll. See
+   MU3_IO_GAMEBTN enum above for bit mask definitions. Inputs are split into
+   a left hand side set of inputs and a right hand side set of inputs: the bit
+   mappings are the same in both cases.
+
+   All buttons are active-high, even though some buttons' electrical signals
+   on a real cabinet are active-low.
+
+   Minimum API version: 0x0100 */
+
+void idac_io_get_gamebtns(uint8_t *gamebtn);
 
 /* Poll the current state of the cabinet's JVS analog inputs. See structure
    definition above for details.
 
    Minimum API version: 0x0100 */
 
-void idac_io_jvs_read_analogs(struct idac_io_analog_state *out);
-
-/* Poll the current state of the cabinet's JVS input buttons and return them
-   through the opbtn and gamebtn out parameters. See enum definitions at the
-   top of this file for a list of bit masks to be used with these out
-   parameters.
-
-   Minimum API version: 0x0100 */
-
-void idac_io_jvs_read_buttons(uint8_t *opbtn, uint8_t *gamebtn);
+void idac_io_get_analogs(struct idac_io_analog_state *out);
 
 /* Poll the current position of the six-speed shifter and return it via the
    gear out parameter. Valid values are 0 for neutral and 1-6 for gears 1-6.
@@ -95,12 +99,4 @@ void idac_io_jvs_read_buttons(uint8_t *opbtn, uint8_t *gamebtn);
 
    Minimum API version: 0x0100 */
 
-void idac_io_jvs_read_shifter(uint8_t *gear);
-
-/* Read the current state of the coin counter. This value should be incremented
-   for every coin detected by the coin acceptor mechanism. This count does not
-   need to persist beyond the lifetime of the process.
-
-   Minimum API version: 0x0100 */
-
-void idac_io_jvs_read_coin_counter(uint16_t *total);
+void idac_io_get_shifter(uint8_t *gear);

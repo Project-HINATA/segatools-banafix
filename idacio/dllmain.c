@@ -16,14 +16,13 @@
 static struct idac_io_config idac_io_cfg;
 static const struct idac_io_backend *idac_io_backend;
 static bool idac_io_coin;
-static uint16_t idac_io_coins;
 
 uint16_t idac_io_get_api_version(void)
 {
     return 0x0100;
 }
 
-HRESULT idac_io_jvs_init(void)
+HRESULT idac_io_init(void)
 {
     HINSTANCE inst;
     HRESULT hr;
@@ -47,20 +46,19 @@ HRESULT idac_io_jvs_init(void)
         hr = idac_xi_init(&idac_io_cfg.xi, &idac_io_backend);
     } else {
         hr = E_INVALIDARG;
-        dprintf("IDZ IO: Invalid IO mode \"%S\", use dinput or xinput\n",
+        dprintf("IDAC IO: Invalid IO mode \"%S\", use dinput or xinput\n",
                 idac_io_cfg.mode);
     }
 
     return hr;
 }
 
-void idac_io_jvs_read_buttons(uint8_t *opbtn_out, uint8_t *gamebtn_out)
+void idac_io_get_opbtns(uint8_t *opbtn_out)
 {
     uint8_t opbtn;
 
     assert(idac_io_backend != NULL);
     assert(opbtn_out != NULL);
-    assert(gamebtn_out != NULL);
 
     opbtn = 0;
 
@@ -72,27 +70,43 @@ void idac_io_jvs_read_buttons(uint8_t *opbtn_out, uint8_t *gamebtn_out)
         opbtn |= IDAC_IO_OPBTN_SERVICE;
     }
 
-    *opbtn_out = opbtn;
+    if (GetAsyncKeyState(idac_io_cfg.vk_coin) & 0x8000) {
+        if (!idac_io_coin) {
+            idac_io_coin = true;
+            opbtn |= IDAC_IO_OPBTN_COIN;
+        }
+    } else {
+        idac_io_coin = false;
+    }
 
-    idac_io_backend->jvs_read_buttons(gamebtn_out);
+    *opbtn_out = opbtn;
 }
 
-void idac_io_jvs_read_shifter(uint8_t *gear)
+
+void idac_io_get_gamebtns(uint8_t *gamebtn_out)
+{
+    assert(idac_io_backend != NULL);
+    assert(gamebtn_out != NULL);
+
+    idac_io_backend->get_gamebtns(gamebtn_out);
+}
+
+void idac_io_get_shifter(uint8_t *gear)
 {
     assert(gear != NULL);
     assert(idac_io_backend != NULL);
 
-    idac_io_backend->jvs_read_shifter(gear);
+    idac_io_backend->get_shifter(gear);
 }
 
-void idac_io_jvs_read_analogs(struct idac_io_analog_state *out)
+void idac_io_get_analogs(struct idac_io_analog_state *out)
 {
     struct idac_io_analog_state tmp;
 
     assert(out != NULL);
     assert(idac_io_backend != NULL);
 
-    idac_io_backend->jvs_read_analogs(&tmp);
+    idac_io_backend->get_analogs(&tmp);
 
     /* Apply steering wheel restriction. Real cabs only report about 77% of
        the IO-3's max ADC output value when the wheel is turned to either of
@@ -103,23 +117,4 @@ void idac_io_jvs_read_analogs(struct idac_io_analog_state *out)
     out->wheel = (tmp.wheel * idac_io_cfg.restrict_) / 128;
     out->accel = tmp.accel;
     out->brake = tmp.brake;
-}
-
-void idac_io_jvs_read_coin_counter(uint16_t *out)
-{
-    assert(out != NULL);
-
-    /* Coin counter is not backend-specific */
-
-    if (idac_io_cfg.vk_coin &&
-            (GetAsyncKeyState(idac_io_cfg.vk_coin) & 0x8000)) {
-        if (!idac_io_coin) {
-            idac_io_coin = true;
-            idac_io_coins++;
-        }
-    } else {
-        idac_io_coin = false;
-    }
-
-    *out = idac_io_coins;
 }
