@@ -79,5 +79,13 @@ HRESULT dns_platform_hook_init(const struct dns_config *cfg)
         return hr;
     }
 
+    // Disable api/polling to the original servers
+
+    hr = dns_hook_push(L"amlog.sys-all.net", NULL);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     return S_OK;
 }

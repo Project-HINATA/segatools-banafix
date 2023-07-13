@@ -18,7 +18,7 @@ if ERRORLEVEL 1 (
     goto failure
 )
 
-docker image rm -f %IMAGE_NAME%
+:: docker image rm -f %IMAGE_NAME%
 
 goto success
 

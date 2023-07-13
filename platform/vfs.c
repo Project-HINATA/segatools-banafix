@@ -28,7 +28,9 @@ static HRESULT vfs_reg_read_amfs(void *bytes, uint32_t *nbytes);
 static HRESULT vfs_reg_read_appdata(void *bytes, uint32_t *nbytes);
 
 static wchar_t vfs_nthome_real[MAX_PATH];
-static const wchar_t vfs_nthome[] = L"C:\\Documents and Settings\\AppUser";
+// new home for ALLS
+static const wchar_t vfs_nthome[] = L"C:\\Users\\AppUser";
+// static const wchar_t vfs_nthome[] = L"C:\\Documents and Settings\\AppUser";
 static const size_t vfs_nthome_len = _countof(vfs_nthome) - 1;
 
 static const wchar_t vfs_option[] = L"C:\\Mount\\Option";
@@ -273,8 +275,8 @@ static HRESULT vfs_path_hook(const wchar_t *src, wchar_t *dest, size_t *count)
     }
 
     switch (src[0]) {
-    case L'D': // later AMDaemon versions default to D: for AMFS if it can't find it
-    case L'd':
+    // case L'D': // later AMDaemon versions default to D: for AMFS if it can't find it
+    // case L'd':
     case L'e':
     case L'E':
         redir = vfs_config.amfs;

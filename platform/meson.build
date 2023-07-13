@@ -32,5 +32,7 @@ platform_lib = static_library(
         'platform.h',
         'vfs.c',
         'vfs.h',
+        'dipsw.c',
+        'dipsw.h',
     ],
 )

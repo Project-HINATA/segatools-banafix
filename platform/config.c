@@ -21,6 +21,7 @@
 #include "platform/pcbid.h"
 #include "platform/platform.h"
 #include "platform/vfs.h"
+#include "platform/dipsw.h"
 
 void platform_config_load(struct platform_config *cfg, const wchar_t *filename)
 {
@@ -37,6 +38,7 @@ void platform_config_load(struct platform_config *cfg, const wchar_t *filename)
     netenv_config_load(&cfg->netenv, filename);
     nusec_config_load(&cfg->nusec, filename);
     vfs_config_load(&cfg->vfs, filename);
+    dipsw_config_load(&cfg->dipsw, filename);
 }
 
 void amvideo_config_load(struct amvideo_config *cfg, const wchar_t *filename)
@@ -315,5 +317,23 @@ void vfs_config_load(struct vfs_config *cfg, const wchar_t *filename)
             cfg->option,
             _countof(cfg->option),
             filename);
+}
+
+void dipsw_config_load(struct dipsw_config *cfg, const wchar_t *filename)
+{
+    wchar_t name[7];
+    size_t i;
+
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    cfg->enable = GetPrivateProfileIntW(L"gpio", L"enable", 1, filename);
+
+    wcscpy_s(name, _countof(name), L"dipsw0");
+
+    for (i = 0 ; i < 8 ; i++) {
+        name[5] = L'1' + i;
+        cfg->dipsw[i] = GetPrivateProfileIntW(L"gpio", name, 0, filename);
+    }
 }
 
