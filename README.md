@@ -17,6 +17,12 @@ Loaders and hardware emulators for SEGA games that run on the Nu and ALLS platfo
   * Initial D The Arcade
 * SEGA World Drivers Championship
   * SEGA World Drivers Championship 2019
+* ONGEKI
+  * bright MEMORY
+* maimai DX
+  * maimai DX FESTiVAL
+* Card Maker
+  * Card Maker 1.35
 * Wacca
   * Wacca Lilly R (WIP)
 
