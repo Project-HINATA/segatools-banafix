@@ -3,5 +3,7 @@
 #include <stddef.h>
 
 #include "hooklib/dvd.h"
+#include "hooklib/touch.h"
 
 void dvd_config_load(struct dvd_config *cfg, const wchar_t *filename);
+void touch_screen_config_load(struct touch_screen_config *cfg, const wchar_t *filename);

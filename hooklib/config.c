@@ -14,3 +14,11 @@ void dvd_config_load(struct dvd_config *cfg, const wchar_t *filename)
 
     cfg->enable = GetPrivateProfileIntW(L"dvd", L"enable", 1, filename);
 }
+
+void touch_screen_config_load(struct touch_screen_config *cfg, const wchar_t *filename)
+{
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    cfg->enable = GetPrivateProfileIntW(L"touch", L"enable", 1, filename);
+}
