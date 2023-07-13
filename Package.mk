@@ -154,6 +154,36 @@ $(BUILD_DIR_ZIP)/mu3.zip:
 	$(V)strip $(BUILD_DIR_ZIP)/mu3/*.{exe,dll}
 	$(V)cd $(BUILD_DIR_ZIP)/mu3 ; zip -r ../mu3.zip *
 
+$(BUILD_DIR_ZIP)/mai2.zip:
+	$(V)echo ... $@
+	$(V)mkdir -p $(BUILD_DIR_ZIP)/mai2
+	$(V)mkdir -p $(BUILD_DIR_ZIP)/mai2/DEVICE
+	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
+		$(BUILD_DIR_64)/mai2hook/mai2hook.dll \
+		$(DIST_DIR)/mai2/segatools.ini \
+		$(DIST_DIR)/mai2/start.bat \
+    	$(BUILD_DIR_ZIP)/mai2
+	$(V)cp pki/billing.pub \
+		pki/ca.crt \
+    	$(BUILD_DIR_ZIP)/mai2/DEVICE
+	$(V)strip $(BUILD_DIR_ZIP)/mai2/*.{exe,dll}
+	$(V)cd $(BUILD_DIR_ZIP)/mai2 ; zip -r ../mai2.zip *
+
+$(BUILD_DIR_ZIP)/cm.zip:
+	$(V)echo ... $@
+	$(V)mkdir -p $(BUILD_DIR_ZIP)/cm
+	$(V)mkdir -p $(BUILD_DIR_ZIP)/cm/DEVICE
+	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
+		$(BUILD_DIR_64)/cmhook/cmhook.dll \
+		$(DIST_DIR)/cm/segatools.ini \
+		$(DIST_DIR)/cm/start.bat \
+    	$(BUILD_DIR_ZIP)/cm
+	$(V)cp pki/billing.pub \
+		pki/ca.crt \
+    	$(BUILD_DIR_ZIP)/cm/DEVICE
+	$(V)strip $(BUILD_DIR_ZIP)/cm/*.{exe,dll}
+	$(V)cd $(BUILD_DIR_ZIP)/cm ; zip -r ../cm.zip *
+
 $(BUILD_DIR_ZIP)/doc.zip: \
 		$(DOC_DIR)/config \
 		$(DOC_DIR)/chunihook.md \
@@ -174,6 +204,8 @@ $(BUILD_DIR_ZIP)/segatools.zip: \
 		$(BUILD_DIR_ZIP)/mercury.zip \
 		$(BUILD_DIR_ZIP)/chusan.zip \
 		$(BUILD_DIR_ZIP)/mu3.zip \
+		$(BUILD_DIR_ZIP)/mai2.zip \
+		$(BUILD_DIR_ZIP)/cm.zip \
 		CHANGELOG.md \
 		README.md \
 
