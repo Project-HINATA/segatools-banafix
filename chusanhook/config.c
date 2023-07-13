@@ -1,23 +1,34 @@
-#include <windows.h>
-
 #include <assert.h>
-#include <stdbool.h>
 #include <stddef.h>
 
-#include "amex/amex.h"
-#include "amex/config.h"
-
 #include "board/config.h"
-#include "board/sg-reader.h"
 
-#include "chunihook/config.h"
+#include "hooklib/config.h"
+#include "hooklib/dvd.h"
 
 #include "gfxhook/config.h"
 
-#include "hooklib/config.h"
-
 #include "platform/config.h"
-#include "platform/platform.h"
+
+#include "chusanhook/config.h"
+
+// Check windows
+#if _WIN32 || _WIN64
+   #if _WIN64
+     #define ENV64BIT
+  #else
+    #define ENV32BIT
+  #endif
+#endif
+
+// Check GCC
+#if __GNUC__
+  #if __x86_64__ || __ppc64__
+    #define ENV64BIT
+  #else
+    #define ENV32BIT
+  #endif
+#endif
 
 void chuni_dll_config_load(
         struct chuni_dll_config *cfg,
@@ -26,13 +37,30 @@ void chuni_dll_config_load(
     assert(cfg != NULL);
     assert(filename != NULL);
 
-    GetPrivateProfileStringW(
-            L"chuniio",
-            L"path",
-            L"",
-            cfg->path,
-            _countof(cfg->path),
-            filename);
+    // Workaround for x64/x86 external IO dlls
+    // path32 for 32bit, path64 for 64bit
+    // for else.. is that possible? idk
+
+    #if defined(ENV32BIT)
+        GetPrivateProfileStringW(
+                L"chuniio",
+                L"path32",
+                L"",
+                cfg->path,
+                _countof(cfg->path),
+                filename);
+    #elif defined(ENV64BIT)
+        GetPrivateProfileStringW(
+                L"chuniio",
+                L"path64",
+                L"",
+                cfg->path,
+                _countof(cfg->path),
+                filename);
+    #else
+        #error "Unknown environment"
+    #endif
+    
 }
 
 void slider_config_load(struct slider_config *cfg, const wchar_t *filename)
@@ -54,6 +82,7 @@ void led1509306_config_load(struct led1509306_config *cfg, const wchar_t *filena
     memset(cfg->chip_number, ' ', sizeof(cfg->chip_number));
     
     cfg->enable = GetPrivateProfileIntW(L"ledstrip", L"enable", 1, filename);
+    cfg->cvt_port = GetPrivateProfileIntW(L"ledstrip", L"cvt_port", 0, filename);
     cfg->fw_ver = GetPrivateProfileIntW(L"ledstrip", L"fw_ver", 0x90, filename);
     cfg->fw_sum = GetPrivateProfileIntW(L"ledstrip", L"fw_sum", 0xadf7, filename);
     
@@ -72,8 +101,9 @@ void led1509306_config_load(struct led1509306_config *cfg, const wchar_t *filena
     } 
 }
 
-void chuni_hook_config_load(
-        struct chuni_hook_config *cfg,
+
+void chusan_hook_config_load(
+        struct chusan_hook_config *cfg,
         const wchar_t *filename)
 {
     assert(cfg != NULL);
@@ -82,8 +112,9 @@ void chuni_hook_config_load(
     memset(cfg, 0, sizeof(*cfg));
 
     platform_config_load(&cfg->platform, filename);
-    amex_config_load(&cfg->amex, filename);
     aime_config_load(&cfg->aime, filename);
+    dvd_config_load(&cfg->dvd, filename);
+    io4_config_load(&cfg->io4, filename);
     gfx_config_load(&cfg->gfx, filename);
     chuni_dll_config_load(&cfg->dll, filename);
     slider_config_load(&cfg->slider, filename);

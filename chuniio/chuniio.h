@@ -15,6 +15,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+enum {
+    CHUNI_IO_OPBTN_TEST = 0x01,
+    CHUNI_IO_OPBTN_SERVICE = 0x02,
+    CHUNI_IO_OPBTN_COIN = 0x04,
+};
+
 /* Get the version of the Chunithm IO API that this DLL supports. This
    function should return a positive 16-bit integer, where the high byte is
    the major version and the low byte is the minor version (as defined by the

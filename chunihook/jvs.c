@@ -101,13 +101,13 @@ static void chunithm_jvs_read_switches(void *ctx, struct io3_switch_state *out)
     out->p1 = 0x0000;
     out->p2 = 0x0000;
 
-    if (opbtn & 0x01) {
+    if (opbtn & CHUNI_IO_OPBTN_TEST) {
         out->system = 0x80;
     } else {
         out->system = 0x00;
     }
 
-    if (opbtn & 0x02) {
+    if (opbtn & CHUNI_IO_OPBTN_SERVICE) {
         out->p1 |= 0x4000;
     }
 

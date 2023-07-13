@@ -118,6 +118,26 @@ $(BUILD_DIR_ZIP)/mercury.zip:
 	$(V)strip $(BUILD_DIR_ZIP)/mercury/*.{exe,dll}
 	$(V)cd $(BUILD_DIR_ZIP)/mercury ; zip -r ../mercury.zip *
 
+$(BUILD_DIR_ZIP)/chusan.zip:
+	$(V)echo ... $@
+	$(V)mkdir -p $(BUILD_DIR_ZIP)/chusan
+	$(V)mkdir -p $(BUILD_DIR_ZIP)/chusan/DEVICE
+	$(V)cp $(DIST_DIR)/chusan/segatools.ini \
+		$(DIST_DIR)/chusan/start.bat \
+		$(BUILD_DIR_ZIP)/chusan
+	$(V)cp $(BUILD_DIR_32)/chusanhook/chusanhook.dll \
+		$(BUILD_DIR_ZIP)/chusan/chusanhook_x86.dll
+	$(V)cp $(BUILD_DIR_64)/chusanhook/chusanhook.dll \
+		$(BUILD_DIR_ZIP)/chusan/chusanhook_x64.dll
+	$(V)cp $(BUILD_DIR_32)/subprojects/capnhook/inject/inject.exe \
+		$(BUILD_DIR_ZIP)/chusan/inject_x86.exe
+	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
+		$(BUILD_DIR_ZIP)/chusan/inject_x64.exe
+	$(V)cp pki/billing.pub \
+		pki/ca.crt \
+		$(BUILD_DIR_ZIP)/chusan/DEVICE
+	for x in exe dll; do strip $(BUILD_DIR_ZIP)/chusan/*.$$x; done
+	$(V)cd $(BUILD_DIR_ZIP)/chusan ; zip -r ../chusan.zip *
 
 $(BUILD_DIR_ZIP)/mu3.zip:
 	$(V)echo ... $@
@@ -152,6 +172,7 @@ $(BUILD_DIR_ZIP)/segatools.zip: \
 		$(BUILD_DIR_ZIP)/idac.zip \
 		$(BUILD_DIR_ZIP)/swdc.zip \
 		$(BUILD_DIR_ZIP)/mercury.zip \
+		$(BUILD_DIR_ZIP)/chusan.zip \
 		$(BUILD_DIR_ZIP)/mu3.zip \
 		CHANGELOG.md \
 		README.md \
