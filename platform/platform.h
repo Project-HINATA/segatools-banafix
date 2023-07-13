@@ -12,6 +12,7 @@
 #include "platform/nusec.h"
 #include "platform/pcbid.h"
 #include "platform/vfs.h"
+#include "platform/dipsw.h"
 
 struct platform_config {
     struct amvideo_config amvideo;
@@ -24,6 +25,7 @@ struct platform_config {
     struct netenv_config netenv;
     struct nusec_config nusec;
     struct vfs_config vfs;
+    struct dipsw_config dipsw;
 };
 
 HRESULT platform_hook_init(

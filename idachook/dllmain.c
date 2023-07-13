@@ -5,7 +5,6 @@
 
 #include "board/sg-reader.h"
 #include "board/io4.h"
-#include "board/vfd.h"
 
 #include "hook/process.h"
 
@@ -58,13 +57,6 @@ static DWORD CALLBACK idac_pre_startup(void)
 
     if (FAILED(hr)) {
         goto fail;
-    }
-
-    // Not needed?
-    hr = vfd_hook_init(4);
-
-    if (FAILED(hr)) {
-        return hr;
     }
 
     hr = idac_dll_init(&idac_hook_cfg.dll, idac_hook_mod);

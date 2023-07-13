@@ -17,6 +17,7 @@
 #include "platform/pcbid.h"
 #include "platform/platform.h"
 #include "platform/vfs.h"
+#include "platform/dipsw.h"
 
 void platform_config_load(
         struct platform_config *cfg,
@@ -32,3 +33,4 @@ void netenv_config_load(struct netenv_config *cfg, const wchar_t *filename);
 void nusec_config_load(struct nusec_config *cfg, const wchar_t *filename);
 void pcbid_config_load(struct pcbid_config *cfg, const wchar_t *filename);
 void vfs_config_load(struct vfs_config *cfg, const wchar_t *filename);
+void dipsw_config_load(struct dipsw_config *cfg, const wchar_t *filename);
