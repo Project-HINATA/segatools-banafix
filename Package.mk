@@ -88,6 +88,21 @@ $(BUILD_DIR_ZIP)/idac.zip:
 	$(V)strip $(BUILD_DIR_ZIP)/idac/*.{exe,dll}
 	$(V)cd $(BUILD_DIR_ZIP)/idac ; zip -r ../idac.zip *
 
+$(BUILD_DIR_ZIP)/swdc.zip:
+	$(V)echo ... $@
+	$(V)mkdir -p $(BUILD_DIR_ZIP)/swdc
+	$(V)mkdir -p $(BUILD_DIR_ZIP)/swdc/DEVICE
+	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
+		$(BUILD_DIR_64)/swdchook/swdchook.dll \
+		$(DIST_DIR)/swdc/segatools.ini \
+		$(DIST_DIR)/swdc/start.bat \
+    	$(BUILD_DIR_ZIP)/swdc
+	$(V)cp pki/billing.pub \
+		pki/ca.crt \
+    	$(BUILD_DIR_ZIP)/swdc/DEVICE
+	$(V)strip $(BUILD_DIR_ZIP)/swdc/*.{exe,dll}
+	$(V)cd $(BUILD_DIR_ZIP)/swdc ; zip -r ../swdc.zip *
+
 $(BUILD_DIR_ZIP)/mercury.zip:
 	$(V)echo ... $@
 	$(V)mkdir -p $(BUILD_DIR_ZIP)/mercury
@@ -135,6 +150,7 @@ $(BUILD_DIR_ZIP)/segatools.zip: \
 		$(BUILD_DIR_ZIP)/doc.zip \
 		$(BUILD_DIR_ZIP)/idz.zip \
 		$(BUILD_DIR_ZIP)/idac.zip \
+		$(BUILD_DIR_ZIP)/swdc.zip \
 		$(BUILD_DIR_ZIP)/mercury.zip \
 		$(BUILD_DIR_ZIP)/mu3.zip \
 		CHANGELOG.md \

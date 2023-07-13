@@ -1,6 +1,6 @@
 # Segatools
 
-Version: `v005`
+Version: `2023-07-14`
 
 Loaders and hardware emulators for SEGA games that run on the Nu and ALLS platforms.
 
@@ -14,6 +14,9 @@ Loaders and hardware emulators for SEGA games that run on the Nu and ALLS platfo
   * [Chunithm Crystal (Plus)](doc/chunihook.md)
 * Initial D
   * [Initial D Arcade Stage Zero](doc/idzhook.md)
+  * Initial D The Arcade
+* SEGA World Drivers Championship
+  * SEGA World Drivers Championship 2019
 * Wacca
   * Wacca Lilly R (WIP)
 
