@@ -327,7 +327,7 @@ void dipsw_config_load(struct dipsw_config *cfg, const wchar_t *filename)
     assert(cfg != NULL);
     assert(filename != NULL);
 
-    cfg->enable = GetPrivateProfileIntW(L"gpio", L"enable", 1, filename);
+    cfg->enable = GetPrivateProfileIntW(L"gpio", L"enable", 0, filename);
 
     wcscpy_s(name, _countof(name), L"dipsw0");
 

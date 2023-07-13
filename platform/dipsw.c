@@ -3,7 +3,6 @@
 
 #include <assert.h>
 #include <string.h>
-// #include <zlib.h>
 
 #include "platform/dipsw.h"
 #include "platform/vfs.h"
