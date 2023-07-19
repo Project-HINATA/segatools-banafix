@@ -107,7 +107,7 @@ static DWORD CALLBACK idz_pre_startup(void)
 
     spike_hook_init(L".\\segatools.ini");
 
-    dprintf("---  End  idz_pre_startup ---\n");
+    dprintf("--- End idz_pre_startup ---\n");
 
     /* Jump to EXE start address */
 

@@ -379,7 +379,7 @@ static uint8_t swdc_di_decode_pov(DWORD pov)
         case 9000:  return SWDC_IO_GAMEBTN_RIGHT;
         case 13500: return SWDC_IO_GAMEBTN_RIGHT | SWDC_IO_GAMEBTN_DOWN;
         case 18000: return SWDC_IO_GAMEBTN_DOWN;
-        case 22500: return SWDC_IO_GAMEBTN_DOWN | SWDC_IO_GAMEBTN_RIGHT;
+        case 22500: return SWDC_IO_GAMEBTN_DOWN | SWDC_IO_GAMEBTN_LEFT;
         case 27000: return SWDC_IO_GAMEBTN_LEFT;
         case 31500: return SWDC_IO_GAMEBTN_LEFT | SWDC_IO_GAMEBTN_UP;
         default:    return 0;

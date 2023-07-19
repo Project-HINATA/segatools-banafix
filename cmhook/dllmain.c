@@ -60,7 +60,7 @@ static DWORD CALLBACK cm_pre_startup(void)
         goto fail;
     }
 
-    hr = vfd_hook_init(3);
+    hr = vfd_hook_init(2);
 
     if (FAILED(hr)) {
         goto fail;
@@ -89,7 +89,7 @@ static DWORD CALLBACK cm_pre_startup(void)
 
     spike_hook_init(L".\\segatools.ini");
 
-    dprintf("---  End  cm_pre_startup ---\n");
+    dprintf("--- End cm_pre_startup ---\n");
 
     /* Jump to EXE start address */
 

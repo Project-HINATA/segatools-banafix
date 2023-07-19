@@ -409,7 +409,7 @@ static uint8_t idac_di_decode_pov(DWORD pov)
         case 9000:  return IDAC_IO_GAMEBTN_RIGHT;
         case 13500: return IDAC_IO_GAMEBTN_RIGHT | IDAC_IO_GAMEBTN_DOWN;
         case 18000: return IDAC_IO_GAMEBTN_DOWN;
-        case 22500: return IDAC_IO_GAMEBTN_DOWN | IDAC_IO_GAMEBTN_RIGHT;
+        case 22500: return IDAC_IO_GAMEBTN_DOWN | IDAC_IO_GAMEBTN_LEFT;
         case 27000: return IDAC_IO_GAMEBTN_LEFT;
         case 31500: return IDAC_IO_GAMEBTN_LEFT | IDAC_IO_GAMEBTN_UP;
         default:    return 0;

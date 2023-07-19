@@ -75,7 +75,7 @@ static DWORD CALLBACK idac_pre_startup(void)
 
     spike_hook_init(L".\\segatools.ini");
 
-    dprintf("---  End  idac_pre_startup ---\n");
+    dprintf("--- End idac_pre_startup ---\n");
 
     /* Jump to EXE start address */
 
