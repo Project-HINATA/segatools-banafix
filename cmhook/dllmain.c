@@ -89,7 +89,7 @@ static DWORD CALLBACK cm_pre_startup(void)
 
     spike_hook_init(L".\\segatools.ini");
 
-    dprintf("--- End cm_pre_startup ---\n");
+    dprintf("---  End  cm_pre_startup ---\n");
 
     /* Jump to EXE start address */
 

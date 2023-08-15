@@ -31,6 +31,13 @@ Default: `1`
 Enable Aime card reader assembly emulation. Disable to use a real SEGA Aime
 reader (COM port number varies by game).
 
+### `highbaud`
+
+Default: `1`
+
+Enables the high baudrate of the Aime card reader to be 115200 (instead of 38400).
+This is required for some games (e.g. Chunithm) but not others (e.g. WACCA).
+
 ### `aimePath`
 
 Default: `DEVICE\aime.txt`
@@ -269,6 +276,33 @@ Configure emulation of the AMEX PCIe JVS *controller* (not IO board!)
 Default `1`
 
 Enable JVS port emulation. Disable to use the JVS port on a real AMEX.
+
+## `[io4]`
+
+Configure emulation of the IO4 board. Same settings also apply to `[io3]`.
+
+### `enable`
+
+Default `1`
+
+Enable IO4 port emulation. Disable to use the IO4 port on a real ALLS.
+
+### `test`
+Default `0x31`
+
+Test button virtual-key code. Default is the 1 key.
+
+### `service`
+
+Default `0x32`
+
+Service button virtual-key code. Default is the 2 key.
+
+### `coin`
+
+Default `0x33`
+
+Keyboard button to increment coin counter. Default is the 3 key.
 
 ## `[keychip]`
 

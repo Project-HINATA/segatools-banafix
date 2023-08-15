@@ -6,6 +6,8 @@
 
 struct touch_screen_config {
     bool enable;
+    bool remap;
+    bool cursor;
 };
 
 /* Init is not thread safe because API hook init is not thread safe blah

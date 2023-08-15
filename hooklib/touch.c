@@ -19,6 +19,12 @@ This means there can be some license issues if you do use this code in some othe
 
 /* API hooks */
 
+static LRESULT hook_wndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+
+static ATOM WINAPI hook_RegisterClassExA(
+    WNDCLASSEXA* wndClass
+);
+
 static int WINAPI hook_GetSystemMetrics(
     int nIndex
 );
@@ -35,7 +41,13 @@ static BOOL WINAPI hook_GetTouchInputInfo(
     int cbSize
 );
 
+static HCURSOR WINAPI hook_SetCursor(HCURSOR cursor);
+
 /* Link pointers */
+
+static ATOM (WINAPI *next_RegisterClassExA)(
+    const WNDCLASSEXA* wndClass
+);
 
 static int (WINAPI *next_GetSystemMetrics)(
     int nIndex
@@ -53,10 +65,20 @@ static BOOL (WINAPI *next_GetTouchInputInfo)(
     int cbSize
 );
 
+static HCURSOR(WINAPI *next_SetCursor)(HCURSOR cursor);
+
 static bool touch_hook_initted;
+static bool touch_held;
+static HWND registered_hWnd;
 static struct touch_screen_config touch_config;
+static WNDPROC orig_wndProc;
 
 static const struct hook_symbol touch_hooks[] = {
+    {
+        .name   = "RegisterClassExA",
+        .patch  = hook_RegisterClassExA,
+        .link   = (void**)&next_RegisterClassExA
+    },
     {
         .name   = "GetSystemMetrics",
         .patch  = hook_GetSystemMetrics,
@@ -71,6 +93,11 @@ static const struct hook_symbol touch_hooks[] = {
         .name   = "GetTouchInputInfo",
         .patch  = hook_GetTouchInputInfo,
         .link   = (void **) &next_GetTouchInputInfo
+    },
+    {
+        .name   = "SetCursor",
+        .patch  = hook_SetCursor,
+        .link   = (void **) &next_SetCursor
     },
 };
 
@@ -93,6 +120,34 @@ void touch_screen_hook_init(const struct touch_screen_config *cfg, HINSTANCE sel
     dprintf("TOUCH: hook enabled.\n");
 }
 
+static HCURSOR WINAPI hook_SetCursor(HCURSOR cursor) {
+    if (cursor == 0 && touch_config.cursor)
+        return 0;
+
+    return next_SetCursor(cursor);
+}
+
+// remap mouse events to touch events
+
+static LRESULT hook_wndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
+    if (hWnd == registered_hWnd && (Msg == WM_LBUTTONDOWN || Msg == WM_LBUTTONUP || (touch_held && Msg == WM_MOUSEMOVE))) {
+        orig_wndProc(hWnd, WM_TOUCH, 1, 1);
+    }
+
+    return orig_wndProc(hWnd, Msg, wParam, lParam);
+}
+
+static ATOM WINAPI hook_RegisterClassExA(
+    WNDCLASSEXA* wndClass
+) {
+    if (wndClass->lpfnWndProc) {
+        orig_wndProc = wndClass->lpfnWndProc;
+        wndClass->lpfnWndProc = (WNDPROC) hook_wndProc;
+    }
+
+    return next_RegisterClassExA(wndClass);
+}
+
 // Spicetools misc/wintouchemu.cpp
 
 static int WINAPI hook_GetSystemMetrics(
@@ -111,11 +166,11 @@ static BOOL WINAPI hook_RegisterTouchWindow(
     ULONG ulFlags
 )
 {
+    registered_hWnd = hwnd;
     return true;
 }
 
 // Converting mouse event to touch event
-// Does not work at current stage
 static BOOL WINAPI hook_GetTouchInputInfo(
     HANDLE hTouchInput,
     UINT cInputs,
@@ -124,7 +179,15 @@ static BOOL WINAPI hook_GetTouchInputInfo(
 )
 {
     bool result = false;
+    int sw, sh, cw, ch;
+    RECT cRect;
+    sw = GetSystemMetrics(SM_CXSCREEN);
+    sh = GetSystemMetrics(SM_CYSCREEN);
+    GetClientRect(registered_hWnd, &cRect);
+    cw = cRect.right - cRect.left;
+    ch = cRect.bottom - cRect.top;
     static bool mouse_state_old = false;
+
     for (UINT input = 0; input < cInputs; input++) {
         TOUCHINPUT *touch_input = &pInputs[input];
 
@@ -143,7 +206,14 @@ static BOOL WINAPI hook_GetTouchInputInfo(
 
         if (mouse_state || mouse_state_old) {
             POINT cursorPos;
+            
             GetCursorPos(&cursorPos);
+
+            if (touch_config.remap) {
+                ScreenToClient(registered_hWnd, &cursorPos);
+                cursorPos.x = (long)(cursorPos.x * ((double)sw / cw));
+                cursorPos.y = (long)(cursorPos.y * ((double)sh / ch));
+            }
 
             result = true;
             touch_input->x = cursorPos.x * 100;
@@ -153,10 +223,12 @@ static BOOL WINAPI hook_GetTouchInputInfo(
             touch_input->dwFlags = 0;
             if (mouse_state && !mouse_state_old) {
                 touch_input->dwFlags |= TOUCHEVENTF_DOWN;
+                touch_held = true;
             } else if (mouse_state && mouse_state_old) {
                 touch_input->dwFlags |= TOUCHEVENTF_MOVE;
             } else if (!mouse_state && mouse_state_old) {
                 touch_input->dwFlags |= TOUCHEVENTF_UP;
+                touch_held = false;
             }
             touch_input->dwMask = 0;
             touch_input->dwTime = 0;

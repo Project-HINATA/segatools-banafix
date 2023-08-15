@@ -2,8 +2,8 @@
 
 pushd %~dp0
 
-start /min inject -d -k cmhook.dll amdaemon.exe -f -c config_server.json config_common.json
-inject.exe -d -k cmhook.dll CardMaker.exe -screen-fullscreen 0 -popupwindow -screen-width 1080 -screen-height 1920
+start /min inject -d -k cmhook.dll amdaemon.exe -f -c config_common.json config_server.json config_client.json
+inject -d -k cmhook.dll CardMaker.exe -screen-fullscreen 0 -popupwindow -screen-width 1080 -screen-height 1920
 
 taskkill /f /im amdaemon.exe > nul 2>&1
 
