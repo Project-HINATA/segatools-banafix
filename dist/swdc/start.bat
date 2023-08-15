@@ -17,7 +17,7 @@ if not exist "%APP_DIR%" (
 echo Mounted the Y:\ drive to the %TEMP%\SWDC folder
 
 REM start /min inject -d -k swdchook.dll amdaemon.exe -f -c config.json config_LanClient.json config_MiniCabinet.json
-start /min inject -d -k swdchook.dll amdaemon.exe -f -c config.json config_LanServer.json config_MiniCabinet.json
+start /min inject -d -k swdchook.dll amdaemon.exe -f -c config.json config_LanServer.json config_MiniCabinet.json config_hook.json
 inject -d -k swdchook.dll ..\Todoroki\Binaries\Win64\Todoroki-Win64-Shipping.exe -launch=MiniCabinet -ABSLOG="..\..\..\..\..\Userdata\GameProject.log" -UserDir="..\..\..\Userdata" -NotInstalled -UNATTENDED
 taskkill /f /im amdaemon.exe > nul 2>&1
 

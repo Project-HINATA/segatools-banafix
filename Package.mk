@@ -94,6 +94,7 @@ $(BUILD_DIR_ZIP)/swdc.zip:
 	$(V)mkdir -p $(BUILD_DIR_ZIP)/swdc/DEVICE
 	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
 		$(BUILD_DIR_64)/swdchook/swdchook.dll \
+		$(DIST_DIR)/chusan/config_hook.json \
 		$(DIST_DIR)/swdc/segatools.ini \
 		$(DIST_DIR)/swdc/start.bat \
     	$(BUILD_DIR_ZIP)/swdc
@@ -123,6 +124,7 @@ $(BUILD_DIR_ZIP)/chusan.zip:
 	$(V)mkdir -p $(BUILD_DIR_ZIP)/chusan
 	$(V)mkdir -p $(BUILD_DIR_ZIP)/chusan/DEVICE
 	$(V)cp $(DIST_DIR)/chusan/segatools.ini \
+		$(DIST_DIR)/chusan/config_hook.json \
 		$(DIST_DIR)/chusan/start.bat \
 		$(BUILD_DIR_ZIP)/chusan
 	$(V)cp $(BUILD_DIR_32)/chusanhook/chusanhook.dll \
@@ -145,6 +147,7 @@ $(BUILD_DIR_ZIP)/mu3.zip:
 	$(V)mkdir -p $(BUILD_DIR_ZIP)/mu3/DEVICE
 	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
 		$(BUILD_DIR_64)/mu3hook/mu3hook.dll \
+		$(DIST_DIR)/mu3/config_hook.json \
 		$(DIST_DIR)/mu3/segatools.ini \
 		$(DIST_DIR)/mu3/start.bat \
     	$(BUILD_DIR_ZIP)/mu3
@@ -160,6 +163,7 @@ $(BUILD_DIR_ZIP)/mai2.zip:
 	$(V)mkdir -p $(BUILD_DIR_ZIP)/mai2/DEVICE
 	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
 		$(BUILD_DIR_64)/mai2hook/mai2hook.dll \
+		$(DIST_DIR)/mai2/config_hook.json \
 		$(DIST_DIR)/mai2/segatools.ini \
 		$(DIST_DIR)/mai2/start.bat \
     	$(BUILD_DIR_ZIP)/mai2
@@ -175,6 +179,7 @@ $(BUILD_DIR_ZIP)/cm.zip:
 	$(V)mkdir -p $(BUILD_DIR_ZIP)/cm/DEVICE
 	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
 		$(BUILD_DIR_64)/cmhook/cmhook.dll \
+		$(DIST_DIR)/cm/config_hook.json \
 		$(DIST_DIR)/cm/segatools.ini \
 		$(DIST_DIR)/cm/start.bat \
     	$(BUILD_DIR_ZIP)/cm
