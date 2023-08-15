@@ -71,6 +71,12 @@ void swdc_xi_config_load(struct swdc_xi_config *cfg, const wchar_t *filename)
                                 L"singleStickSteering",
                                 0,
                                 filename);
+
+    cfg->linear_steering = GetPrivateProfileIntW(
+                           L"io4",
+                           L"linearSteering",
+                           0,
+                           filename);
 }
 
 void swdc_io_config_load(struct swdc_io_config *cfg, const wchar_t *filename)

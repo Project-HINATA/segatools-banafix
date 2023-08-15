@@ -262,8 +262,8 @@ static HRESULT idac_di_config_apply(const struct idac_di_config *cfg)
     dprintf("Wheel: --- Begin configuration ---\n");
     dprintf("Wheel: Device name . . . . : Contains \"%S\"\n",
             cfg->device_name);
-    dprintf("Wheel: Brake axis  . . . . : %S\n", accel_axis->name);
-    dprintf("Wheel: Accelerator axis  . : %S\n", brake_axis->name);
+    dprintf("Wheel: Brake axis  . . . . : %S\n", brake_axis->name);
+    dprintf("Wheel: Accel axis  . . . . : %S\n", accel_axis->name);
     dprintf("Wheel: Start button  . . . : %i\n", cfg->start);
     dprintf("Wheel: View Change button  : %i\n", cfg->view_chg);
     dprintf("Wheel: Shift Down button . : %i\n", cfg->shift_dn);
@@ -286,8 +286,8 @@ static HRESULT idac_di_config_apply(const struct idac_di_config *cfg)
         dprintf("Shifter: ---  End  configuration ---\n");
     }
 
-    idac_di_off_brake = accel_axis->off;
-    idac_di_off_accel = brake_axis->off;
+    idac_di_off_brake = brake_axis->off;
+    idac_di_off_accel = accel_axis->off;
     idac_di_start = cfg->start;
     idac_di_view_chg = cfg->view_chg;
     idac_di_shift_dn = cfg->shift_dn;

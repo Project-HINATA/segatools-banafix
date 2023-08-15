@@ -246,8 +246,8 @@ static HRESULT swdc_di_config_apply(const struct swdc_di_config *cfg)
     dprintf("Wheel: --- Begin configuration ---\n");
     dprintf("Wheel: Device name . . . . : Contains \"%S\"\n",
             cfg->device_name);
-    dprintf("Wheel: Brake axis . . . . . . : %S\n", accel_axis->name);
-    dprintf("Wheel: Accelerator axis . . . : %S\n", brake_axis->name);
+    dprintf("Wheel: Brake axis . . . . . . : %S\n", brake_axis->name);
+    dprintf("Wheel: Accel axis . . . . . . : %S\n", accel_axis->name);
     dprintf("Wheel: Start button . . . . . : %i\n", cfg->start);
     dprintf("Wheel: View Change button . . : %i\n", cfg->view_chg);
     dprintf("Wheel: Shift Down button  . . : %i\n", cfg->shift_dn);
@@ -260,8 +260,8 @@ static HRESULT swdc_di_config_apply(const struct swdc_di_config *cfg)
     dprintf("Wheel: Reverse Accel Axis . . : %i\n", cfg->reverse_accel_axis);
     dprintf("Wheel: ---  End  configuration ---\n");
 
-    swdc_di_off_brake = accel_axis->off;
-    swdc_di_off_accel = brake_axis->off;
+    swdc_di_off_brake = brake_axis->off;
+    swdc_di_off_accel = accel_axis->off;
     swdc_di_start = cfg->start;
     swdc_di_view_chg = cfg->view_chg;
     swdc_di_shift_dn = cfg->shift_dn;

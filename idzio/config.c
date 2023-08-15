@@ -81,6 +81,12 @@ void idz_xi_config_load(struct idz_xi_config *cfg, const wchar_t *filename)
                                 L"singleStickSteering",
                                 0,
                                 filename);
+
+    cfg->linear_steering = GetPrivateProfileIntW(
+                           L"io3",
+                           L"linearSteering",
+                           0,
+                           filename);
 }
 
 void idz_io_config_load(struct idz_io_config *cfg, const wchar_t *filename)

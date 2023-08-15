@@ -26,6 +26,7 @@ struct swdc_di_config {
 
 struct swdc_xi_config {
     bool single_stick_steering;
+    bool linear_steering;
 };
 
 struct swdc_io_config {

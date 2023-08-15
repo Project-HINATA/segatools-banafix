@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <xinput.h>
 
+#include <math.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -23,6 +24,7 @@ static const struct swdc_io_backend swdc_xi_backend = {
 };
 
 static bool swdc_xi_single_stick_steering;
+static bool swdc_xi_linear_steering;
 
 HRESULT swdc_xi_init(const struct swdc_xi_config *cfg, const struct swdc_io_backend **backend)
 {
@@ -51,9 +53,11 @@ static HRESULT swdc_xi_config_apply(const struct swdc_xi_config *cfg)
 {
     dprintf("XInput: --- Begin configuration ---\n");
     dprintf("XInput: Single Stick Steering : %i\n", cfg->single_stick_steering);
+    dprintf("XInput: Linear Steering . . . : %i\n", cfg->linear_steering);
     dprintf("XInput: ---  End  configuration ---\n");
 
     swdc_xi_single_stick_steering = cfg->single_stick_steering;
+    swdc_xi_linear_steering = cfg->linear_steering;
 
     return S_OK;
 }
@@ -123,6 +127,31 @@ static void swdc_xi_get_gamebtns(uint16_t *gamebtn_out)
     *gamebtn_out = gamebtn;
 }
 
+static int apply_non_linear_transform(int value, int deadzone_center) {
+    const int max_input = 32767;
+    const double power_factor = 3.0;
+
+    // Apply deadzone only after passing the center threshold
+    if (abs(value) < deadzone_center) {
+        return 0;
+    }
+
+    // Scale the value to the range [-1.0, 1.0]
+    double scaled_value = (abs(value) - deadzone_center) / (double)(max_input - deadzone_center);
+
+    // Apply a non-linear transform (cubing in this case) and preserve the sign
+    double signed_value = copysign(pow(scaled_value, power_factor), value);
+
+    // Scale the value back to the range [-32770, 32767]
+    int transformed_value = (int)(signed_value * max_input);
+
+    // Clamp the value to the range [-32767, 32767]
+    transformed_value = (transformed_value > max_input) ? max_input : transformed_value;
+    transformed_value = (transformed_value < -max_input) ? -max_input : transformed_value;
+
+    return transformed_value;
+}
+
 static void swdc_xi_get_analogs(struct swdc_io_analog_state *out)
 {
     XINPUT_STATE xi;
@@ -135,23 +164,28 @@ static void swdc_xi_get_analogs(struct swdc_io_analog_state *out)
     XInputGetState(0, &xi);
 
     left = xi.Gamepad.sThumbLX;
-
-    if (left < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
-        left += XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
-    } else if (left > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
-        left -= XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
-    } else {
-        left = 0;
-    }
-
     right = xi.Gamepad.sThumbRX;
 
-    if (right < -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
-        right += XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
-    } else if (right > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
-        right -= XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
+    if (!swdc_xi_linear_steering) {
+        // Apply non-linear transform for both sticks
+        left = apply_non_linear_transform(left, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+        right = apply_non_linear_transform(right, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
     } else {
-        right = 0;
+        if (left < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
+            left += XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
+        } else if (left > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
+            left -= XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
+        } else {
+            left = 0;
+        }
+
+        if (right < -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
+            right += XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
+        } else if (right > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
+            right -= XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
+        } else {
+            right = 0;
+        }
     }
 
     if (swdc_xi_single_stick_steering) {
