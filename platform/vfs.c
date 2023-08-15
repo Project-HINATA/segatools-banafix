@@ -28,9 +28,7 @@ static HRESULT vfs_reg_read_amfs(void *bytes, uint32_t *nbytes);
 static HRESULT vfs_reg_read_appdata(void *bytes, uint32_t *nbytes);
 
 static wchar_t vfs_nthome_real[MAX_PATH];
-// new home for ALLS
-static const wchar_t vfs_nthome[] = L"C:\\Users\\AppUser";
-// static const wchar_t vfs_nthome[] = L"C:\\Documents and Settings\\AppUser";
+static const wchar_t vfs_nthome[] = L"C:\\Documents and Settings\\AppUser";
 static const size_t vfs_nthome_len = _countof(vfs_nthome) - 1;
 
 static const wchar_t vfs_option[] = L"C:\\Mount\\Option";
