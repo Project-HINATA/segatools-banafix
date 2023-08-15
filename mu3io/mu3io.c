@@ -6,6 +6,7 @@
 
 #include "mu3io/mu3io.h"
 #include "mu3io/config.h"
+#include "util/dprintf.h"
 
 static uint8_t mu3_opbtn;
 static uint8_t mu3_left_btn;
@@ -15,6 +16,9 @@ static int16_t mu3_lever_xpos;
 static struct mu3_io_config mu3_io_cfg;
 static bool mu3_io_coin;
 
+// Mouse control factor to adjust the speed of mouse movement
+const double MOUSE_SENSITIVITY = 0.5;
+
 uint16_t mu3_io_get_api_version(void)
 {
     return 0x0100;
@@ -23,6 +27,11 @@ uint16_t mu3_io_get_api_version(void)
 HRESULT mu3_io_init(void)
 {
     mu3_io_config_load(&mu3_io_cfg, L".\\segatools.ini");
+
+    dprintf("XInput: --- Begin configuration ---\n");
+    dprintf("XInput: Mouse lever emulation : %i\n", mu3_io_cfg.use_mouse);
+    dprintf("XInput: ---  End  configuration ---\n");
+
     return S_OK;
 }
 
@@ -58,54 +67,81 @@ HRESULT mu3_io_poll(void)
     XInputGetState(0, &xi);
     xb = xi.Gamepad.wButtons;
 
-    if (xb & XINPUT_GAMEPAD_DPAD_LEFT) {
+    if (GetAsyncKeyState(mu3_io_cfg.vk_left_1) || (xb & XINPUT_GAMEPAD_DPAD_LEFT)) {
         mu3_left_btn |= MU3_IO_GAMEBTN_1;
     }
 
-    if (xb & XINPUT_GAMEPAD_DPAD_UP) {
+    if (GetAsyncKeyState(mu3_io_cfg.vk_left_2) || (xb & XINPUT_GAMEPAD_DPAD_UP)) {
         mu3_left_btn |= MU3_IO_GAMEBTN_2;
     }
 
-    if (xb & XINPUT_GAMEPAD_DPAD_RIGHT) {
+    if (GetAsyncKeyState(mu3_io_cfg.vk_left_3) || (xb & XINPUT_GAMEPAD_DPAD_RIGHT)) {
         mu3_left_btn |= MU3_IO_GAMEBTN_3;
     }
 
-    if (xb & XINPUT_GAMEPAD_X) {
+    if (GetAsyncKeyState(mu3_io_cfg.vk_right_1) || (xb & XINPUT_GAMEPAD_X)) {
         mu3_right_btn |= MU3_IO_GAMEBTN_1;
     }
 
-    if (xb & XINPUT_GAMEPAD_Y) {
+    if (GetAsyncKeyState(mu3_io_cfg.vk_right_2) || (xb & XINPUT_GAMEPAD_Y)) {
         mu3_right_btn |= MU3_IO_GAMEBTN_2;
     }
 
-    if (xb & XINPUT_GAMEPAD_B) {
+    if (GetAsyncKeyState(mu3_io_cfg.vk_right_3) || (xb & XINPUT_GAMEPAD_B)) {
         mu3_right_btn |= MU3_IO_GAMEBTN_3;
     }
 
-    if (xb & XINPUT_GAMEPAD_BACK) {
+    if (GetAsyncKeyState(mu3_io_cfg.vk_left_menu) || (xb & XINPUT_GAMEPAD_BACK)) {
         mu3_left_btn |= MU3_IO_GAMEBTN_MENU;
     }
 
-    if (xb & XINPUT_GAMEPAD_START) {
+    if (GetAsyncKeyState(mu3_io_cfg.vk_right_menu) || (xb & XINPUT_GAMEPAD_START)) {
         mu3_right_btn |= MU3_IO_GAMEBTN_MENU;
     }
 
-    if (xb & XINPUT_GAMEPAD_LEFT_SHOULDER) {
+    if (GetAsyncKeyState(mu3_io_cfg.vk_left_side) || (xb & XINPUT_GAMEPAD_LEFT_SHOULDER)) {
         mu3_left_btn |= MU3_IO_GAMEBTN_SIDE;
     }
 
-    if (xb & XINPUT_GAMEPAD_RIGHT_SHOULDER) {
+    if (GetAsyncKeyState(mu3_io_cfg.vk_right_side) || (xb & XINPUT_GAMEPAD_RIGHT_SHOULDER)) {
         mu3_right_btn |= MU3_IO_GAMEBTN_SIDE;
     }
 
     lever = mu3_lever_pos;
 
-    if (abs(xi.Gamepad.sThumbLX) > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
-        lever += xi.Gamepad.sThumbLX / 24;
-    }
+    if (mu3_io_cfg.use_mouse) {
+        // mouse movement
+        POINT mousePos;
+        GetCursorPos(&mousePos);
 
-    if (abs(xi.Gamepad.sThumbRX) > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
-        lever += xi.Gamepad.sThumbRX / 24;
+        // int mouseMovement = (int)(xi.Gamepad.sThumbLX * MOUSE_SENSITIVITY);
+        // int newXPos = mousePos.x + mouseMovement;
+        int mouse_x = mousePos.x;
+
+        // clamp the mouse_x position to the screen width
+        int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+        if (mouse_x < 0) {
+            mouse_x = 0;
+        }
+        else if (mouse_x > screenWidth) {
+            mouse_x = screenWidth;
+        }
+
+        // normalize the mouse_x position from 0 to 1
+        double mouse_x_norm = (double)mouse_x / screenWidth;
+
+        // scale the mouse_x_norm to the range of INT16_MIN to INT16_MAX
+        mouse_x = (int)((mouse_x_norm * (INT16_MAX - INT16_MIN)) + INT16_MIN);
+
+        lever = mouse_x;
+    } else {
+        if (abs(xi.Gamepad.sThumbLX) > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
+            lever += xi.Gamepad.sThumbLX / 24;
+        }
+
+        if (abs(xi.Gamepad.sThumbRX) > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
+            lever += xi.Gamepad.sThumbRX / 24;
+        }
     }
 
     if (lever < INT16_MIN) {
