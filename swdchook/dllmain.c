@@ -39,7 +39,7 @@ static DWORD CALLBACK swdc_pre_startup(void)
     /* Hook Win32 APIs */
 
     serial_hook_init();
-    zinput_hook_init(&swdc_hook_cfg.zinput);
+    zinput_hook_init(&swdc_hook_cfg.zinput, swdc_hook_mod);
     dvd_hook_init(&swdc_hook_cfg.dvd, swdc_hook_mod);
 
     /* Initialize emulation hooks */

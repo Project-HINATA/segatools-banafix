@@ -1,9 +1,8 @@
 #include <windows.h>
-#include <dinput.h>
+#include <xinput.h>
 
-#include <stdint.h>
+#include <assert.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "swdchook/config.h"
 #include "swdchook/zinput.h"
@@ -12,175 +11,70 @@
 
 #include "util/dprintf.h"
 
-HRESULT WINAPI hook_DirectInput8Create(
-         HINSTANCE hinst,
-         DWORD dwVersion,
-         REFIID riidltf,
-         LPVOID *ppvOut,
-         LPUNKNOWN punkOuter);
-
-static unsigned long WINAPI hook_AddRef(IUnknown *self);
-
-static unsigned long WINAPI hook_Release(IUnknown *self);
-
-static HRESULT WINAPI hook_CreateDevice(
-        IDirectInput8W *self,
-        REFGUID rguid,
-        LPDIRECTINPUTDEVICE8W * lplpDirectInputDevice,
-        LPUNKNOWN pUnkOuter);
-
-static HRESULT WINAPI hook_EnumDevices(
-        IDirectInput8W *self,
-        DWORD dwDevType,
-        LPDIENUMDEVICESCALLBACKW lpCallback,
-        LPVOID pvRef,
-        DWORD dwFlags);
-
-static HRESULT WINAPI hook_SetDataFormat(
-        IDirectInputDevice8W *self,
-        LPCDIDATAFORMAT lpdf);
-
-static HRESULT WINAPI hook_SetCooperativeLevel(
-        IDirectInputDevice8W *self,
-        HWND hwnd,
-        DWORD flags);
-
-static HRESULT WINAPI hook_Acquire(IDirectInputDevice8W *self);
-
-static HRESULT WINAPI hook_Unacquire(IDirectInputDevice8W *self);
-
-static HRESULT WINAPI hook_GetDeviceState(
-        IDirectInputDevice8W *self,
-        DWORD cbData,
-        LPVOID lpvData);
-
-static const IDirectInput8WVtbl api_vtbl = {
-    .AddRef             = (void *) hook_AddRef,
-    .Release            = (void *) hook_Release,
-    .CreateDevice       = hook_CreateDevice,
-    .EnumDevices        = hook_EnumDevices,
-};
-
-static const IDirectInput8W api = { (void *) &api_vtbl };
-
-static const IDirectInputDevice8WVtbl dev_vtbl = {
-    .AddRef             = (void *) hook_AddRef,
-    .Release            = (void *) hook_Release,
-    .SetDataFormat      = hook_SetDataFormat,
-    .SetCooperativeLevel= hook_SetCooperativeLevel,
-    .Acquire            = hook_Acquire,
-    .Unacquire          = hook_Unacquire,
-    .GetDeviceState     = hook_GetDeviceState,
-};
-
-static const IDirectInputDevice8W dev = { (void *) &dev_vtbl };
+DWORD WINAPI hook_XInputGetState(DWORD dwUserIndex, XINPUT_STATE *pState);
 
 static const struct hook_symbol zinput_hook_syms[] = {
     {
-        .name   = "DirectInput8Create",
-        .patch  = hook_DirectInput8Create,
-    }
+        .name   = "XInputGetState",
+        .patch  = hook_XInputGetState,
+        .link   = NULL
+    },
 };
 
-HRESULT zinput_hook_init(struct zinput_config *cfg)
+static struct zinput_config zinput_config;
+static bool zinput_hook_initted;
+
+void zinput_hook_init(struct zinput_config *cfg, HINSTANCE self)
 {
     assert(cfg != NULL);
 
     if (!cfg->enable) {
-        return S_FALSE;
+        return;
     }
 
+    if (zinput_hook_initted) {
+        return;
+    }
+
+    memcpy(&zinput_config, cfg, sizeof(*cfg));
     hook_table_apply(
             NULL,
-            "dinput8.dll",
+            "XINPUT9_1_0.dll",
             zinput_hook_syms,
             _countof(zinput_hook_syms));
 
-    return S_OK;
+    hook_table_apply(
+            NULL,
+            "XINPUT1_1.dll",
+            zinput_hook_syms,
+            _countof(zinput_hook_syms));
+
+    hook_table_apply(
+            NULL,
+            "XINPUT1_2.dll",
+            zinput_hook_syms,
+            _countof(zinput_hook_syms));
+
+    hook_table_apply(
+            NULL,
+            "XINPUT1_3.dll",
+            zinput_hook_syms,
+            _countof(zinput_hook_syms));
+
+    hook_table_apply(
+            NULL,
+            "XINPUT1_4.dll",
+            zinput_hook_syms,
+            _countof(zinput_hook_syms));
+
+    zinput_hook_initted = true;
+
+    dprintf("ZInput: Blocking built-in XInput support\n");
 }
 
-HRESULT WINAPI hook_DirectInput8Create(
-         HINSTANCE hinst,
-         DWORD dwVersion,
-         REFIID riidltf,
-         LPVOID *ppvOut,
-         LPUNKNOWN punkOuter)
+DWORD WINAPI hook_XInputGetState(DWORD dwUserIndex, XINPUT_STATE *pState)
 {
-    dprintf("ZInput: Blocking built-in DirectInput support\n");
-    *ppvOut = (void *) &api;
+    // dprintf("ZInput: XInputGetState hook hit\n");
 
-    return S_OK;
-}
-
-static unsigned long WINAPI hook_AddRef(IUnknown *self)
-{
-    return 1;
-}
-
-static unsigned long WINAPI hook_Release(IUnknown *self)
-{
-    return 1;
-}
-
-static HRESULT WINAPI hook_CreateDevice(
-        IDirectInput8W *self,
-        REFGUID rguid,
-        LPDIRECTINPUTDEVICE8W *lplpDirectInputDevice,
-        LPUNKNOWN pUnkOuter)
-{
-    dprintf("ZInput: %s\n", __func__);
-    *lplpDirectInputDevice = (void *) &dev;
-
-    return S_OK;
-}
-
-static HRESULT WINAPI hook_EnumDevices(
-        IDirectInput8W *self,
-        DWORD dwDevType,
-        LPDIENUMDEVICESCALLBACKW lpCallback,
-        LPVOID pvRef,
-        DWORD dwFlags)
-{
-    dprintf("ZInput: %s\n", __func__);
-
-    return S_OK;
-}
-
-static HRESULT WINAPI hook_SetDataFormat(
-        IDirectInputDevice8W *self,
-        LPCDIDATAFORMAT lpdf)
-{
-    dprintf("ZInput: %s\n", __func__);
-
-    return S_OK;
-}
-
-static HRESULT WINAPI hook_SetCooperativeLevel(
-        IDirectInputDevice8W *self,
-        HWND hwnd,
-        DWORD flags)
-{
-    dprintf("ZInput: %s\n", __func__);
-
-    return S_OK;
-}
-
-static HRESULT WINAPI hook_Acquire(IDirectInputDevice8W *self)
-{
-    return S_OK;
-}
-
-static HRESULT WINAPI hook_Unacquire(IDirectInputDevice8W *self)
-{
-    return S_OK;
-}
-
-static HRESULT WINAPI hook_GetDeviceState(
-        IDirectInputDevice8W *self,
-        DWORD cbData,
-        LPVOID lpvData)
-{
-    memset(lpvData, 0, cbData);
-
-    return S_OK;
+    return ERROR_SUCCESS;
 }
