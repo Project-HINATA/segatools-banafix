@@ -44,7 +44,8 @@ static DWORD CALLBACK idz_pre_startup(void)
     /* Config load */
 
     idz_hook_config_load(&idz_hook_cfg, L".\\segatools.ini");
-
+    
+    /*
     module_path = module_file_name(NULL);
 
     if (module_path != NULL) {
@@ -52,7 +53,7 @@ static DWORD CALLBACK idz_pre_startup(void)
 
         _wcslwr(file_name);
 
-        if (wcsstr(file_name, L"serverbox") != NULL) {
+        if (wcsstr(file_name, L"ServerBox") != NULL) {
             dprintf("Executable filename contains 'ServerBox', disabling full-screen mode\n");
 
             idz_hook_cfg.gfx.windowed = true;
@@ -63,13 +64,16 @@ static DWORD CALLBACK idz_pre_startup(void)
 
         module_path = NULL;
     }
+    */
 
     /* Hook Win32 APIs */
 
     serial_hook_init();
+    /*
     gfx_hook_init(&idz_hook_cfg.gfx);
     gfx_d3d11_hook_init(&idz_hook_cfg.gfx, idz_hook_mod);
     gfx_dxgi_hook_init(&idz_hook_cfg.gfx, idz_hook_mod);
+    */
     zinput_hook_init(&idz_hook_cfg.zinput);
     dvd_hook_init(&idz_hook_cfg.dvd, idz_hook_mod);
 

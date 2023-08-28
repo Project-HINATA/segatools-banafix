@@ -64,7 +64,7 @@ HRESULT idac_io_init(void);
 HRESULT idac_io_poll(void);
 
 /* Get the state of the cabinet's operator buttons as of the last poll. See
-   MU3_IO_OPBTN enum above: this contains bit mask definitions for button
+   IDAC_IO_OPBTN enum above: this contains bit mask definitions for button
    states returned in *opbtn. All buttons are active-high.
 
    Minimum API version: 0x0100 */
@@ -72,7 +72,7 @@ HRESULT idac_io_poll(void);
 void idac_io_get_opbtns(uint8_t *opbtn);
 
 /* Get the state of the cabinet's gameplay buttons as of the last poll. See
-   MU3_IO_GAMEBTN enum above for bit mask definitions. Inputs are split into
+   IDAC_IO_GAMEBTN enum above for bit mask definitions. Inputs are split into
    a left hand side set of inputs and a right hand side set of inputs: the bit
    mappings are the same in both cases.
 
@@ -83,7 +83,7 @@ void idac_io_get_opbtns(uint8_t *opbtn);
 
 void idac_io_get_gamebtns(uint8_t *gamebtn);
 
-/* Poll the current state of the cabinet's JVS analog inputs. See structure
+/* Poll the current state of the cabinet's IO4 analog inputs. See structure
    definition above for details.
 
    Minimum API version: 0x0100 */

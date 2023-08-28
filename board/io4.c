@@ -28,7 +28,7 @@ enum {
     IO4_CMD_CLEAR_BOARD_STATUS = 0x03,
     IO4_CMD_SET_GENERAL_OUTPUT = 0x04,
     IO4_CMD_SET_PWM_OUTPUT     = 0x05,
-    IO4_CMD_UNIMPLEMENTED      = 0x41,
+    IO4_CMD_SET_UNIQUE_OUTPUT  = 0x41,
     IO4_CMD_UPDATE_FIRMWARE    = 0x85,
 };
 
@@ -40,7 +40,7 @@ struct io4_report_in {
     uint16_t buttons[2];
     uint8_t system_status;
     uint8_t usb_status;
-    uint8_t unknown[29];
+    uint8_t unique_input[29];
 };
 
 static_assert(sizeof(struct io4_report_in) == 0x40, "IO4 IN report size");
@@ -232,15 +232,15 @@ static HRESULT io4_handle_write(struct irp *irp)
 
         return S_OK;
 
+    case IO4_CMD_SET_UNIQUE_OUTPUT:
+        dprintf("USB I/O: Unique Out\n");
+
+        return S_OK;
+
     case IO4_CMD_UPDATE_FIRMWARE:
         dprintf("USB I/O: Update firmware..?\n");
 
-        return E_FAIL;    
-        
-    case IO4_CMD_UNIMPLEMENTED:
-        //dprintf("USB I/O: Unimplemented cmd 41\n");
-
-        return S_OK;
+        return E_FAIL;
 
     default:
         dprintf("USB I/O: Unknown command %02x\n", out.cmd);
@@ -316,7 +316,7 @@ static HRESULT io4_async_poll(void *ctx, struct irp *irp)
     /* Delay long enough for the instigating thread in amdaemon to be satisfied
        that all queued-up reports have been drained. */
 
-    Sleep(1);
+    // Sleep(1);
 
     /* Call into ops to poll the underlying inputs */
 
