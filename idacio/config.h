@@ -25,6 +25,8 @@ struct idac_di_config {
 struct idac_xi_config {
     bool single_stick_steering;
     bool linear_steering;
+    uint16_t left_stick_deadzone;
+    uint16_t right_stick_deadzone;
 };
 
 struct idac_io_config {

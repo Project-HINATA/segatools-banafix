@@ -25,6 +25,8 @@ static const struct swdc_io_backend swdc_xi_backend = {
 
 static bool swdc_xi_single_stick_steering;
 static bool swdc_xi_linear_steering;
+static uint16_t swdc_xi_left_stick_deadzone;
+static uint16_t swdc_xi_right_stick_deadzone;
 
 HRESULT swdc_xi_init(const struct swdc_xi_config *cfg, const struct swdc_io_backend **backend)
 {
@@ -49,15 +51,29 @@ HRESULT swdc_io_poll(void)
     return S_OK;
 }
 
-static HRESULT swdc_xi_config_apply(const struct swdc_xi_config *cfg)
-{
+static HRESULT swdc_xi_config_apply(const struct swdc_xi_config *cfg) {
+    /* Deadzones check */
+    if (cfg->left_stick_deadzone > 32767 || cfg->left_stick_deadzone < 0) {
+        dprintf("XInput: Left stick deadzone is too large or negative\n");
+        return E_INVALIDARG;
+    }
+
+    if (cfg->right_stick_deadzone > 32767 || cfg->right_stick_deadzone < 0) {
+        dprintf("XInput: Right stick deadzone is too large or negative\n");
+        return E_INVALIDARG;
+    }
+
     dprintf("XInput: --- Begin configuration ---\n");
     dprintf("XInput: Single Stick Steering : %i\n", cfg->single_stick_steering);
     dprintf("XInput: Linear Steering . . . : %i\n", cfg->linear_steering);
+    dprintf("XInput: Left Deadzone . . . . : %i\n", cfg->left_stick_deadzone);
+    dprintf("XInput: Right Deadzone  . . . : %i\n", cfg->right_stick_deadzone);
     dprintf("XInput: ---  End  configuration ---\n");
 
     swdc_xi_single_stick_steering = cfg->single_stick_steering;
     swdc_xi_linear_steering = cfg->linear_steering;
+    swdc_xi_left_stick_deadzone = cfg->left_stick_deadzone;
+    swdc_xi_right_stick_deadzone = cfg->right_stick_deadzone;
 
     return S_OK;
 }
@@ -168,21 +184,21 @@ static void swdc_xi_get_analogs(struct swdc_io_analog_state *out)
 
     if (!swdc_xi_linear_steering) {
         // Apply non-linear transform for both sticks
-        left = apply_non_linear_transform(left, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
-        right = apply_non_linear_transform(right, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+        left = apply_non_linear_transform(left, swdc_xi_left_stick_deadzone);
+        right = apply_non_linear_transform(right, swdc_xi_right_stick_deadzone);
     } else {
-        if (left < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
-            left += XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
-        } else if (left > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
-            left -= XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
+        if (left < -swdc_xi_left_stick_deadzone) {
+            left += swdc_xi_left_stick_deadzone;
+        } else if (left > swdc_xi_left_stick_deadzone) {
+            left -= swdc_xi_left_stick_deadzone;
         } else {
             left = 0;
         }
 
-        if (right < -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
-            right += XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
-        } else if (right > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
-            right -= XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
+        if (right < -swdc_xi_right_stick_deadzone) {
+            right += swdc_xi_right_stick_deadzone;
+        } else if (right > swdc_xi_right_stick_deadzone) {
+            right -= swdc_xi_right_stick_deadzone;
         } else {
             right = 0;
         }

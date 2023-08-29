@@ -77,6 +77,18 @@ void swdc_xi_config_load(struct swdc_xi_config *cfg, const wchar_t *filename)
                            L"linearSteering",
                            0,
                            filename);
+    
+    cfg->left_stick_deadzone = GetPrivateProfileIntW(
+                               L"io4",
+                               L"leftStickDeadzone",
+                               7849,
+                               filename);
+    
+    cfg->right_stick_deadzone = GetPrivateProfileIntW(
+                                L"io4",
+                                L"rightStickDeadzone",
+                                8689,
+                                filename);
 }
 
 void swdc_io_config_load(struct swdc_io_config *cfg, const wchar_t *filename)

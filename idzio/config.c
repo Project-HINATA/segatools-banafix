@@ -87,6 +87,18 @@ void idz_xi_config_load(struct idz_xi_config *cfg, const wchar_t *filename)
                            L"linearSteering",
                            0,
                            filename);
+    
+    cfg->left_stick_deadzone = GetPrivateProfileIntW(
+                               L"io3",
+                               L"leftStickDeadzone",
+                               7849,
+                               filename);
+    
+    cfg->right_stick_deadzone = GetPrivateProfileIntW(
+                                L"io3",
+                                L"rightStickDeadzone",
+                                8689,
+                                filename);
 }
 
 void idz_io_config_load(struct idz_io_config *cfg, const wchar_t *filename)

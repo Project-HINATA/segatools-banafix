@@ -27,6 +27,8 @@ static const struct idac_io_backend idac_xi_backend = {
 
 static bool idac_xi_single_stick_steering;
 static bool idac_xi_linear_steering;
+static uint16_t idac_xi_left_stick_deadzone;
+static uint16_t idac_xi_right_stick_deadzone;
 
 HRESULT idac_xi_init(const struct idac_xi_config *cfg, const struct idac_io_backend **backend) {
     HRESULT hr;
@@ -50,13 +52,28 @@ HRESULT idac_io_poll(void) {
 }
 
 static HRESULT idac_xi_config_apply(const struct idac_xi_config *cfg) {
+    /* Deadzones check */
+    if (cfg->left_stick_deadzone > 32767 || cfg->left_stick_deadzone < 0) {
+        dprintf("XInput: Left stick deadzone is too large or negative\n");
+        return E_INVALIDARG;
+    }
+
+    if (cfg->right_stick_deadzone > 32767 || cfg->right_stick_deadzone < 0) {
+        dprintf("XInput: Right stick deadzone is too large or negative\n");
+        return E_INVALIDARG;
+    }
+
     dprintf("XInput: --- Begin configuration ---\n");
     dprintf("XInput: Single Stick Steering : %i\n", cfg->single_stick_steering);
     dprintf("XInput: Linear Steering . . . : %i\n", cfg->linear_steering);
+    dprintf("XInput: Left Deadzone . . . . : %i\n", cfg->left_stick_deadzone);
+    dprintf("XInput: Right Deadzone  . . . : %i\n", cfg->right_stick_deadzone);
     dprintf("XInput: ---  End  configuration ---\n");
 
     idac_xi_single_stick_steering = cfg->single_stick_steering;
     idac_xi_linear_steering = cfg->linear_steering;
+    idac_xi_left_stick_deadzone = cfg->left_stick_deadzone;
+    idac_xi_right_stick_deadzone = cfg->right_stick_deadzone;
 
     return S_OK;
 }
@@ -118,22 +135,6 @@ static void idac_xi_get_shifter(uint8_t *gear) {
         idac_shifter_set(0);
     }
 
-    /*
-    // Alternative shifting mode
-    if (xb & XINPUT_GAMEPAD_X) {
-        // Set to Gear 2 when X is pressed
-        idac_shifter_set(2);
-    }
-
-    if (xb & XINPUT_GAMEPAD_Y) {
-        // Set to Gear 3 when Y is pressed
-        idac_shifter_set(3);
-    }
-
-    shift_dn = xb & XINPUT_GAMEPAD_LEFT_SHOULDER;
-    shift_up = xb & XINPUT_GAMEPAD_RIGHT_SHOULDER;
-    */
-
     shift_dn = xb & (XINPUT_GAMEPAD_Y | XINPUT_GAMEPAD_LEFT_SHOULDER);
     shift_up = xb & (XINPUT_GAMEPAD_X | XINPUT_GAMEPAD_RIGHT_SHOULDER);
 
@@ -182,21 +183,21 @@ static void idac_xi_get_analogs(struct idac_io_analog_state *out) {
 
     if (!idac_xi_linear_steering) {
         // Apply non-linear transform for both sticks
-        left = apply_non_linear_transform(left, XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
-        right = apply_non_linear_transform(right, XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+        left = apply_non_linear_transform(left, idac_xi_left_stick_deadzone);
+        right = apply_non_linear_transform(right, idac_xi_right_stick_deadzone);
     } else {
-        if (left < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
-            left += XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
-        } else if (left > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
-            left -= XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
+        if (left < -idac_xi_left_stick_deadzone) {
+            left += idac_xi_left_stick_deadzone;
+        } else if (left > idac_xi_left_stick_deadzone) {
+            left -= idac_xi_left_stick_deadzone;
         } else {
             left = 0;
         }
 
-        if (right < -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
-            right += XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
-        } else if (right > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
-            right -= XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
+        if (right < -idac_xi_right_stick_deadzone) {
+            right += idac_xi_right_stick_deadzone;
+        } else if (right > idac_xi_right_stick_deadzone) {
+            right -= idac_xi_right_stick_deadzone;
         } else {
             right = 0;
         }
@@ -204,7 +205,6 @@ static void idac_xi_get_analogs(struct idac_io_analog_state *out) {
 
     if (idac_xi_single_stick_steering) {
         out->wheel = left;
-        // dprintf("XInput: Single Stick Steering: %i\n", out->wheel);
     } else {
         out->wheel = (left + right) / 2;
     }

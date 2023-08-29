@@ -27,6 +27,8 @@ struct swdc_di_config {
 struct swdc_xi_config {
     bool single_stick_steering;
     bool linear_steering;
+    uint16_t left_stick_deadzone;
+    uint16_t right_stick_deadzone;
 };
 
 struct swdc_io_config {

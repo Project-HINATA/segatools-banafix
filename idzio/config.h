@@ -25,6 +25,8 @@ struct idz_di_config {
 struct idz_xi_config {
     bool single_stick_steering;
     bool linear_steering;
+    uint16_t left_stick_deadzone;
+    uint16_t right_stick_deadzone;
 };
 
 struct idz_io_config {
