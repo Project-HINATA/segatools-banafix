@@ -80,6 +80,7 @@ $(BUILD_DIR_ZIP)/idac.zip:
 	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
 		$(BUILD_DIR_64)/idachook/idachook.dll \
 		$(DIST_DIR)/idac/segatools.ini \
+		$(DIST_DIR)/idac/config_hook.json \
 		$(DIST_DIR)/idac/start.bat \
     	$(BUILD_DIR_ZIP)/idac
 	$(V)cp pki/billing.pub \
