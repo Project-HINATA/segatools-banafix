@@ -17,6 +17,7 @@ struct aime_io_config {
     wchar_t aime_path[MAX_PATH];
     wchar_t felica_path[MAX_PATH];
     bool felica_gen;
+    bool aime_gen;
     uint8_t vk_scan;
 };
 
@@ -36,6 +37,11 @@ static HRESULT aime_io_read_id_file(
         size_t nbytes);
 
 static HRESULT aime_io_generate_felica(
+        const wchar_t *path,
+        uint8_t *bytes,
+        size_t nbytes);
+
+static HRESULT aime_io_generate_aime(
         const wchar_t *path,
         uint8_t *bytes,
         size_t nbytes);
@@ -67,6 +73,12 @@ static void aime_io_config_read(
     cfg->felica_gen = GetPrivateProfileIntW(
             L"aime",
             L"felicaGen",
+            0,
+            filename);
+
+    cfg->aime_gen = GetPrivateProfileIntW(
+            L"aime",
+            L"aimeGen",
             1,
             filename);
 
@@ -136,7 +148,7 @@ static HRESULT aime_io_generate_felica(
 
     srand(time(NULL));
 
-    for (i = 0 ; i < nbytes ; i++) {
+    for (i = 0; i < nbytes; i++) {
         bytes[i] = rand();
     }
 
@@ -151,7 +163,7 @@ static HRESULT aime_io_generate_felica(
         return E_FAIL;
     }
 
-    for (i = 0 ; i < nbytes ; i++) {
+    for (i = 0; i < nbytes; i++) {
         fprintf(f, "%02X", bytes[i]);
     }
 
@@ -159,6 +171,47 @@ static HRESULT aime_io_generate_felica(
     fclose(f);
 
     dprintf("AimeIO DLL: Generated random FeliCa ID\n");
+
+    return S_OK;
+}
+
+static HRESULT aime_io_generate_aime(
+        const wchar_t *path,
+        uint8_t *bytes,
+        size_t nbytes)
+{
+    size_t i;
+    FILE *f;
+
+    assert(path != NULL);
+    assert(bytes != NULL);
+    assert(nbytes > 0);
+
+    srand(time(NULL));
+
+    /* AiMe IDs should not start with 3, due to a missing check for BananaPass IDs */
+    do {
+        for (i = 0; i < nbytes; i++) {
+            bytes[i] = rand() % 10 << 4 | rand() % 10;
+        }
+    } while (bytes[0] >> 4 == 3);
+
+    f = _wfopen(path, L"w");
+
+    if (f == NULL) {
+        dprintf("AimeIO DLL: %S: fopen failed: %i\n", path, (int) errno);
+
+        return E_FAIL;
+    }
+
+    for (i = 0; i < nbytes; i++) {
+        fprintf(f, "%02x", bytes[i]);
+    }
+
+    fprintf(f, "\n");
+    fclose(f);
+
+    dprintf("AimeIO DLL: Generated random AiMe ID\n");
 
     return S_OK;
 }
@@ -207,6 +260,22 @@ HRESULT aime_io_nfc_poll(uint8_t unit_no)
     if (SUCCEEDED(hr) && hr != S_FALSE) {
         aime_io_aime_id_present = true;
 
+        return S_OK;
+    }
+
+    /* Try generating AiMe IC (if enabled) */
+
+    if (aime_io_cfg.aime_gen) {
+        hr = aime_io_generate_aime(
+                aime_io_cfg.aime_path,
+                aime_io_aime_id,
+                sizeof(aime_io_aime_id));
+
+        if (FAILED(hr)) {
+            return hr;
+        }
+
+        aime_io_aime_id_present = true;
         return S_OK;
     }
 

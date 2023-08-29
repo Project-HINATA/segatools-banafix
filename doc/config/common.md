@@ -45,6 +45,13 @@ Default: `DEVICE\aime.txt`
 Path to a text file containing a classic Aime IC card ID. **This does not
 currently work**.
 
+### `aimeGen`
+
+Default: `1`
+
+Whether to generate a random AiMe ID if the file at `aimePath` does not
+exist.
+
 ### `felicaPath`
 
 Default: `DEVICE\felica.txt`
@@ -53,7 +60,7 @@ Path to a text file containing a FeliCa e-cash card IDm serial number.
 
 ### `felicaGen`
 
-Default: `1`
+Default: `0`
 
 Whether to generate a random FeliCa ID if the file at `felicaPath` does not
 exist.
