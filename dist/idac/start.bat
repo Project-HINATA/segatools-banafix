@@ -17,7 +17,6 @@ if not exist "%APP_DIR%" (
 echo Mounted the Y:\ drive to the %TEMP%\SDGT folder
 
 set AMDAEMON_CFG=config_common.json ^
-config_common.json ^
 config_ex.json ^
 config_jp.json ^
 config_laninstall_client_ex.json ^
