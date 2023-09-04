@@ -111,7 +111,7 @@ void idac_io_config_load(struct idac_io_config *cfg, const wchar_t *filename)
     cfg->vk_test = GetPrivateProfileIntW(L"io4", L"test", '1', filename);
     cfg->vk_service = GetPrivateProfileIntW(L"io4", L"service", '2', filename);
     cfg->vk_coin = GetPrivateProfileIntW(L"io4", L"coin", '3', filename);
-    cfg->restrict_ = GetPrivateProfileIntW(L"io4", L"restrict", 97, filename);
+    cfg->restrict_ = GetPrivateProfileIntW(L"io4", L"restrict", 128, filename);
 
     GetPrivateProfileStringW(
             L"io4",
