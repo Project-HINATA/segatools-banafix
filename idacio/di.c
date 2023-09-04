@@ -65,6 +65,8 @@ static uint8_t idac_di_shift_dn;
 static uint8_t idac_di_shift_up;
 static uint8_t idac_di_view_chg;
 static uint8_t idac_di_start;
+static uint8_t idac_di_left;
+static uint8_t idac_di_right;
 static uint8_t idac_di_gear[6];
 static bool idac_di_reverse_brake_axis;
 static bool idac_di_reverse_accel_axis;
@@ -235,6 +237,18 @@ static HRESULT idac_di_config_apply(const struct idac_di_config *cfg)
         return E_INVALIDARG;
     }
 
+    if (cfg->left > 32) {
+        dprintf("Wheel: Invalid left button: %i\n", cfg->left);
+
+        return E_INVALIDARG;
+    }
+
+    if (cfg->right > 32) {
+        dprintf("Wheel: Invalid right button: %i\n", cfg->right);
+
+        return E_INVALIDARG;
+    }
+
     if (cfg->shift_dn > 32) {
         dprintf("Wheel: Invalid shift down button: %i\n", cfg->shift_dn);
 
@@ -266,6 +280,8 @@ static HRESULT idac_di_config_apply(const struct idac_di_config *cfg)
     dprintf("Wheel: Accel axis  . . . . : %S\n", accel_axis->name);
     dprintf("Wheel: Start button  . . . : %i\n", cfg->start);
     dprintf("Wheel: View Change button  : %i\n", cfg->view_chg);
+    dprintf("Wheel: Left button . . . . : %i\n", cfg->left);
+    dprintf("Wheel: Right button  . . . : %i\n", cfg->right);
     dprintf("Wheel: Shift Down button . : %i\n", cfg->shift_dn);
     dprintf("Wheel: Shift Up button . . : %i\n", cfg->shift_up);
     dprintf("Wheel: Reverse Brake Axis  : %i\n", cfg->reverse_brake_axis);
@@ -290,6 +306,8 @@ static HRESULT idac_di_config_apply(const struct idac_di_config *cfg)
     idac_di_off_accel = accel_axis->off;
     idac_di_start = cfg->start;
     idac_di_view_chg = cfg->view_chg;
+    idac_di_left = cfg->left;
+    idac_di_right = cfg->right;
     idac_di_shift_dn = cfg->shift_dn;
     idac_di_shift_up = cfg->shift_up;
     idac_di_reverse_brake_axis = cfg->reverse_brake_axis;
@@ -396,6 +414,14 @@ static void idac_di_get_buttons(uint8_t *gamebtn_out)
 
     if (idac_di_view_chg && state.st.rgbButtons[idac_di_view_chg - 1]) {
         gamebtn |= IDAC_IO_GAMEBTN_VIEW_CHANGE;
+    }
+
+    if (idac_di_left && state.st.rgbButtons[idac_di_left - 1]) {
+        gamebtn |= IDAC_IO_GAMEBTN_LEFT;
+    }
+
+    if (idac_di_right && state.st.rgbButtons[idac_di_right - 1]) {
+        gamebtn |= IDAC_IO_GAMEBTN_RIGHT;
     }
 
     *gamebtn_out = gamebtn;
