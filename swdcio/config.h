@@ -4,18 +4,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct swdc_shifter_config {
-    bool auto_neutral;
-};
-
 struct swdc_di_config {
     wchar_t device_name[64];
     wchar_t brake_axis[16];
     wchar_t accel_axis[16];
     uint8_t start;
     uint8_t view_chg;
-    uint8_t shift_dn;
-    uint8_t shift_up;
+    uint8_t paddle_left;
+    uint8_t paddle_right;
     uint8_t wheel_green;
     uint8_t wheel_red;
     uint8_t wheel_blue;
@@ -37,7 +33,6 @@ struct swdc_io_config {
     uint8_t vk_coin;
     wchar_t mode[8];
     int restrict_;
-    struct swdc_shifter_config shifter;
     struct swdc_di_config di;
     struct swdc_xi_config xi;
 };
@@ -45,6 +40,3 @@ struct swdc_io_config {
 void swdc_di_config_load(struct swdc_di_config *cfg, const wchar_t *filename);
 void swdc_xi_config_load(struct swdc_xi_config *cfg, const wchar_t *filename);
 void swdc_io_config_load(struct swdc_io_config *cfg, const wchar_t *filename);
-void swdc_shifter_config_load(
-        struct swdc_shifter_config *cfg,
-        const wchar_t *filename);
