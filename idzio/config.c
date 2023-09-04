@@ -77,25 +77,25 @@ void idz_xi_config_load(struct idz_xi_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     cfg->single_stick_steering = GetPrivateProfileIntW(
-                                L"io3",
+                                L"xinput",
                                 L"singleStickSteering",
                                 0,
                                 filename);
 
     cfg->linear_steering = GetPrivateProfileIntW(
-                           L"io3",
+                           L"xinput",
                            L"linearSteering",
                            0,
                            filename);
     
     cfg->left_stick_deadzone = GetPrivateProfileIntW(
-                               L"io3",
+                               L"xinput",
                                L"leftStickDeadzone",
                                7849,
                                filename);
     
     cfg->right_stick_deadzone = GetPrivateProfileIntW(
-                                L"io3",
+                                L"xinput",
                                 L"rightStickDeadzone",
                                 8689,
                                 filename);
