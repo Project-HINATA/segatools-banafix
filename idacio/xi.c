@@ -99,11 +99,11 @@ static void idac_xi_get_gamebtns(uint8_t *gamebtn_out) {
         gamebtn |= IDAC_IO_GAMEBTN_DOWN;
     }
 
-    if (xb & XINPUT_GAMEPAD_DPAD_LEFT) {
+    if (xb & (XINPUT_GAMEPAD_DPAD_LEFT | XINPUT_GAMEPAD_LEFT_THUMB)) {
         gamebtn |= IDAC_IO_GAMEBTN_LEFT;
     }
 
-    if (xb & XINPUT_GAMEPAD_DPAD_RIGHT) {
+    if (xb & (XINPUT_GAMEPAD_DPAD_RIGHT | XINPUT_GAMEPAD_RIGHT_THUMB)) {
         gamebtn |= IDAC_IO_GAMEBTN_RIGHT;
     }
 
