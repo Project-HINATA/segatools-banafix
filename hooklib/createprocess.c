@@ -7,6 +7,9 @@
 
 #include "hook/table.h"
 
+#include "util/dprintf.h"
+
+void createprocess_hook_init();
 static BOOL WINAPI my_CreateProcessA(
     LPCSTR                lpApplicationName,
     LPSTR                 lpCommandLine,
