@@ -20,6 +20,10 @@ static HRESULT vfs_path_hook_nthome(
         const wchar_t *src,
         wchar_t *dest,
         size_t *count);
+static HRESULT vfs_path_hook_w10home(
+        const wchar_t *src,
+        wchar_t *dest,
+        size_t *count);
 static HRESULT vfs_path_hook_option(
         const wchar_t *src,
         wchar_t *dest,
@@ -30,6 +34,9 @@ static HRESULT vfs_reg_read_appdata(void *bytes, uint32_t *nbytes);
 static wchar_t vfs_nthome_real[MAX_PATH];
 static const wchar_t vfs_nthome[] = L"C:\\Documents and Settings\\AppUser";
 static const size_t vfs_nthome_len = _countof(vfs_nthome) - 1;
+
+static const wchar_t vfs_w10home[] = L"C:\\Users\\AppUser";
+static const size_t vfs_w10home_len = _countof(vfs_w10home) - 1;
 
 static const wchar_t vfs_option[] = L"C:\\Mount\\Option";
 static const size_t vfs_option_len = _countof(vfs_option) - 1;
@@ -139,6 +146,12 @@ HRESULT vfs_hook_init(const struct vfs_config *config)
     }
 
     hr = path_hook_push(vfs_path_hook_nthome);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = path_hook_push(vfs_path_hook_w10home);
 
     if (FAILED(hr)) {
         return hr;
@@ -350,6 +363,53 @@ static HRESULT vfs_path_hook_nthome(
 
         wcscpy_s(dest, *count, vfs_nthome_real);
         wcscpy_s(dest + redir_len, *count - redir_len, src + vfs_nthome_len + shift);
+    }
+
+    *count = required;
+
+    return S_OK;
+}
+
+static HRESULT vfs_path_hook_w10home(
+        const wchar_t *src,
+        wchar_t *dest,
+        size_t *count)
+{
+    size_t required;
+    size_t redir_len;
+    size_t shift;
+
+    assert(src != NULL);
+    assert(count != NULL);
+
+    /* Case-insensitive check to see if src starts with vfs_w10home */
+
+    if (path_compare_w(src, vfs_w10home, vfs_w10home_len) != 0) {
+        return S_FALSE;
+    }
+
+    /* Check if the character after vfs_w10home is a separator or the end of
+       the string */
+
+    if (!path_is_separator_w(src[vfs_w10home_len]) &&
+            src[vfs_w10home_len] != L'\0')
+    {
+        return S_FALSE;
+    }
+
+    /* Cut off the matched <prefix>\, add the replaced prefix, count NUL */
+
+    shift = path_is_separator_w(src[vfs_w10home_len]) ? 1 : 0;
+    redir_len = wcslen(vfs_nthome_real);
+    required = wcslen(src) - vfs_w10home_len - shift + redir_len + 1;
+
+    if (dest != NULL) {
+        if (required > *count) {
+            return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
+        }
+
+        wcscpy_s(dest, *count, vfs_nthome_real);
+        wcscpy_s(dest + redir_len, *count - redir_len, src + vfs_w10home_len + shift);
     }
 
     *count = required;
