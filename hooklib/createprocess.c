@@ -7,6 +7,8 @@
 
 #include "hook/table.h"
 
+#include "hooklib/createprocess.h"
+
 #include "util/dprintf.h"
 
 void createprocess_hook_init();
@@ -76,18 +78,80 @@ static const struct hook_symbol win32_hooks[] = {
 
 static bool did_init = false;
 
-static struct process_hook_sym_w *processe_syms_w;
-static struct process_hook_sym_a *processe_syms_a;
+static struct process_hook_sym_w *process_syms_w;
+static struct process_hook_sym_a *process_syms_a;
 
-static size_t processe_nsyms_a = 0;
-static size_t processe_nsyms_w = 0;
+static size_t process_nsyms_a = 0;
+static size_t process_nsyms_w = 0;
 
-void createprocess_push_hook_w(const wchar_t *name, const wchar_t *dll_name, const wchar_t *tail) {
+static CRITICAL_SECTION createproc_lock;
+
+HRESULT createprocess_push_hook_w(const wchar_t *name, const wchar_t *head, const wchar_t *tail) {
+    struct process_hook_sym_w *new_mem;
+    struct process_hook_sym_w *new_proc;
+    HRESULT hr;
+
+    assert(name != NULL);
+    assert(head != NULL);
+
     createprocess_hook_init();
+    EnterCriticalSection(&createproc_lock);
+    
+    new_mem = realloc(
+            process_syms_w,
+            (process_nsyms_w + 1) * sizeof(struct process_hook_sym_w));
+
+    if (new_mem == NULL) {
+
+        LeaveCriticalSection(&createproc_lock);
+        return E_OUTOFMEMORY;
+    }
+
+    new_proc = &new_mem[process_nsyms_w];
+    memset(new_proc, 0, sizeof(*new_proc));
+    new_proc->name = name;
+    new_proc->head = head;
+    new_proc->tail = tail;
+
+    process_syms_w = new_mem;
+    process_nsyms_w++;
+    
+    LeaveCriticalSection(&createproc_lock);
+    return S_OK;
 }
 
-void createprocess_push_hook_a(const char *name, const char *dll_name, const char *tail) {
+HRESULT createprocess_push_hook_a(const char *name, const char *head, const char *tail) {
+    struct process_hook_sym_a *new_mem;
+    struct process_hook_sym_a *new_proc;
+
+    assert(name != NULL);
+    assert(head != NULL);
+
     createprocess_hook_init();
+
+    EnterCriticalSection(&createproc_lock);
+    
+    new_mem = realloc(
+            process_syms_a,
+            (process_nsyms_a + 1) * sizeof(struct process_hook_sym_a));
+
+    if (new_mem == NULL) {
+
+        LeaveCriticalSection(&createproc_lock);
+        return E_OUTOFMEMORY;
+    }
+
+    new_proc = &new_mem[process_nsyms_a];
+    memset(new_proc, 0, sizeof(*new_proc));
+    new_proc->name = name;
+    new_proc->head = head;
+    new_proc->tail = tail;
+
+    process_syms_a = new_mem;
+    process_nsyms_a++;
+    
+    LeaveCriticalSection(&createproc_lock);
+    return S_OK;
 }
 
 void createprocess_hook_init() {
@@ -101,7 +165,7 @@ void createprocess_hook_init() {
             "kernel32.dll",
             win32_hooks,
             _countof(win32_hooks));
-
+    InitializeCriticalSection(&createproc_lock);
     dprintf("CreateProcess: Init\n");
 }
 
@@ -119,37 +183,45 @@ static BOOL WINAPI my_CreateProcessA(
     LPPROCESS_INFORMATION lpProcessInformation
 )
 {
-    if (strncmp(".\\15312firm\\firmupdate_1113.exe", lpCommandLine, 31)) {
+    for (int i = 0; i < process_nsyms_a; i++) {
+        if (strncmp(process_syms_a->name, lpCommandLine, strlen(process_syms_a->name))) {
+            continue;
+        }
+
+        dprintf("CreateProcess: Hooking child process %s\n", lpCommandLine);
+        char new_cmd[MAX_PATH];
+        strcat_s(new_cmd, MAX_PATH, process_syms_a->head);
+        strcat_s(new_cmd, MAX_PATH, lpCommandLine);
+
+        if (process_syms_a->tail[0]) {
+            strcat_s(new_cmd, MAX_PATH, process_syms_a->tail);
+        }
+
         return next_CreateProcessA(
-            lpApplicationName,
-            lpCommandLine,
-            lpProcessAttributes,
-            lpThreadAttributes,
-            bInheritHandles,
-            dwCreationFlags,
-            lpEnvironment,
-            lpCurrentDirectory,
-            lpStartupInfo,
-            lpProcessInformation
-        );
+                lpApplicationName,
+                new_cmd,
+                lpProcessAttributes,
+                lpThreadAttributes,
+                bInheritHandles,
+                dwCreationFlags,
+                lpEnvironment,
+                lpCurrentDirectory,
+                lpStartupInfo,
+                lpProcessInformation
+            );
     }
-
-    dprintf("CreateProcess: Hooking child process %s\n", lpCommandLine);
-    char new_cmd[MAX_PATH] = "inject -d -k carolhook.dll ";
-    strcat_s(new_cmd, MAX_PATH, lpCommandLine);
-
     return next_CreateProcessA(
-            lpApplicationName,
-            new_cmd,
-            lpProcessAttributes,
-            lpThreadAttributes,
-            bInheritHandles,
-            dwCreationFlags,
-            lpEnvironment,
-            lpCurrentDirectory,
-            lpStartupInfo,
-            lpProcessInformation
-        );
+                lpApplicationName,
+                lpCommandLine,
+                lpProcessAttributes,
+                lpThreadAttributes,
+                bInheritHandles,
+                dwCreationFlags,
+                lpEnvironment,
+                lpCurrentDirectory,
+                lpStartupInfo,
+                lpProcessInformation
+            );
 }
 
 BOOL my_CreateProcessW(
