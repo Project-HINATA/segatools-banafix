@@ -1,3 +1,5 @@
+#pragma once
+
 #include <windows.h>
 
 HRESULT createprocess_push_hook_w(const wchar_t *name, const wchar_t *head, const wchar_t *tail);

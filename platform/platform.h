@@ -5,6 +5,7 @@
 #include "platform/amvideo.h"
 #include "platform/clock.h"
 #include "platform/dns.h"
+#include "platform/epay.h"
 #include "platform/hwmon.h"
 #include "platform/hwreset.h"
 #include "platform/misc.h"
@@ -17,6 +18,7 @@ struct platform_config {
     struct amvideo_config amvideo;
     struct clock_config clock;
     struct dns_config dns;
+    struct epay_config epay;
     struct hwmon_config hwmon;
     struct hwreset_config hwreset;
     struct misc_config misc;

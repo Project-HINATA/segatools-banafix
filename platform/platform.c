@@ -5,6 +5,7 @@
 #include "platform/amvideo.h"
 #include "platform/clock.h"
 #include "platform/dns.h"
+#include "platform/epay.h"
 #include "platform/hwmon.h"
 #include "platform/misc.h"
 #include "platform/netenv.h"
@@ -75,6 +76,12 @@ HRESULT platform_hook_init(
     }
 
     hr = vfs_hook_init(&cfg->vfs);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = epay_hook_init(&cfg->epay);
 
     if (FAILED(hr)) {
         return hr;

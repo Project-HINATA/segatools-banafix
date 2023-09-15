@@ -188,15 +188,16 @@ static BOOL WINAPI my_CreateProcessA(
             continue;
         }
 
-        dprintf("CreateProcess: Hooking child process %s\n", lpCommandLine);
-        char new_cmd[MAX_PATH];
+        dprintf("CreateProcess: Hooking child process %s %s\n", lpApplicationName, lpCommandLine);
+        char new_cmd[MAX_PATH] = {0};
         strcat_s(new_cmd, MAX_PATH, process_syms_a->head);
         strcat_s(new_cmd, MAX_PATH, lpCommandLine);
 
-        if (process_syms_a->tail[0]) {
+        if (process_syms_a->tail != NULL) {
             strcat_s(new_cmd, MAX_PATH, process_syms_a->tail);
         }
 
+        dprintf("CreateProcess: Replaced CreateProcessA %s\n", new_cmd);
         return next_CreateProcessA(
                 lpApplicationName,
                 new_cmd,
