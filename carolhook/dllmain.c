@@ -19,6 +19,7 @@
 
 #include "hooklib/serial.h"
 #include "hooklib/spike.h"
+#include "hooklib/createprocess.h"
 
 #include "platform/platform.h"
 
@@ -122,7 +123,12 @@ static DWORD CALLBACK carol_pre_startup(void)
     if (FAILED(hr)) {
         goto fail;
     }
-
+    
+    hr = createprocess_push_hook_a(".\\15312firm\\firmupdate_1113.exe", "inject -d -k carolhook.dll ", NULL);
+    
+    if (FAILED(hr)) {
+        goto fail;
+    }
     /* Initialize debug helpers */
 
     spike_hook_init(L".\\segatools.ini");
