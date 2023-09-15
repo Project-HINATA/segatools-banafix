@@ -9,6 +9,8 @@ hooklib_lib = static_library(
     sources : [
         'config.c',
         'config.h',
+        'createprocess.c',
+        'createprocess.h',
         'dll.c',
         'dll.h',
         'dns.c',

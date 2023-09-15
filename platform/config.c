@@ -13,6 +13,7 @@
 #include "platform/clock.h"
 #include "platform/config.h"
 #include "platform/dns.h"
+#include "platform/epay.h"
 #include "platform/hwmon.h"
 #include "platform/hwreset.h"
 #include "platform/misc.h"
@@ -31,6 +32,7 @@ void platform_config_load(struct platform_config *cfg, const wchar_t *filename)
     amvideo_config_load(&cfg->amvideo, filename);
     clock_config_load(&cfg->clock, filename);
     dns_config_load(&cfg->dns, filename);
+    epay_config_load(&cfg->epay, filename);
     hwmon_config_load(&cfg->hwmon, filename);
     hwreset_config_load(&cfg->hwreset, filename);
     misc_config_load(&cfg->misc, filename);
