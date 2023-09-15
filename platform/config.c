@@ -339,3 +339,10 @@ void dipsw_config_load(struct dipsw_config *cfg, const wchar_t *filename)
     }
 }
 
+void epay_config_load(struct epay_config *cfg, const wchar_t *filename)
+{
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    cfg->enable = GetPrivateProfileIntW(L"epay", L"enable", 1, filename);
+}
