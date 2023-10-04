@@ -72,6 +72,7 @@ static bool touch_held;
 static HWND registered_hWnd;
 static struct touch_screen_config touch_config;
 static WNDPROC orig_wndProc;
+static HCURSOR defaultCursor;
 
 static const struct hook_symbol touch_hooks[] = {
     {
@@ -115,6 +116,8 @@ void touch_screen_hook_init(const struct touch_screen_config *cfg, HINSTANCE sel
 
     touch_hook_initted = true;
 
+    defaultCursor = LoadCursorA(NULL, IDC_CROSS);
+
     memcpy(&touch_config, cfg, sizeof(*cfg));
     hook_table_apply(NULL, "user32.dll", touch_hooks, _countof(touch_hooks));
     dprintf("TOUCH: hook enabled.\n");
@@ -122,7 +125,7 @@ void touch_screen_hook_init(const struct touch_screen_config *cfg, HINSTANCE sel
 
 static HCURSOR WINAPI hook_SetCursor(HCURSOR cursor) {
     if (cursor == 0 && touch_config.cursor)
-        return 0;
+        return next_SetCursor(defaultCursor);
 
     return next_SetCursor(cursor);
 }
