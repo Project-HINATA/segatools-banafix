@@ -26,6 +26,9 @@ static const struct idac_di_axis *idac_di_get_axis(const wchar_t *name);
 static BOOL CALLBACK idac_di_enum_callback(
         const DIDEVICEINSTANCEW *dev,
         void *ctx);
+static BOOL CALLBACK idac_di_enum_callback_pedals(
+        const DIDEVICEINSTANCEW *dev,
+        void *ctx);
 static BOOL CALLBACK idac_di_enum_callback_shifter(
         const DIDEVICEINSTANCEW *dev,
         void *ctx);
@@ -57,6 +60,7 @@ static const struct idac_io_backend idac_di_backend = {
 static HWND idac_di_wnd;
 static IDirectInput8W *idac_di_api;
 static IDirectInputDevice8W *idac_di_dev;
+static IDirectInputDevice8W *idac_di_pedals;
 static IDirectInputDevice8W *idac_di_shifter;
 static IDirectInputEffect *idac_di_fx;
 static size_t idac_di_off_brake;
@@ -68,6 +72,7 @@ static uint8_t idac_di_start;
 static uint8_t idac_di_left;
 static uint8_t idac_di_right;
 static uint8_t idac_di_gear[6];
+static bool idac_di_use_pedals;
 static bool idac_di_reverse_brake_axis;
 static bool idac_di_reverse_accel_axis;
 
@@ -169,6 +174,37 @@ HRESULT idac_di_init(
     }
 
     idac_di_dev_start_fx(idac_di_dev, &idac_di_fx);
+
+    if (cfg->pedals_name[0] != L'\0') {
+        hr = IDirectInput8_EnumDevices(
+                idac_di_api,
+                DI8DEVCLASS_GAMECTRL,
+                idac_di_enum_callback_pedals,
+                (void *) cfg,
+                DIEDFL_ATTACHEDONLY);
+
+        if (FAILED(hr)) {
+            dprintf("DirectInput: EnumDevices failed: %08x\n", (int) hr);
+
+            return hr;
+        }
+
+        if (idac_di_dev == NULL) {
+            dprintf("Pedals: Controller not found\n");
+
+            return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+        }
+
+        hr = idac_di_dev_start(idac_di_pedals, idac_di_wnd);
+
+        if (FAILED(hr)) {
+            return hr;
+        }
+
+        idac_di_use_pedals = true;
+    } else {
+        idac_di_use_pedals = false;
+    }
 
     if (cfg->shifter_name[0] != L'\0') {
         hr = IDirectInput8_EnumDevices(
@@ -276,8 +312,10 @@ static HRESULT idac_di_config_apply(const struct idac_di_config *cfg)
     dprintf("Wheel: --- Begin configuration ---\n");
     dprintf("Wheel: Device name . . . . : Contains \"%S\"\n",
             cfg->device_name);
-    dprintf("Wheel: Brake axis  . . . . : %S\n", brake_axis->name);
-    dprintf("Wheel: Accel axis  . . . . : %S\n", accel_axis->name);
+    if (cfg->pedals_name[0] == L'\0') {
+        dprintf("Wheel: Brake axis  . . . . : %S\n", brake_axis->name);
+        dprintf("Wheel: Accel axis  . . . . : %S\n", accel_axis->name);
+    }
     dprintf("Wheel: Start button  . . . : %i\n", cfg->start);
     dprintf("Wheel: View Change button  : %i\n", cfg->view_chg);
     dprintf("Wheel: Left button . . . . : %i\n", cfg->left);
@@ -287,6 +325,15 @@ static HRESULT idac_di_config_apply(const struct idac_di_config *cfg)
     dprintf("Wheel: Reverse Brake Axis  : %i\n", cfg->reverse_brake_axis);
     dprintf("Wheel: Reverse Accel Axis  : %i\n", cfg->reverse_accel_axis);
     dprintf("Wheel: ---  End  configuration ---\n");
+
+    if (cfg->pedals_name[0] != L'\0') {
+        dprintf("Pedals: --- Begin configuration ---\n");
+        dprintf("Pedals: Device name . . . : Contains \"%S\"\n",
+                cfg->pedals_name);
+        dprintf("Pedals: Brake axis  . . . . : %S\n", brake_axis->name);
+        dprintf("Pedals: Accel axis  . . . . : %S\n", accel_axis->name);
+        dprintf("Pedals: ---  End  configuration ---\n");
+    }
 
     if (cfg->shifter_name[0] != L'\0') {
         dprintf("Shifter: --- Begin configuration ---\n");
@@ -359,6 +406,34 @@ static BOOL CALLBACK idac_di_enum_callback(
 
     if (FAILED(hr)) {
         dprintf("Wheel: CreateDevice failed: %08x\n", (int) hr);
+    }
+
+    return DIENUM_STOP;
+}
+
+static BOOL CALLBACK idac_di_enum_callback_pedals(
+        const DIDEVICEINSTANCEW *dev,
+        void *ctx)
+{
+    const struct idac_di_config *cfg;
+    HRESULT hr;
+
+    cfg = ctx;
+
+    if (wcsstr(dev->tszProductName, cfg->pedals_name) == NULL) {
+        return DIENUM_CONTINUE;
+    }
+
+    dprintf("Pedals: Using DirectInput device \"%S\"\n", dev->tszProductName);
+
+    hr = IDirectInput8_CreateDevice(
+            idac_di_api,
+            &dev->guidInstance,
+            &idac_di_pedals,
+            NULL);
+
+    if (FAILED(hr)) {
+        dprintf("Pedals: CreateDevice failed: %08x\n", (int) hr);
     }
 
     return DIENUM_STOP;
@@ -518,6 +593,7 @@ static void idac_di_get_shifter_virt(uint8_t *gear)
 static void idac_di_get_analogs(struct idac_io_analog_state *out)
 {
     union idac_di_state state;
+    union idac_di_state pedals_state;
     const LONG *brake;
     const LONG *accel;
     HRESULT hr;
@@ -530,8 +606,19 @@ static void idac_di_get_analogs(struct idac_io_analog_state *out)
         return;
     }
 
-    brake = (LONG *) &state.bytes[idac_di_off_brake];
-    accel = (LONG *) &state.bytes[idac_di_off_accel];
+    if (idac_di_use_pedals) {
+        hr = idac_di_dev_poll(idac_di_pedals, idac_di_wnd, &pedals_state);
+
+        if (FAILED(hr)) {
+            return;
+        }
+
+        brake = (LONG *) &pedals_state.bytes[idac_di_off_brake];
+        accel = (LONG *) &pedals_state.bytes[idac_di_off_accel];
+    } else {
+        brake = (LONG *) &state.bytes[idac_di_off_brake];
+        accel = (LONG *) &state.bytes[idac_di_off_accel];
+    }
 
     out->wheel = state.st.lX - 32768;
 

@@ -26,6 +26,9 @@ static const struct idz_di_axis *idz_di_get_axis(const wchar_t *name);
 static BOOL CALLBACK idz_di_enum_callback(
         const DIDEVICEINSTANCEW *dev,
         void *ctx);
+static BOOL CALLBACK idz_di_enum_callback_pedals(
+        const DIDEVICEINSTANCEW *dev,
+        void *ctx);
 static BOOL CALLBACK idz_di_enum_callback_shifter(
         const DIDEVICEINSTANCEW *dev,
         void *ctx);
@@ -57,6 +60,7 @@ static const struct idz_io_backend idz_di_backend = {
 static HWND idz_di_wnd;
 static IDirectInput8W *idz_di_api;
 static IDirectInputDevice8W *idz_di_dev;
+static IDirectInputDevice8W *idz_di_pedals;
 static IDirectInputDevice8W *idz_di_shifter;
 static IDirectInputEffect *idz_di_fx;
 static size_t idz_di_off_brake;
@@ -66,6 +70,7 @@ static uint8_t idz_di_shift_up;
 static uint8_t idz_di_view_chg;
 static uint8_t idz_di_start;
 static uint8_t idz_di_gear[6];
+static bool idz_di_use_pedals;
 static bool idz_di_reverse_brake_axis;
 static bool idz_di_reverse_accel_axis;
 
@@ -168,6 +173,37 @@ HRESULT idz_di_init(
 
     idz_di_dev_start_fx(idz_di_dev, &idz_di_fx);
 
+    if (cfg->pedals_name[0] != L'\0') {
+        hr = IDirectInput8_EnumDevices(
+                idz_di_api,
+                DI8DEVCLASS_GAMECTRL,
+                idz_di_enum_callback_pedals,
+                (void *) cfg,
+                DIEDFL_ATTACHEDONLY);
+
+        if (FAILED(hr)) {
+            dprintf("DirectInput: EnumDevices failed: %08x\n", (int) hr);
+
+            return hr;
+        }
+
+        if (idz_di_dev == NULL) {
+            dprintf("Pedals: Controller not found\n");
+
+            return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+        }
+
+        hr = idz_di_dev_start(idz_di_pedals, idz_di_wnd);
+
+        if (FAILED(hr)) {
+            return hr;
+        }
+
+        idz_di_use_pedals = true;
+    } else {
+        idz_di_use_pedals = false;
+    }
+
     if (cfg->shifter_name[0] != L'\0') {
         hr = IDirectInput8_EnumDevices(
                 idz_di_api,
@@ -262,8 +298,10 @@ static HRESULT idz_di_config_apply(const struct idz_di_config *cfg)
     dprintf("Wheel: --- Begin configuration ---\n");
     dprintf("Wheel: Device name . . . . : Contains \"%S\"\n",
             cfg->device_name);
-    dprintf("Wheel: Brake axis  . . . . : %S\n", brake_axis->name);
-    dprintf("Wheel: Accel axis  . . . . : %S\n", accel_axis->name);
+    if (cfg->pedals_name[0] == L'\0') {
+        dprintf("Wheel: Brake axis  . . . . : %S\n", brake_axis->name);
+        dprintf("Wheel: Accel axis  . . . . : %S\n", accel_axis->name);
+    }
     dprintf("Wheel: Start button  . . . : %i\n", cfg->start);
     dprintf("Wheel: View Change button  : %i\n", cfg->view_chg);
     dprintf("Wheel: Shift Down button . : %i\n", cfg->shift_dn);
@@ -271,6 +309,15 @@ static HRESULT idz_di_config_apply(const struct idz_di_config *cfg)
     dprintf("Wheel: Reverse Brake Axis  : %i\n", cfg->reverse_brake_axis);
     dprintf("Wheel: Reverse Accel Axis  : %i\n", cfg->reverse_accel_axis);
     dprintf("Wheel: ---  End  configuration ---\n");
+
+    if (cfg->pedals_name[0] != L'\0') {
+        dprintf("Pedals: --- Begin configuration ---\n");
+        dprintf("Pedals: Device name . . . : Contains \"%S\"\n",
+                cfg->pedals_name);
+        dprintf("Pedals: Brake axis  . . . . : %S\n", brake_axis->name);
+        dprintf("Pedals: Accel axis  . . . . : %S\n", accel_axis->name);
+        dprintf("Pedals: ---  End  configuration ---\n");
+    }
 
     if (cfg->shifter_name[0] != L'\0') {
         dprintf("Shifter: --- Begin configuration ---\n");
@@ -341,6 +388,34 @@ static BOOL CALLBACK idz_di_enum_callback(
 
     if (FAILED(hr)) {
         dprintf("Wheel: CreateDevice failed: %08x\n", (int) hr);
+    }
+
+    return DIENUM_STOP;
+}
+
+static BOOL CALLBACK idz_di_enum_callback_pedals(
+        const DIDEVICEINSTANCEW *dev,
+        void *ctx)
+{
+    const struct idz_di_config *cfg;
+    HRESULT hr;
+
+    cfg = ctx;
+
+    if (wcsstr(dev->tszProductName, cfg->pedals_name) == NULL) {
+        return DIENUM_CONTINUE;
+    }
+
+    dprintf("Pedals: Using DirectInput device \"%S\"\n", dev->tszProductName);
+
+    hr = IDirectInput8_CreateDevice(
+            idz_di_api,
+            &dev->guidInstance,
+            &idz_di_pedals,
+            NULL);
+
+    if (FAILED(hr)) {
+        dprintf("Pedals: CreateDevice failed: %08x\n", (int) hr);
     }
 
     return DIENUM_STOP;
@@ -492,6 +567,7 @@ static void idz_di_jvs_read_shifter_virt(uint8_t *gear)
 static void idz_di_jvs_read_analogs(struct idz_io_analog_state *out)
 {
     union idz_di_state state;
+    union idz_di_state pedals_state;
     const LONG *brake;
     const LONG *accel;
     HRESULT hr;
@@ -504,8 +580,19 @@ static void idz_di_jvs_read_analogs(struct idz_io_analog_state *out)
         return;
     }
 
-    brake = (LONG *) &state.bytes[idz_di_off_brake];
-    accel = (LONG *) &state.bytes[idz_di_off_accel];
+    if (idz_di_use_pedals) {
+        hr = idz_di_dev_poll(idz_di_pedals, idz_di_wnd, &pedals_state);
+
+        if (FAILED(hr)) {
+            return;
+        }
+
+        brake = (LONG *) &pedals_state.bytes[idz_di_off_brake];
+        accel = (LONG *) &pedals_state.bytes[idz_di_off_accel];
+    } else {
+        brake = (LONG *) &state.bytes[idz_di_off_brake];
+        accel = (LONG *) &state.bytes[idz_di_off_accel];
+    }
 
     out->wheel = state.st.lX - 32768;
 

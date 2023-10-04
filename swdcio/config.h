@@ -6,6 +6,7 @@
 
 struct swdc_di_config {
     wchar_t device_name[64];
+    wchar_t pedals_name[64];
     wchar_t brake_axis[16];
     wchar_t accel_axis[16];
     uint8_t start;

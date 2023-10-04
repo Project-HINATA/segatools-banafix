@@ -25,6 +25,9 @@ static const struct swdc_di_axis *swdc_di_get_axis(const wchar_t *name);
 static BOOL CALLBACK swdc_di_enum_callback(
         const DIDEVICEINSTANCEW *dev,
         void *ctx);
+static BOOL CALLBACK swdc_di_enum_callback_pedals(
+        const DIDEVICEINSTANCEW *dev,
+        void *ctx);
 static BOOL CALLBACK swdc_di_enum_callback_shifter(
         const DIDEVICEINSTANCEW *dev,
         void *ctx);
@@ -52,6 +55,7 @@ static const struct swdc_io_backend swdc_di_backend = {
 static HWND swdc_di_wnd;
 static IDirectInput8W *swdc_di_api;
 static IDirectInputDevice8W *swdc_di_dev;
+static IDirectInputDevice8W *swdc_di_pedals;
 static IDirectInputEffect *swdc_di_fx;
 static size_t swdc_di_off_brake;
 static size_t swdc_di_off_accel;
@@ -63,6 +67,7 @@ static uint8_t swdc_di_wheel_green;
 static uint8_t swdc_di_wheel_red;
 static uint8_t swdc_di_wheel_blue;
 static uint8_t swdc_di_wheel_yellow;
+static bool swdc_di_use_pedals;
 static bool swdc_di_reverse_brake_axis;
 static bool swdc_di_reverse_accel_axis;
 
@@ -165,6 +170,37 @@ HRESULT swdc_di_init(
 
     swdc_di_dev_start_fx(swdc_di_dev, &swdc_di_fx);
 
+    if (cfg->pedals_name[0] != L'\0') {
+        hr = IDirectInput8_EnumDevices(
+                swdc_di_api,
+                DI8DEVCLASS_GAMECTRL,
+                swdc_di_enum_callback_pedals,
+                (void *) cfg,
+                DIEDFL_ATTACHEDONLY);
+
+        if (FAILED(hr)) {
+            dprintf("DirectInput: EnumDevices failed: %08x\n", (int) hr);
+
+            return hr;
+        }
+
+        if (swdc_di_dev == NULL) {
+            dprintf("Pedals: Controller not found\n");
+
+            return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+        }
+
+        hr = swdc_di_dev_start(swdc_di_pedals, swdc_di_wnd);
+
+        if (FAILED(hr)) {
+            return hr;
+        }
+
+        swdc_di_use_pedals = true;
+    } else {
+        swdc_di_use_pedals = false;
+    }
+
     dprintf("DirectInput: Controller initialized\n");
 
     *backend = &swdc_di_backend;
@@ -246,8 +282,10 @@ static HRESULT swdc_di_config_apply(const struct swdc_di_config *cfg)
     dprintf("Wheel: --- Begin configuration ---\n");
     dprintf("Wheel: Device name . . . . : Contains \"%S\"\n",
             cfg->device_name);
-    dprintf("Wheel: Brake axis . . . . . . : %S\n", brake_axis->name);
-    dprintf("Wheel: Accel axis . . . . . . : %S\n", accel_axis->name);
+    if (cfg->pedals_name[0] == L'\0') {
+        dprintf("Wheel: Brake axis  . . . . : %S\n", brake_axis->name);
+        dprintf("Wheel: Accel axis  . . . . : %S\n", accel_axis->name);
+    }
     dprintf("Wheel: Start button . . . . . : %i\n", cfg->start);
     dprintf("Wheel: View Change button . . : %i\n", cfg->view_chg);
     dprintf("Wheel: Paddle Left button . . : %i\n", cfg->paddle_left);
@@ -259,6 +297,15 @@ static HRESULT swdc_di_config_apply(const struct swdc_di_config *cfg)
     dprintf("Wheel: Reverse Brake Axis . . : %i\n", cfg->reverse_brake_axis);
     dprintf("Wheel: Reverse Accel Axis . . : %i\n", cfg->reverse_accel_axis);
     dprintf("Wheel: ---  End  configuration ---\n");
+
+    if (cfg->pedals_name[0] != L'\0') {
+        dprintf("Pedals: --- Begin configuration ---\n");
+        dprintf("Pedals: Device name . . . : Contains \"%S\"\n",
+                cfg->pedals_name);
+        dprintf("Pedals: Brake axis  . . . . : %S\n", brake_axis->name);
+        dprintf("Pedals: Accel axis  . . . . : %S\n", accel_axis->name);
+        dprintf("Pedals: ---  End  configuration ---\n");
+    }
 
     swdc_di_off_brake = brake_axis->off;
     swdc_di_off_accel = accel_axis->off;
@@ -315,6 +362,34 @@ static BOOL CALLBACK swdc_di_enum_callback(
 
     if (FAILED(hr)) {
         dprintf("Wheel: CreateDevice failed: %08x\n", (int) hr);
+    }
+
+    return DIENUM_STOP;
+}
+
+static BOOL CALLBACK swdc_di_enum_callback_pedals(
+        const DIDEVICEINSTANCEW *dev,
+        void *ctx)
+{
+    const struct swdc_di_config *cfg;
+    HRESULT hr;
+
+    cfg = ctx;
+
+    if (wcsstr(dev->tszProductName, cfg->pedals_name) == NULL) {
+        return DIENUM_CONTINUE;
+    }
+
+    dprintf("Pedals: Using DirectInput device \"%S\"\n", dev->tszProductName);
+
+    hr = IDirectInput8_CreateDevice(
+            swdc_di_api,
+            &dev->guidInstance,
+            &swdc_di_pedals,
+            NULL);
+
+    if (FAILED(hr)) {
+        dprintf("Pedals: CreateDevice failed: %08x\n", (int) hr);
     }
 
     return DIENUM_STOP;
@@ -389,6 +464,7 @@ static uint8_t swdc_di_decode_pov(DWORD pov)
 static void swdc_di_get_analogs(struct swdc_io_analog_state *out)
 {
     union swdc_di_state state;
+    union swdc_di_state pedals_state;
     const LONG *brake;
     const LONG *accel;
     HRESULT hr;
@@ -401,8 +477,19 @@ static void swdc_di_get_analogs(struct swdc_io_analog_state *out)
         return;
     }
 
-    brake = (LONG *) &state.bytes[swdc_di_off_brake];
-    accel = (LONG *) &state.bytes[swdc_di_off_accel];
+    if (swdc_di_use_pedals) {
+        hr = swdc_di_dev_poll(swdc_di_pedals, swdc_di_wnd, &pedals_state);
+
+        if (FAILED(hr)) {
+            return;
+        }
+
+        brake = (LONG *) &pedals_state.bytes[swdc_di_off_brake];
+        accel = (LONG *) &pedals_state.bytes[swdc_di_off_accel];
+    } else {
+        brake = (LONG *) &state.bytes[swdc_di_off_brake];
+        accel = (LONG *) &state.bytes[swdc_di_off_accel];
+    }
 
     out->wheel = state.st.lX - 32768;
 

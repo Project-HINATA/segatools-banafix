@@ -26,6 +26,14 @@ void idz_di_config_load(struct idz_di_config *cfg, const wchar_t *filename)
 
     GetPrivateProfileStringW(
             L"dinput",
+            L"pedalsName",
+            L"",
+            cfg->pedals_name,
+            _countof(cfg->pedals_name),
+            filename);
+
+    GetPrivateProfileStringW(
+            L"dinput",
             L"shifterName",
             L"",
             cfg->shifter_name,
@@ -79,7 +87,7 @@ void idz_xi_config_load(struct idz_xi_config *cfg, const wchar_t *filename)
     cfg->single_stick_steering = GetPrivateProfileIntW(
                                 L"xinput",
                                 L"singleStickSteering",
-                                0,
+                                1,
                                 filename);
 
     cfg->linear_steering = GetPrivateProfileIntW(

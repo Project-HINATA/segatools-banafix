@@ -26,6 +26,14 @@ void swdc_di_config_load(struct swdc_di_config *cfg, const wchar_t *filename)
 
     GetPrivateProfileStringW(
             L"dinput",
+            L"pedalsName",
+            L"",
+            cfg->pedals_name,
+            _countof(cfg->pedals_name),
+            filename);
+
+    GetPrivateProfileStringW(
+            L"dinput",
             L"brakeAxis",
             L"RZ",
             cfg->brake_axis,

@@ -31,6 +31,11 @@ static bool idz_xi_linear_steering;
 static uint16_t idz_xi_left_stick_deadzone;
 static uint16_t idz_xi_right_stick_deadzone;
 
+const uint16_t max_stick_value = 32767;
+/* Apply steering wheel restriction. Real cabs only report about 76% of
+    the output value when the wheel is turned to either of its maximum positions. */
+const uint16_t max_wheel_value = 24831;
+
 HRESULT idz_xi_init(const struct idz_xi_config *cfg, const struct idz_io_backend **backend)
 {
     HRESULT hr;
@@ -143,29 +148,39 @@ static void idz_xi_jvs_read_shifter(uint8_t *gear)
     *gear = idz_shifter_current_gear();
 }
 
-static int apply_non_linear_transform(int value, int deadzone_center) {
-    const int max_input = 32767;
-    const double power_factor = 3.0;
+static int16_t calculate_norm_steering(int16_t axis, uint16_t deadzone, bool linear_steering) {
+    // determine how far the controller is pushed
+    float magnitude = sqrt(axis*axis);
 
-    // Apply deadzone only after passing the center threshold
-    if (abs(value) < deadzone_center) {
-        return 0;
+    // determine the direction the controller is pushed
+    float norm_axis = axis / magnitude;
+
+    float norm_magnitude = 0.0;
+
+    // check if the controller is outside a circular dead zone
+    if (magnitude > deadzone)
+    {
+        // clip the magnitude at its expected maximum value
+        if (magnitude > max_stick_value) magnitude = max_stick_value;
+
+        // adjust magnitude relative to the end of the dead zone
+        magnitude -= deadzone;
+
+        // optionally normalize the magnitude with respect to its expected range
+        // giving a magnitude value of 0.0 to 1.0
+        norm_magnitude = magnitude / (max_stick_value - deadzone);
+    } else // if the controller is in the deadzone zero out the magnitude
+    {
+        magnitude = 0.0;
+        norm_magnitude = 0.0;
     }
 
-    // Scale the value to the range [-1.0, 1.0]
-    double scaled_value = (abs(value) - deadzone_center) / (double)(max_input - deadzone_center);
+    // apply non-linear transform to the axis
+    if (!linear_steering) {
+        return norm_axis * pow(norm_magnitude, 3.0) * max_wheel_value;
+    }
 
-    // Apply a non-linear transform (cubing in this case) and preserve the sign
-    double signed_value = copysign(pow(scaled_value, power_factor), value);
-
-    // Scale the value back to the range [-32770, 32767]
-    int transformed_value = (int)(signed_value * max_input);
-
-    // Clamp the value to the range [-32767, 32767]
-    transformed_value = (transformed_value > max_input) ? max_input : transformed_value;
-    transformed_value = (transformed_value < -max_input) ? -max_input : transformed_value;
-
-    return transformed_value;
+    return norm_axis * norm_magnitude * max_wheel_value;
 }
 
 static void idz_xi_jvs_read_analogs(struct idz_io_analog_state *out)
@@ -182,27 +197,9 @@ static void idz_xi_jvs_read_analogs(struct idz_io_analog_state *out)
     left = xi.Gamepad.sThumbLX;
     right = xi.Gamepad.sThumbRX;
     
-    if (!idz_xi_linear_steering) {
-        // Apply non-linear transform for both sticks
-        left = apply_non_linear_transform(left, idz_xi_left_stick_deadzone);
-        right = apply_non_linear_transform(right, idz_xi_right_stick_deadzone);
-    } else {
-        if (left < -idz_xi_left_stick_deadzone) {
-            left += idz_xi_left_stick_deadzone;
-        } else if (left > idz_xi_left_stick_deadzone) {
-            left -= idz_xi_left_stick_deadzone;
-        } else {
-            left = 0;
-        }
-
-        if (right < -idz_xi_right_stick_deadzone) {
-            right += idz_xi_right_stick_deadzone;
-        } else if (right > idz_xi_right_stick_deadzone) {
-            right -= idz_xi_right_stick_deadzone;
-        } else {
-            right = 0;
-        }
-    }
+    // normalize the steering axis
+    left = calculate_norm_steering(left, idz_xi_left_stick_deadzone, idz_xi_linear_steering);
+    right = calculate_norm_steering(right, idz_xi_right_stick_deadzone, idz_xi_linear_steering);
 
     if(idz_xi_single_stick_steering) {
         out->wheel = left;

@@ -10,6 +10,7 @@ struct idac_shifter_config {
 
 struct idac_di_config {
     wchar_t device_name[64];
+    wchar_t pedals_name[64];
     wchar_t shifter_name[64];
     wchar_t brake_axis[16];
     wchar_t accel_axis[16];
