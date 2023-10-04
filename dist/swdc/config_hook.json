@@ -6,9 +6,5 @@
             ".\\aime_firm\\TN32MSEC003S_V12.hex",
             ".\\aime_firm\\update_15396_6728_94.bin"
         ]
-    },
-    "emoney" :
-    {
-        "enable" : false
     }
 }

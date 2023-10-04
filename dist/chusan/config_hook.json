@@ -2,9 +2,5 @@
     "allnet_auth":
     {
         "type": "1.0"
-    },
-    "emoney" :
-    {
-        "enable" : false
     }
 }

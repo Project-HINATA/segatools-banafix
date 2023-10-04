@@ -42,8 +42,7 @@ This is required for some games (e.g. Chunithm) but not others (e.g. WACCA).
 
 Default: `DEVICE\aime.txt`
 
-Path to a text file containing a classic Aime IC card ID. **This does not
-currently work**.
+Path to a text file containing a classic Aime IC card ID.
 
 ### `aimeGen`
 
