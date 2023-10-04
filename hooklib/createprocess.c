@@ -86,7 +86,7 @@ static size_t process_nsyms_w = 0;
 
 static CRITICAL_SECTION createproc_lock;
 
-HRESULT createprocess_push_hook_w(const wchar_t *name, const wchar_t *head, const wchar_t *tail) {
+HRESULT createprocess_push_hook_w(const wchar_t *name, const wchar_t *head, const wchar_t *tail, bool replace_all) {
     struct process_hook_sym_w *new_mem;
     struct process_hook_sym_w *new_proc;
     HRESULT hr;
@@ -112,6 +112,7 @@ HRESULT createprocess_push_hook_w(const wchar_t *name, const wchar_t *head, cons
     new_proc->name = name;
     new_proc->head = head;
     new_proc->tail = tail;
+    new_proc->replace_all = replace_all;
 
     process_syms_w = new_mem;
     process_nsyms_w++;
@@ -120,7 +121,7 @@ HRESULT createprocess_push_hook_w(const wchar_t *name, const wchar_t *head, cons
     return S_OK;
 }
 
-HRESULT createprocess_push_hook_a(const char *name, const char *head, const char *tail) {
+HRESULT createprocess_push_hook_a(const char *name, const char *head, const char *tail, bool replace_all) {
     struct process_hook_sym_a *new_mem;
     struct process_hook_sym_a *new_proc;
 
@@ -146,6 +147,7 @@ HRESULT createprocess_push_hook_a(const char *name, const char *head, const char
     new_proc->name = name;
     new_proc->head = head;
     new_proc->tail = tail;
+    new_proc->replace_all = replace_all;
 
     process_syms_a = new_mem;
     process_nsyms_a++;
@@ -184,17 +186,20 @@ static BOOL WINAPI my_CreateProcessA(
 )
 {
     for (int i = 0; i < process_nsyms_a; i++) {
-        if (strncmp(process_syms_a->name, lpCommandLine, strlen(process_syms_a->name))) {
+        if (strncmp(process_syms_a[i].name, lpCommandLine, strlen(process_syms_a[i].name))) {
             continue;
         }
 
         dprintf("CreateProcess: Hooking child process %s %s\n", lpApplicationName, lpCommandLine);
         char new_cmd[MAX_PATH] = {0};
-        strcat_s(new_cmd, MAX_PATH, process_syms_a->head);
-        strcat_s(new_cmd, MAX_PATH, lpCommandLine);
+        strcat_s(new_cmd, MAX_PATH, process_syms_a[i].head);
 
-        if (process_syms_a->tail != NULL) {
-            strcat_s(new_cmd, MAX_PATH, process_syms_a->tail);
+        if (!process_syms_a[i].replace_all) {            
+            strcat_s(new_cmd, MAX_PATH, lpCommandLine);
+        }
+
+        if (process_syms_a[i].tail != NULL) {
+            strcat_s(new_cmd, MAX_PATH, process_syms_a[i].tail);
         }
 
         dprintf("CreateProcess: Replaced CreateProcessA %s\n", new_cmd);

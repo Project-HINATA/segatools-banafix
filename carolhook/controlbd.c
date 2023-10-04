@@ -8,8 +8,6 @@
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
 
-#include "hook/table.h"
-
 #include "carolhook/carol-dll.h"
 #include "carolhook/controlbd.h"
 
@@ -38,39 +36,6 @@ static struct uart controlbd_uart;
 static uint8_t controlbd_written_bytes[520];
 static uint8_t controlbd_readable_bytes[520];
 
-static BOOL WINAPI my_CreateProcessA(
-    LPCSTR                lpApplicationName,
-    LPSTR                 lpCommandLine,
-    LPSECURITY_ATTRIBUTES lpProcessAttributes,
-    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    BOOL                  bInheritHandles,
-    DWORD                 dwCreationFlags,
-    LPVOID                lpEnvironment,
-    LPCSTR                lpCurrentDirectory,
-    LPSTARTUPINFOA        lpStartupInfo,
-    LPPROCESS_INFORMATION lpProcessInformation
-);
-static BOOL (WINAPI *next_CreateProcessA)(
-    LPCSTR                lpApplicationName,
-    LPSTR                 lpCommandLine,
-    LPSECURITY_ATTRIBUTES lpProcessAttributes,
-    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    BOOL                  bInheritHandles,
-    DWORD                 dwCreationFlags,
-    LPVOID                lpEnvironment,
-    LPCSTR                lpCurrentDirectory,
-    LPSTARTUPINFOA        lpStartupInfo,
-    LPPROCESS_INFORMATION lpProcessInformation
-);
-
-static const struct hook_symbol win32_hooks[] = {
-    {
-        .name = "CreateProcessA",
-        .patch = my_CreateProcessA,
-        .link = (void **) &next_CreateProcessA
-    }
-};
-
 HRESULT controlbd_hook_init(const struct controlbd_config *cfg)
 {
     if (!cfg->enable) {
@@ -84,12 +49,6 @@ HRESULT controlbd_hook_init(const struct controlbd_config *cfg)
     controlbd_uart.written.nbytes = sizeof(controlbd_written_bytes);
     controlbd_uart.readable.bytes = controlbd_readable_bytes;
     controlbd_uart.readable.nbytes = sizeof(controlbd_readable_bytes);
-
-    hook_table_apply(
-            NULL,
-            "kernel32.dll",
-            win32_hooks,
-            _countof(win32_hooks));
 
     dprintf("Control Board: Init\n");
 
@@ -377,51 +336,4 @@ static HRESULT controlbd_req_ack_any(uint8_t cmd)
     resp.checksum = calc_checksum(&resp, sizeof(resp));
 
     return iobuf_write(&controlbd_uart.readable, &resp, sizeof(resp));
-}
-
-static BOOL WINAPI my_CreateProcessA(
-    LPCSTR                lpApplicationName,
-    LPSTR                 lpCommandLine,
-    LPSECURITY_ATTRIBUTES lpProcessAttributes,
-    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    BOOL                  bInheritHandles,
-    DWORD                 dwCreationFlags,
-    LPVOID                lpEnvironment,
-    LPCSTR                lpCurrentDirectory,
-    LPSTARTUPINFOA        lpStartupInfo,
-    LPPROCESS_INFORMATION lpProcessInformation
-)
-{
-    dprintf("Control Board: my_CreateProcessA Hit! %s\n", lpCommandLine);
-    if (strncmp(".\\15312firm\\firmupdate_1113.exe", lpCommandLine, 31)) {
-        return next_CreateProcessA(
-            lpApplicationName,
-            lpCommandLine,
-            lpProcessAttributes,
-            lpThreadAttributes,
-            bInheritHandles,
-            dwCreationFlags,
-            lpEnvironment,
-            lpCurrentDirectory,
-            lpStartupInfo,
-            lpProcessInformation
-        );
-    }
-
-    dprintf("Control Board: Hooking child process\n");
-    char new_cmd[MAX_PATH] = "inject -d -k carolhook.dll ";
-    strcat_s(new_cmd, MAX_PATH, lpCommandLine);
-
-    return next_CreateProcessA(
-            lpApplicationName,
-            new_cmd,
-            lpProcessAttributes,
-            lpThreadAttributes,
-            bInheritHandles,
-            dwCreationFlags,
-            lpEnvironment,
-            lpCurrentDirectory,
-            lpStartupInfo,
-            lpProcessInformation
-        );
 }
