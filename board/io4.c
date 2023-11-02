@@ -233,7 +233,7 @@ static HRESULT io4_handle_write(struct irp *irp)
         return S_OK;
 
     case IO4_CMD_SET_UNIQUE_OUTPUT:
-        dprintf("USB I/O: Unique Out\n");
+        // dprintf("USB I/O: Unique Out\n");
 
         return S_OK;
 

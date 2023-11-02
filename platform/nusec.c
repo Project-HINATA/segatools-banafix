@@ -16,6 +16,7 @@
 enum {
     NUSEC_IOCTL_PING                    = 0x22A114,
     NUSEC_IOCTL_ERASE_TRACE_LOG         = 0x22E188,
+    NUSEC_IOCTL_TD_ERASE_USED           = 0x22E18C,
     NUSEC_IOCTL_ADD_PLAY_COUNT          = 0x22E154,
     NUSEC_IOCTL_GET_BILLING_CA_CERT     = 0x22E1C4,
     NUSEC_IOCTL_GET_BILLING_PUBKEY      = 0x22E1C8,
@@ -42,6 +43,7 @@ static HRESULT nusec_handle_ioctl(struct irp *irp);
 
 static HRESULT nusec_ioctl_ping(struct irp *irp);
 static HRESULT nusec_ioctl_erase_trace_log(struct irp *irp);
+static HRESULT nusec_ioctl_td_erase_used(struct irp *irp);
 static HRESULT nusec_ioctl_add_play_count(struct irp *irp);
 static HRESULT nusec_ioctl_get_billing_ca_cert(struct irp *irp);
 static HRESULT nusec_ioctl_get_billing_pubkey(struct irp *irp);
@@ -208,6 +210,9 @@ static HRESULT nusec_handle_ioctl(struct irp *irp)
 
     case NUSEC_IOCTL_ERASE_TRACE_LOG:
         return nusec_ioctl_erase_trace_log(irp);
+    
+    case NUSEC_IOCTL_TD_ERASE_USED:
+        return nusec_ioctl_td_erase_used(irp);
 
     case NUSEC_IOCTL_ADD_PLAY_COUNT:
         return nusec_ioctl_add_play_count(irp);
@@ -284,6 +289,16 @@ static HRESULT nusec_ioctl_erase_trace_log(struct irp *irp)
     }
 
     nusec_log_tail += count;
+
+    return S_OK;
+}
+
+static HRESULT nusec_ioctl_td_erase_used(struct irp *irp)
+{
+    dprintf("Security: %s\n", __func__);
+
+    nusec_log_head = 0;
+    nusec_log_tail = 0;
 
     return S_OK;
 }
