@@ -3,12 +3,8 @@ pushd %~dp0
 
 taskkill /f /im amdaemon.exe > nul 2>&1
 
-REM USA
-REM start inject -d -k mercuryhook.dll amdaemon.exe -f -c config.json config_lan_install_client.json config_lan_install_server.json config_video_clone.json config_video_dual.json config_video_clone_flip.json config_video_dual_flip.json config_region_exp.json config_region_chn.json config_region_usa.json
-
-REM JP
-start inject -d -k mercuryhook.dll amdaemon.exe -f -c config.json config_lan_install_client.json config_lan_install_server.json config_video_clone.json config_video_dual.json config_video_clone_flip.json config_video_dual_flip.json config_region_exp.json config_region_chn.json config_region_jpn.json
-inject -d -k mercuryhook.dll ../WindowsNoEditor/Mercury/Binaries/Win64/Mercury-Win64-Shipping.exe
+start inject -d -k mu3hook.dll amdaemon.exe -f -c config_client.json config_common.json config_server.json
+inject -d -k mu3hook.dll mu3.exe
 
 taskkill /f /im amdaemon.exe > nul 2>&1
 
