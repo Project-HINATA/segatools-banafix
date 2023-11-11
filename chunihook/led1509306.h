@@ -6,7 +6,6 @@
 
 struct led1509306_config {
     bool enable;
-    bool cvt_port;
     char board_number[8];
     char chip_number[5];
     uint8_t fw_ver;

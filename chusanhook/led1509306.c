@@ -9,7 +9,7 @@
 #include "board/led1509306-cmd.h"
 #include "board/led1509306-frame.h"
 
-#include "chunihook/led1509306.h"
+#include "chusanhook/led1509306.h"
 
 #include "hook/iobuf.h"
 #include "hook/iohook.h"
@@ -71,7 +71,7 @@ HRESULT led1509306_hook_init(const struct led1509306_config *cfg)
         com_ports[0] = 20;
         com_ports[1] = 21;
     } else {
-        // CVT mode: COM3, COM23
+        // CVT mode: COM2, COM3
         com_ports[0] = 2;
         com_ports[1] = 3;
     }

@@ -12,7 +12,7 @@
 
 #include "chusanhook/chuni-dll.h"
 #include "chusanhook/slider.h"
-#include "chunihook/led1509306.h"
+#include "chusanhook/led1509306.h"
 
 struct chusan_hook_config {
     struct platform_config platform;

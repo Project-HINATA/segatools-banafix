@@ -11,7 +11,7 @@
 #include "chusanhook/config.h"
 #include "chusanhook/io4.h"
 #include "chusanhook/slider.h"
-#include "chunihook/led1509306.h"
+#include "chusanhook/led1509306.h"
 
 #include "chuniio/chuniio.h"
 
