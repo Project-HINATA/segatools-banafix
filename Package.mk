@@ -73,6 +73,22 @@ $(BUILD_DIR_ZIP)/idz.zip:
 	$(V)strip $(BUILD_DIR_ZIP)/idz/*.{exe,dll}
 	$(V)cd $(BUILD_DIR_ZIP)/idz ; zip -r ../idz.zip *
 
+$(BUILD_DIR_ZIP)/fgo.zip:
+	$(V)echo ... $@
+	$(V)mkdir -p $(BUILD_DIR_ZIP)/fgo
+	$(V)mkdir -p $(BUILD_DIR_ZIP)/fgo/DEVICE
+	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
+		$(BUILD_DIR_64)/fgohook/fgohook.dll \
+		$(DIST_DIR)/fgo/config_hook.json \
+		$(DIST_DIR)/fgo/segatools.ini \
+		$(DIST_DIR)/fgo/start.bat \
+    	$(BUILD_DIR_ZIP)/fgo
+	$(V)cp pki/billing.pub \
+		pki/ca.crt \
+    	$(BUILD_DIR_ZIP)/fgo/DEVICE
+	$(V)strip $(BUILD_DIR_ZIP)/fgo/*.{exe,dll}
+	$(V)cd $(BUILD_DIR_ZIP)/fgo ; zip -r ../fgo.zip *
+
 $(BUILD_DIR_ZIP)/idac.zip:
 	$(V)echo ... $@
 	$(V)mkdir -p $(BUILD_DIR_ZIP)/idac

@@ -31,5 +31,7 @@ hooklib_lib = static_library(
         'spike.h',
         'touch.c',
         'touch.h',
+        'printer.c',
+        'printer.h',
     ],
 )

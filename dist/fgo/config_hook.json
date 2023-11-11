@@ -1,0 +1,12 @@
+{
+    "aime" :
+    {
+        "firmware_path" :
+        [
+            "am\\aime_firm\\update_15396_6728_94.bin",
+            "am\\aime_firm\\TN32MSEC003S_V12.hex",
+            "am\\aime_firm\\837-15286-P_LPC1112_NFC_RW_LED_BD_0x92.bin"
+        ],
+        "high_baudrate" : true
+    }
+}
