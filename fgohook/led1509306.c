@@ -1,3 +1,11 @@
+/*
+    SEGA 837-15093-06 LED controller emulator
+
+    Credits:
+
+    somewhatlurker, skogaby
+*/
+
 #include <windows.h>
 
 #include <assert.h>
