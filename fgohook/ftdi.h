@@ -8,6 +8,7 @@
 
 struct ftdi_config {
     bool enable;
+    uint32_t port_no;
 };
 
 DEFINE_GUID(

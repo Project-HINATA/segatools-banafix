@@ -90,13 +90,11 @@ static DWORD CALLBACK fgo_pre_startup(void)
         goto fail;
     }
 
-    /*
     hr = ftdi_hook_init(&fgo_hook_cfg.ftdi);
 
     if (FAILED(hr)) {
         goto fail;
     }
-    */
 
     hr = led1509306_hook_init(&fgo_hook_cfg.led1509306);
 

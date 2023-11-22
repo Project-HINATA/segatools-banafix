@@ -16,6 +16,7 @@
 struct setupapi_class {
     const GUID *guid;
     const wchar_t *path;
+    char *a_path;
     HDEVINFO cur_handle;
 };
 
@@ -26,6 +27,12 @@ static void setupapi_hook_init(void);
 static HDEVINFO WINAPI my_SetupDiGetClassDevsW(
         const GUID *ClassGuid,
         wchar_t *Enumerator,
+        HWND hwndParent,
+        DWORD Flags);
+
+static HDEVINFO WINAPI my_SetupDiGetClassDevsA(
+        const GUID *ClassGuid,
+        char *Enumerator,
         HWND hwndParent,
         DWORD Flags);
 
@@ -44,6 +51,14 @@ static BOOL WINAPI my_SetupDiGetDeviceInterfaceDetailW(
         DWORD *RequiredSize,
         SP_DEVINFO_DATA *DeviceInfoData);
 
+static BOOL WINAPI my_SetupDiGetDeviceInterfaceDetailA(
+        HDEVINFO DeviceInfoSet,
+        SP_DEVICE_INTERFACE_DATA *DeviceInterfaceData,
+        SP_DEVICE_INTERFACE_DETAIL_DATA_A *DeviceInterfaceDetailData,
+        DWORD DeviceInterfaceDetailDataSize,
+        DWORD *RequiredSize,
+        SP_DEVINFO_DATA *DeviceInfoData);
+
 static BOOL WINAPI my_SetupDiDestroyDeviceInfoList(HDEVINFO DeviceInfoSet);
 
 /* Links */
@@ -51,6 +66,12 @@ static BOOL WINAPI my_SetupDiDestroyDeviceInfoList(HDEVINFO DeviceInfoSet);
 static HDEVINFO (WINAPI *next_SetupDiGetClassDevsW)(
         const GUID *ClassGuid,
         wchar_t *Enumerator,
+        HWND hwndParent,
+        DWORD Flags);
+
+static HDEVINFO (WINAPI *next_SetupDiGetClassDevsA)(
+        const GUID *ClassGuid,
+        char *Enumerator,
         HWND hwndParent,
         DWORD Flags);
 
@@ -69,6 +90,14 @@ static BOOL (WINAPI *next_SetupDiGetDeviceInterfaceDetailW)(
         DWORD *RequiredSize,
         SP_DEVINFO_DATA *DeviceInfoData);
 
+static BOOL (WINAPI *next_SetupDiGetDeviceInterfaceDetailA)(
+        HDEVINFO DeviceInfoSet,
+        SP_DEVICE_INTERFACE_DATA *DeviceInterfaceData,
+        SP_DEVICE_INTERFACE_DETAIL_DATA_A *DeviceInterfaceDetailData,
+        DWORD DeviceInterfaceDetailDataSize,
+        DWORD *RequiredSize,
+        SP_DEVINFO_DATA *DeviceInfoData);
+
 static BOOL (WINAPI *next_SetupDiDestroyDeviceInfoList)(HDEVINFO DeviceInfoSet);
 
 /* Hook tbl */
@@ -79,6 +108,10 @@ static const struct hook_symbol setupapi_syms[] = {
         .patch  = my_SetupDiGetClassDevsW,
         .link   = (void *) &next_SetupDiGetClassDevsW,
     }, {
+        .name   = "SetupDiGetClassDevsA",
+        .patch  = my_SetupDiGetClassDevsA,
+        .link   = (void *) &next_SetupDiGetClassDevsA,
+    }, {
         .name   = "SetupDiEnumDeviceInterfaces",
         .patch  = my_SetupDiEnumDeviceInterfaces,
         .link   = (void *) &next_SetupDiEnumDeviceInterfaces,
@@ -86,6 +119,10 @@ static const struct hook_symbol setupapi_syms[] = {
         .name   = "SetupDiGetDeviceInterfaceDetailW",
         .patch  = my_SetupDiGetDeviceInterfaceDetailW,
         .link   = (void *) &next_SetupDiGetDeviceInterfaceDetailW,
+    }, {
+        .name   = "SetupDiGetDeviceInterfaceDetailA",
+        .patch  = my_SetupDiGetDeviceInterfaceDetailA,
+        .link   = (void *) &next_SetupDiGetDeviceInterfaceDetailA,
     }, {
         .name   = "SetupDiDestroyDeviceInfoList",
         .patch  = my_SetupDiDestroyDeviceInfoList,
@@ -102,6 +139,7 @@ HRESULT setupapi_add_phantom_dev(const GUID *iface_class, const wchar_t *path)
 {
     struct setupapi_class *class_;
     struct setupapi_class *new_array;
+    size_t a_path_len;
     HRESULT hr;
 
     assert(iface_class != NULL);
@@ -126,6 +164,11 @@ HRESULT setupapi_add_phantom_dev(const GUID *iface_class, const wchar_t *path)
     class_ = &setupapi_classes[setupapi_nclasses++];
     class_->guid = iface_class;
     class_->path = path;
+
+    a_path_len = wcslen(path) * sizeof(wchar_t) + 1;
+    class_->a_path = (char*)malloc(a_path_len);
+    wcstombs(class_->a_path, path, a_path_len);
+
     hr = S_OK;
 
 end:
@@ -166,6 +209,40 @@ static HDEVINFO WINAPI my_SetupDiGetClassDevsW(
     size_t i;
 
     result = next_SetupDiGetClassDevsW(
+            ClassGuid,
+            Enumerator,
+            hwndParent,
+            Flags);
+
+    if (result == INVALID_HANDLE_VALUE || ClassGuid == NULL) {
+        return result;
+    }
+
+    EnterCriticalSection(&setupapi_lock);
+
+    for (i = 0 ; i < setupapi_nclasses ; i++) {
+        class_ = &setupapi_classes[i];
+        if (memcmp(ClassGuid, class_->guid, sizeof(*ClassGuid)) == 0) {
+            class_->cur_handle = result;
+        }
+    }
+
+    LeaveCriticalSection(&setupapi_lock);
+
+    return result;
+}
+
+static HDEVINFO WINAPI my_SetupDiGetClassDevsA(
+        const GUID *ClassGuid,
+        char *Enumerator,
+        HWND hwndParent,
+        DWORD Flags)
+{
+    struct setupapi_class *class_;
+    HDEVINFO result;
+    size_t i;
+
+    result = next_SetupDiGetClassDevsA(
             ClassGuid,
             Enumerator,
             hwndParent,
@@ -314,6 +391,76 @@ static BOOL WINAPI my_SetupDiGetDeviceInterfaceDetailW(
 
 pass:
     return next_SetupDiGetDeviceInterfaceDetailW(
+            DeviceInfoSet,
+            DeviceInterfaceData,
+            DeviceInterfaceDetailData,
+            DeviceInterfaceDetailDataSize,
+            RequiredSize,
+            DeviceInfoData);
+}
+
+static BOOL WINAPI my_SetupDiGetDeviceInterfaceDetailA(
+        HDEVINFO DeviceInfoSet,
+        SP_DEVICE_INTERFACE_DATA *DeviceInterfaceData,
+        SP_DEVICE_INTERFACE_DETAIL_DATA_A *DeviceInterfaceDetailData,
+        DWORD DeviceInterfaceDetailDataSize,
+        DWORD *RequiredSize,
+        SP_DEVINFO_DATA *DeviceInfoData)
+{
+    const char *str;
+    size_t nbytes_str;
+    size_t nbytes_total;
+    size_t i;
+    bool match;
+
+    if (DeviceInfoSet == INVALID_HANDLE_VALUE || DeviceInterfaceData == NULL) {
+        goto pass;
+    }
+
+    EnterCriticalSection(&setupapi_lock);
+
+    for (i = 0, match = false; i < setupapi_nclasses && !match; i++) {
+        if (DeviceInfoSet == setupapi_classes[i].cur_handle &&
+            DeviceInterfaceData->Reserved == (ULONG_PTR) setupapi_classes[i].path) {
+            str = setupapi_classes[i].a_path;
+            match = true;
+        }
+    }
+
+    LeaveCriticalSection(&setupapi_lock);
+
+    if (!match) {
+        goto pass;
+    }
+
+    nbytes_str = strlen(str) + 1;
+    nbytes_total  = offsetof(SP_DEVICE_INTERFACE_DETAIL_DATA_W, DevicePath);
+    nbytes_total += nbytes_str;
+
+    if (RequiredSize != NULL) {
+        *RequiredSize = (DWORD) nbytes_total;
+    }
+
+    if (    DeviceInterfaceDetailData == NULL &&
+            DeviceInterfaceDetailDataSize < nbytes_total) {
+        SetLastError(ERROR_INSUFFICIENT_BUFFER);
+
+        return FALSE;
+    }
+
+    if (DeviceInterfaceDetailData->cbSize!=sizeof(*DeviceInterfaceDetailData)) {
+        SetLastError(ERROR_INVALID_PARAMETER);
+
+        return FALSE;
+    }
+
+    memcpy(DeviceInterfaceDetailData->DevicePath, str, nbytes_str);
+    SetLastError(ERROR_SUCCESS);
+
+    return TRUE;
+
+    pass:
+    return next_SetupDiGetDeviceInterfaceDetailA(
             DeviceInfoSet,
             DeviceInterfaceData,
             DeviceInterfaceDetailData,

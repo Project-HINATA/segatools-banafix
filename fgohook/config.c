@@ -32,6 +32,7 @@ void ftdi_config_load(struct ftdi_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"ftdi", L"enable", 1, filename);
+    cfg->port_no = GetPrivateProfileIntW(L"ftdi", L"port", 17, filename);
 }
 
 void led1509306_config_load(struct led1509306_config *cfg, const wchar_t *filename)
@@ -45,7 +46,7 @@ void led1509306_config_load(struct led1509306_config *cfg, const wchar_t *filena
     memset(cfg->chip_number, ' ', sizeof(cfg->chip_number));
     
     cfg->enable = GetPrivateProfileIntW(L"ledstrip", L"enable", 1, filename);
-    cfg->port_no = GetPrivateProfileIntW(L"ledstrip", L"port", 21, filename);
+    cfg->port_no = GetPrivateProfileIntW(L"ledstrip", L"port", 17, filename);
     cfg->fw_ver = GetPrivateProfileIntW(L"ledstrip", L"fw_ver", 0xA0, filename);
     cfg->fw_sum = GetPrivateProfileIntW(L"ledstrip", L"fw_sum", 0xaa53, filename);
     

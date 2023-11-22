@@ -1,6 +1,6 @@
 # Segatools
 
-Version: `2023-07-14`
+Version: `2023-11-22`
 
 Loaders and hardware emulators for SEGA games that run on the Nu and ALLS platforms.
 
@@ -12,19 +12,22 @@ Loaders and hardware emulators for SEGA games that run on the Nu and ALLS platfo
   * [Chunithm Star (Plus)](doc/chunihook.md)
   * [Chunithm Amazon (Plus)](doc/chunihook.md)
   * [Chunithm Crystal (Plus)](doc/chunihook.md)
+  * Chunithm SUN
 * Initial D
   * [Initial D Arcade Stage Zero](doc/idzhook.md)
-  * Initial D The Arcade
+  * Initial D THE ARCADE
 * SEGA World Drivers Championship
-  * SEGA World Drivers Championship 2019
+  * up to SEGA World Drivers Championship 2019
+* Fate/Grand Order
+  * Fate/Grand Order Arcade
 * ONGEKI
-  * bright MEMORY
+  * up to bright MEMORY
 * maimai DX
-  * maimai DX FESTiVAL
+  * up to maimai DX FESTiVAL PLUS
 * Card Maker
-  * Card Maker 1.35
+  * up to Card Maker 1.35
 * Wacca
-  * Wacca Lilly R (WIP)
+  * up to WACCA Reverse
 
 ## End-users
 

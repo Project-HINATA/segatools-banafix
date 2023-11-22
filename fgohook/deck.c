@@ -129,7 +129,7 @@ static struct card_collection* cards_ptr;
 static uint8_t current_card_idx = 0;
 static bool read_pending = false;
 
-HRESULT deck_hook_init(const struct deck_config *cfg, int port)
+HRESULT deck_hook_init(const struct deck_config *cfg, unsigned int port_no)
 {
     assert(cfg != NULL);
 
@@ -139,7 +139,7 @@ HRESULT deck_hook_init(const struct deck_config *cfg, int port)
 
     InitializeCriticalSection(&deck_lock);
 
-    uart_init(&deck_uart, port);
+    uart_init(&deck_uart, port_no);
     deck_uart.written.bytes = deck_written_bytes;
     deck_uart.written.nbytes = sizeof(deck_written_bytes);
     deck_uart.readable.bytes = deck_readable_bytes;
@@ -397,6 +397,8 @@ static HRESULT deck_frame_decode(struct iobuf *dest, struct iobuf *src) {
     assert(src != NULL);
     assert(src->bytes != NULL || src->nbytes == 0);
     assert(src->pos <= src->nbytes);
+
+    deck_frame_sync(src);
 
     dest->pos = 0;
     escape = false;

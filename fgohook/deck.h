@@ -8,4 +8,4 @@ struct deck_config {
     bool enable;
 };
 
-HRESULT deck_hook_init(const struct deck_config *cfg, int port);
+HRESULT deck_hook_init(const struct deck_config *cfg, unsigned int port_no);
