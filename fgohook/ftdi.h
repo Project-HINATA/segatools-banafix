@@ -18,4 +18,4 @@ DEFINE_GUID(
         0x11D0,
         0x9C, 0xE4, 0x08, 0x00, 0x3E, 0x30, 0x1F, 0x73);
 
-HRESULT ftdi_hook_init(const struct ftdi_config *cfg);
+HRESULT ftdi_hook_init(const struct ftdi_config *cfg, unsigned int port_no);

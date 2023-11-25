@@ -5,13 +5,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "board/led1509306-frame.h"
+#include "board/led15093-frame.h"
 
 #include "hook/iobuf.h"
 
-static void led1509306_frame_sync(struct iobuf *src);
-static HRESULT led1509306_frame_accept(const struct iobuf *dest);
-static HRESULT led1509306_frame_encode_byte(struct iobuf *dest, uint8_t byte);
+static void led15093_frame_sync(struct iobuf *src);
+static HRESULT led15093_frame_accept(const struct iobuf *dest);
+static HRESULT led15093_frame_encode_byte(struct iobuf *dest, uint8_t byte);
 
 /* Frame structure:
 
@@ -34,17 +34,17 @@ static HRESULT led1509306_frame_encode_byte(struct iobuf *dest, uint8_t byte);
 
    0xD0 is an escape byte. Un-escape the subsequent byte by adding 1. */
 
-static void led1509306_frame_sync(struct iobuf *src)
+static void led15093_frame_sync(struct iobuf *src)
 {
     size_t i;
 
-    for (i = 0 ; i < src->pos && src->bytes[i] != 0xE0 ; i++);
+    for (i = 0 ; i < src->pos && src->bytes[i] != LED_15093_FRAME_SYNC ; i++);
 
     src->pos -= i;
     memmove(&src->bytes[0], &src->bytes[i], i);
 }
 
-static HRESULT led1509306_frame_accept(const struct iobuf *dest)
+static HRESULT led15093_frame_accept(const struct iobuf *dest)
 {
     uint8_t checksum;
     size_t i;
@@ -58,9 +58,9 @@ static HRESULT led1509306_frame_accept(const struct iobuf *dest)
     for (i = 1 ; i < dest->pos - 1 ; i++) {
         checksum += dest->bytes[i];
     }
-    
-    //dprintf("LED checksum %02x, expected %02x\n", checksum, dest->bytes[dest->pos - 1]);
-    
+
+    // dprintf("LED checksum %02x, expected %02x\n", checksum, dest->bytes[dest->pos - 1]);
+
     if (checksum != dest->bytes[dest->pos - 1]) {
         return HRESULT_FROM_WIN32(ERROR_CRC);
     }
@@ -68,7 +68,7 @@ static HRESULT led1509306_frame_accept(const struct iobuf *dest)
     return S_OK;
 }
 
-HRESULT led1509306_frame_decode(struct iobuf *dest, struct iobuf *src)
+HRESULT led15093_frame_decode(struct iobuf *dest, struct iobuf *src)
 {
     uint8_t byte;
     bool escape;
@@ -82,7 +82,7 @@ HRESULT led1509306_frame_decode(struct iobuf *dest, struct iobuf *src)
     assert(src->bytes != NULL || src->nbytes == 0);
     assert(src->pos <= src->nbytes);
 
-    led1509306_frame_sync(src);
+    led15093_frame_sync(src);
 
     dest->pos = 0;
     escape = false;
@@ -96,9 +96,9 @@ HRESULT led1509306_frame_decode(struct iobuf *dest, struct iobuf *src)
             hr = HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
         } else if (i == 0) {
             dest->bytes[dest->pos++] = byte;
-        } else if (byte == 0xE0) {
+        } else if (byte == LED_15093_FRAME_SYNC) {
             hr = E_FAIL;
-        } else if (byte == 0xD0) {
+        } else if (byte == LED_15093_FRAME_ESC) {
             if (escape) {
                 hr = E_FAIL;
             }
@@ -114,7 +114,7 @@ HRESULT led1509306_frame_decode(struct iobuf *dest, struct iobuf *src)
         /* Try to accept the packet we've built up so far */
 
         if (SUCCEEDED(hr)) {
-            hr = led1509306_frame_accept(dest);
+            hr = led15093_frame_accept(dest);
         }
     }
 
@@ -129,7 +129,7 @@ HRESULT led1509306_frame_decode(struct iobuf *dest, struct iobuf *src)
     return hr;
 }
 
-HRESULT led1509306_frame_encode(
+HRESULT led15093_frame_encode(
         struct iobuf *dest,
         const void *ptr,
         size_t nbytes)
@@ -147,22 +147,24 @@ HRESULT led1509306_frame_encode(
 
     src = ptr;
 
-    assert(nbytes >= 3 && src[0] == 0xE0 && src[3] + 4 == nbytes);
+    assert(nbytes >= 3 &&
+            src[0] == LED_15093_FRAME_SYNC &&
+            src[3] + 4 == nbytes);
 
     if (dest->pos >= dest->nbytes) {
         return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
     }
 
-    dest->bytes[dest->pos++] = 0xE0;
+    dest->bytes[dest->pos++] = LED_15093_FRAME_SYNC;
     checksum = 0;
-    // dprintf("%02x ", 0xe0);
+    // dprintf("%02x ", LED_15093_FRAME_SYNC);
 
     for (i = 1 ; i < nbytes ; i++) {
         byte = src[i];
         checksum += byte;
         // dprintf("%02x ", byte);
 
-        hr = led1509306_frame_encode_byte(dest, byte);
+        hr = led15093_frame_encode_byte(dest, byte);
 
         if (FAILED(hr)) {
             return hr;
@@ -170,17 +172,17 @@ HRESULT led1509306_frame_encode(
     }
     // dprintf("%02x \n", checksum);
 
-    return led1509306_frame_encode_byte(dest, checksum);
+    return led15093_frame_encode_byte(dest, checksum);
 }
 
-static HRESULT led1509306_frame_encode_byte(struct iobuf *dest, uint8_t byte)
+static HRESULT led15093_frame_encode_byte(struct iobuf *dest, uint8_t byte)
 {
-    if (byte == 0xE0 || byte == 0xD0) {
+    if (byte == LED_15093_FRAME_SYNC || byte == LED_15093_FRAME_ESC) {
         if (dest->pos + 2 > dest->nbytes) {
             return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
         }
 
-        dest->bytes[dest->pos++] = 0xD0;
+        dest->bytes[dest->pos++] = LED_15093_FRAME_ESC;
         dest->bytes[dest->pos++] = byte - 1;
     } else {
         if (dest->pos + 1 > dest->nbytes) {

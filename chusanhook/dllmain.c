@@ -11,7 +11,6 @@
 #include "chusanhook/config.h"
 #include "chusanhook/io4.h"
 #include "chusanhook/slider.h"
-#include "chusanhook/led1509306.h"
 
 #include "chuniio/chuniio.h"
 
@@ -100,7 +99,7 @@ static DWORD CALLBACK chusan_pre_startup(void)
         goto fail;
     }
 
-    hr = led1509306_hook_init(&chusan_hook_cfg.led1509306);
+    hr = led15093_hook_init(&chusan_hook_cfg.led15093, 20, 21);
 
     if (FAILED(hr)) {
         goto fail;

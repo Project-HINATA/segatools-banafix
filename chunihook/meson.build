@@ -30,7 +30,5 @@ shared_library(
         'jvs.h',
         'slider.c',
         'slider.h',
-        'led1509306.c',
-        'led1509306.h',
     ],
 )

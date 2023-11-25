@@ -121,13 +121,17 @@ static const struct hook_symbol reg_syms[] = {
 static HANDLE ftdi_fd;
 static char port_name[8];
 
-HRESULT ftdi_hook_init(const struct ftdi_config *cfg) {
+HRESULT ftdi_hook_init(const struct ftdi_config *cfg, unsigned int port_no) {
     HRESULT hr;
 
     assert(cfg != NULL);
 
     if (!cfg->enable) {
         return S_FALSE;
+    }
+
+    if (cfg->port_no != 0) {
+        port_no = cfg->port_no;
     }
 
     hook_table_apply(
@@ -156,7 +160,7 @@ HRESULT ftdi_hook_init(const struct ftdi_config *cfg) {
         return hr;
     }
 
-    sprintf(port_name, "COM%d", cfg->port_no);
+    sprintf(port_name, "COM%d", port_no);
 
     dprintf("FTDI: Hook enabled.\n");
     return S_OK;

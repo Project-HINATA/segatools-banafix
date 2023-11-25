@@ -30,7 +30,5 @@ shared_library(
         'deck.h',
         'ftdi.c',
         'ftdi.h',
-        'led1509306.c',
-        'led1509306.h',
     ],
 )

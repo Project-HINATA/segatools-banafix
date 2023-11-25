@@ -6,10 +6,10 @@
 #include "amex/amex.h"
 
 #include "board/sg-reader.h"
+#include "board/led15093.h"
 
 #include "chunihook/chuni-dll.h"
 #include "chunihook/slider.h"
-#include "chunihook/led1509306.h"
 
 #include "gfxhook/gfx.h"
 
@@ -22,7 +22,7 @@ struct chuni_hook_config {
     struct gfx_config gfx;
     struct chuni_dll_config dll;
     struct slider_config slider;
-    struct led1509306_config led1509306;
+    struct led15093_config led15093;
 };
 
 void chuni_dll_config_load(

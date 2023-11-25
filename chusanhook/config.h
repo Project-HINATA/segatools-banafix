@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "board/config.h"
+#include "board/led15093.h"
 
 #include "hooklib/dvd.h"
 
@@ -12,7 +13,6 @@
 
 #include "chusanhook/chuni-dll.h"
 #include "chusanhook/slider.h"
-#include "chusanhook/led1509306.h"
 
 struct chusan_hook_config {
     struct platform_config platform;
@@ -22,7 +22,7 @@ struct chusan_hook_config {
     struct gfx_config gfx;
     struct chuni_dll_config dll;
     struct slider_config slider;
-    struct led1509306_config led1509306;
+    struct led15093_config led15093;
 };
 
 void chuni_dll_config_load(

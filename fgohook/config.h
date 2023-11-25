@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "board/config.h"
+#include "board/led15093.h"
 
 #include "hooklib/dvd.h"
 #include "hooklib/touch.h"
@@ -10,7 +11,6 @@
 
 #include "fgohook/deck.h"
 #include "fgohook/ftdi.h"
-#include "fgohook/led1509306.h"
 #include "fgohook/fgo-dll.h"
 
 #include "platform/config.h"
@@ -24,7 +24,7 @@ struct fgo_hook_config {
     struct printer_config printer;
     struct deck_config deck;
     struct ftdi_config ftdi;
-    struct led1509306_config led1509306;
+    struct led15093_config led15093;
     struct fgo_dll_config dll;
 };
 
