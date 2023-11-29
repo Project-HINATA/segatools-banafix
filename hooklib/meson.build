@@ -7,6 +7,8 @@ hooklib_lib = static_library(
         capnhook.get_variable('hook_dep'),
     ],
     sources : [
+        'cursor.c',
+        'cursor.h',
         'config.c',
         'config.h',
         'createprocess.c',

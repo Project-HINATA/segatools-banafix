@@ -8,6 +8,9 @@
 
 struct touch_config {
     bool enable;
+    unsigned int port_no;
+    char board_id[7];
+    char unit_type[9];
 };
 
 // Always starts with 0x01, always ends with 0x0D
@@ -20,17 +23,21 @@ struct touch_req {
 
 struct touch_report {
     uint8_t status;
+    uint8_t x1;
+    uint8_t x2;
+    uint8_t y1;
+    uint8_t y2;
     uint8_t touch_id;
-    uint16_t x;
-    uint16_t y;
 };
 
 struct touch_auto_resp {
-    uint8_t rep_id;
     struct touch_report touches[10];
-    uint8_t count;
-    uint16_t scan_time;    
-    //uint8_t padding[456];
+};
+
+enum {
+    TOUCH_MODE_STREAM    = 0x01,
+    TOUCH_MODE_DOWN_UP   = 0x02,
+    TOUCH_MODE_INACTIVE  = 0x03,
 };
 
 #pragma pack(pop)

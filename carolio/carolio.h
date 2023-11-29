@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef void (*carol_io_touch_callback_t)(const bool is_pressed, const uint32_t mouse_x, const uint32_t mouse_y);
+typedef void (*carol_io_touch_callback_t)(const bool is_pressed, const uint16_t mouse_x, const uint16_t mouse_y);
 
 /* Get the version of the Project carol IO API that this DLL supports. This
    function should return a positive 16-bit integer, where the high byte is

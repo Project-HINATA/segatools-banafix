@@ -20,6 +20,7 @@
 #include "hooklib/serial.h"
 #include "hooklib/spike.h"
 #include "hooklib/createprocess.h"
+#include "hooklib/cursor.h"
 
 #include "platform/platform.h"
 
@@ -44,6 +45,8 @@ static DWORD CALLBACK carol_pre_startup(void)
     HMODULE dbghelp;
 
     dprintf("--- Begin carol_pre_startup ---\n");
+    if ( !SetProcessDPIAware() )
+        dprintf("Failed to set process DPI awareness level!\n");
     
     /* Pin the D3D shader compiler. This makes startup much faster. */
 
@@ -64,6 +67,8 @@ static DWORD CALLBACK carol_pre_startup(void)
     } else {
         dprintf("Failed to load debug helper library!\n");
     }
+
+    cursor_hook_init();
 
     /* Config load */
 
