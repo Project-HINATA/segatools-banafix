@@ -194,6 +194,7 @@ $(BUILD_DIR_ZIP)/cm.zip:
 	$(V)mkdir -p $(BUILD_DIR_ZIP)/cm/DEVICE
 	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
 		$(BUILD_DIR_64)/cmhook/cmhook.dll \
+		$(DIST_DIR)/cm/config_hook.json \
 		$(DIST_DIR)/cm/segatools.ini \
 		$(DIST_DIR)/cm/start.bat \
     	$(BUILD_DIR_ZIP)/cm
