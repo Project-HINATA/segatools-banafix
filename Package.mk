@@ -110,7 +110,6 @@ $(BUILD_DIR_ZIP)/swdc.zip:
 	$(V)mkdir -p $(BUILD_DIR_ZIP)/swdc/DEVICE
 	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
 		$(BUILD_DIR_64)/swdchook/swdchook.dll \
-		$(DIST_DIR)/swdc/config_hook.json \
 		$(DIST_DIR)/swdc/segatools.ini \
 		$(DIST_DIR)/swdc/start.bat \
     	$(BUILD_DIR_ZIP)/swdc

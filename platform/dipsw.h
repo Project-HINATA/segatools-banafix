@@ -9,6 +9,7 @@
 
 struct dipsw_config {
     bool enable;
+    bool freeplay;
     bool dipsw[8];
 };
 

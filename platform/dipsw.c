@@ -19,20 +19,29 @@
 typedef struct
 {
     uint32_t checksum;
-    char padding_1[4];
+    char padding[6];
+    uint8_t freeplay;
+    char data[DATA_SIZE - 2];
+} CreditBlock;
+
+typedef struct
+{
+    uint32_t checksum;
+    char padding[4];
     uint8_t dip_switches;
     char data[DATA_SIZE];
 } DipSwitchBlock;
 
 typedef struct
 {
+    CreditBlock credit_block;
     DipSwitchBlock dip_switch_block;
     char *data;
-} DipSwitches;
+} SystemInfo;
 
 #pragma pack(pop)
 
-static DipSwitches dip_switches;
+static SystemInfo system_info;
 
 static struct dipsw_config dipsw_config;
 static struct vfs_config vfs_config;
@@ -90,16 +99,21 @@ static void dipsw_read_sysfile(const wchar_t *sys_file)
         return;
     }
 
-    dip_switches.data = malloc(file_size);
-    fread(dip_switches.data, 1, file_size, f);
+    system_info.data = malloc(file_size);
+    fread(system_info.data, 1, file_size, f);
     fclose(f);
 
-    memcpy(&dip_switches.dip_switch_block, dip_switches.data + 0x2800, BLOCK_SIZE);
+    // copy the credit_block and dip_switch_block from the sysfile.dat
+    memcpy(&system_info.credit_block, system_info.data, BLOCK_SIZE);
+    memcpy(&system_info.dip_switch_block, system_info.data + 0x2800, BLOCK_SIZE);
 }
 
 static void dipsw_save_sysfile(const wchar_t *sys_file)
 {
+    char block[BLOCK_SIZE];
     uint8_t dipsw = 0;
+    uint8_t freeplay = 0;
+
     // open the sysfile.dat for writing in bytes mode
     FILE *f = _wfopen(sys_file, L"rb+");
 
@@ -119,33 +133,49 @@ static void dipsw_save_sysfile(const wchar_t *sys_file)
         }
     }
 
-    dip_switches.dip_switch_block.dip_switches = dipsw;
+    if (dipsw_config.freeplay)
+    {
+        // print that freeplay is enabled
+        dprintf("DipSw: Freeplay enabled\n");
+        freeplay = 1;
+    }
+
+    // set the new credit block
+    system_info.credit_block.freeplay = freeplay;
+    // set the new dip_switch_block
+    system_info.dip_switch_block.dip_switches = dipsw;
 
     // calculate the new checksum, skip the old crc32 value
     // which is at the beginning of the block, thats's why the +4
     // conver the struct to chars in order for the crc32 calculation to work
-    dip_switches.dip_switch_block.checksum = crc32(
-        (char *)&dip_switches.dip_switch_block + 4, BLOCK_SIZE - 4, 0);
+    system_info.credit_block.checksum = crc32(
+        (char *)&system_info.credit_block + 4, BLOCK_SIZE - 4, 0);
+    system_info.dip_switch_block.checksum = crc32(
+        (char *)&system_info.dip_switch_block + 4, BLOCK_SIZE - 4, 0);
+
+    // build the new credit block
+    memcpy(block, (char *)&system_info.credit_block, BLOCK_SIZE);
+
+    memcpy(system_info.data, block, BLOCK_SIZE);
+    memcpy(system_info.data + 0x3000, block, BLOCK_SIZE);
 
     // build the new dip switch block
-    char block[BLOCK_SIZE];
-    memcpy(block, (char *)&dip_switches.dip_switch_block, BLOCK_SIZE);
+    memcpy(block, (char *)&system_info.dip_switch_block, BLOCK_SIZE);
 
-    // replace the old block with the new one
-    memcpy(dip_switches.data + 0x2800, block, BLOCK_SIZE);
-    memcpy(dip_switches.data + 0x5800, block, BLOCK_SIZE);
+    memcpy(system_info.data + 0x2800, block, BLOCK_SIZE);
+    memcpy(system_info.data + 0x5800, block, BLOCK_SIZE);
 
     // print the dip_switch_block in hex
     /*
     dprintf("DipSw Block: ");
     for (size_t i = 0; i < BLOCK_SIZE; i++)
     {
-        dprintf("%02X ", ((uint8_t *)&dip_switches.dip_switch_block)[i]);
+        dprintf("%02X ", ((uint8_t *)&system_info.dip_switch_block)[i]);
     }
     dprintf("\n");
     */
 
-    fwrite(dip_switches.data, 1, 0x6000, f);
+    fwrite(system_info.data, 1, 0x6000, f);
 
     fclose(f);
 }
