@@ -22,6 +22,7 @@ struct sg_nfc {
     const struct sg_nfc_ops *ops;
     void *ops_ctx;
     uint8_t addr;
+    unsigned int gen;
     struct felica felica;
     struct mifare mifare;
 };
@@ -30,6 +31,7 @@ void sg_nfc_init(
         struct sg_nfc *nfc,
         uint8_t addr,
         const struct sg_nfc_ops *ops,
+        unsigned int gen,
         void *ops_ctx);
 
 void sg_nfc_transact(

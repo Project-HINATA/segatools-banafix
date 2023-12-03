@@ -111,7 +111,7 @@ void idz_io_jvs_read_coin_counter(uint16_t *out)
 
     /* Coin counter is not backend-specific */
 
-    if (    idz_io_cfg.vk_coin &&
+    if (idz_io_cfg.vk_coin &&
             (GetAsyncKeyState(idz_io_cfg.vk_coin) & 0x8000)) {
         if (!idz_io_coin) {
             idz_io_coin = true;

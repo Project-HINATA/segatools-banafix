@@ -62,7 +62,7 @@ static DWORD CALLBACK diva_pre_startup(void)
         goto fail;
     }
 
-    hr = sg_reader_hook_init(&diva_hook_cfg.aime, 10, diva_hook_mod);
+    hr = sg_reader_hook_init(&diva_hook_cfg.aime, 10, 1, diva_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

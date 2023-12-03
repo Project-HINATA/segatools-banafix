@@ -51,7 +51,7 @@ static DWORD CALLBACK mai2_pre_startup(void)
         goto fail;
     }
 
-    hr = sg_reader_hook_init(&mai2_hook_cfg.aime, 1, mai2_hook_mod);
+    hr = sg_reader_hook_init(&mai2_hook_cfg.aime, 1, 1, mai2_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

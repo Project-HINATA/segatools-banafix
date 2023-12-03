@@ -60,7 +60,7 @@ static DWORD CALLBACK fgo_pre_startup(void)
         goto fail;
     }
 
-    hr = sg_reader_hook_init(&fgo_hook_cfg.aime, 3, fgo_hook_mod);
+    hr = sg_reader_hook_init(&fgo_hook_cfg.aime, 3, 3, fgo_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;
@@ -102,7 +102,7 @@ static DWORD CALLBACK fgo_pre_startup(void)
         goto fail;
     }
 
-    hr = createprocess_push_hook_a("am/amdaemon.exe", "inject -d -k fgohook.dll ", " -c config_hook.json", false);
+    hr = createprocess_push_hook_a("am/amdaemon.exe", "inject -d -k fgohook.dll ", "", false);
 
     if (FAILED(hr)) {
         goto fail;

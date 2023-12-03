@@ -79,7 +79,6 @@ $(BUILD_DIR_ZIP)/fgo.zip:
 	$(V)mkdir -p $(BUILD_DIR_ZIP)/fgo/DEVICE
 	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
 		$(BUILD_DIR_64)/fgohook/fgohook.dll \
-		$(DIST_DIR)/fgo/config_hook.json \
 		$(DIST_DIR)/fgo/segatools.ini \
 		$(DIST_DIR)/fgo/start.bat \
     	$(BUILD_DIR_ZIP)/fgo

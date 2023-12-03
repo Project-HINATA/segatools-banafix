@@ -48,6 +48,7 @@ static struct sg_led sg_reader_led;
 HRESULT sg_reader_hook_init(
         const struct aime_config *cfg,
         unsigned int port_no,
+        unsigned int gen,
         HINSTANCE self)
 {
     HRESULT hr;
@@ -65,8 +66,18 @@ HRESULT sg_reader_hook_init(
         return hr;
     }
 
-    sg_nfc_init(&sg_reader_nfc, 0x00, &sg_reader_nfc_ops, NULL);
-    sg_led_init(&sg_reader_led, 0x08, &sg_reader_led_ops, NULL);
+    if (cfg->gen != 0) {
+        gen = cfg->gen;
+    }
+
+    if (gen < 1 || gen > 3) {
+        dprintf("NFC Assembly: Invalid reader generation: %u\n", gen);
+
+        return E_INVALIDARG;
+    }
+
+    sg_nfc_init(&sg_reader_nfc, 0x00, &sg_reader_nfc_ops, gen, NULL);
+    sg_led_init(&sg_reader_led, 0x08, &sg_reader_led_ops, gen, NULL);
 
     InitializeCriticalSection(&sg_reader_lock);
 

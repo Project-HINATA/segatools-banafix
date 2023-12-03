@@ -15,6 +15,7 @@ enum {
     SG_NFC_CMD_MIFARE_READ_BLOCK    = 0x52,
     SG_NFC_CMD_MIFARE_SET_KEY_AIME  = 0x54,
     SG_NFC_CMD_MIFARE_AUTHENTICATE  = 0x55, /* guess based on time sent */
+    SG_NFC_CMD_SEND_HEX_DATA        = 0x61,
     SG_NFC_CMD_RESET                = 0x62,
     SG_NFC_CMD_FELICA_ENCAP         = 0x71,
 };

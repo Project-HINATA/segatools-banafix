@@ -53,7 +53,7 @@ static DWORD CALLBACK idac_pre_startup(void)
         goto fail;
     }
 
-    hr = sg_reader_hook_init(&idac_hook_cfg.aime, 3, idac_hook_mod);
+    hr = sg_reader_hook_init(&idac_hook_cfg.aime, 3, 3, idac_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

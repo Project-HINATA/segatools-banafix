@@ -105,8 +105,7 @@ static DWORD CALLBACK chusan_pre_startup(void)
         goto fail;
     }
 
-
-    hr = sg_reader_hook_init(&chusan_hook_cfg.aime, 4, chusan_hook_mod);
+    hr = sg_reader_hook_init(&chusan_hook_cfg.aime, 4, dipsw[2] ? 2 : 3, chusan_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

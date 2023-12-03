@@ -27,14 +27,18 @@ static HRESULT sg_led_cmd_set_color(
         const struct sg_led *led,
         const struct sg_led_req_set_color *req);
 
-static const uint8_t sg_led_info[] = {
-    '1', '5', '0', '8', '4', 0xFF, 0x10, 0x00, 0x12,
+const char *sg_led_info[] = {
+    "15084\xFF\x10\x00\x12",
+    "000-00000\xFF\x11\x40",
+    // maybe the same?
+    "000-00000\xFF\x11\x40"
 };
 
 void sg_led_init(
         struct sg_led *led,
         uint8_t addr,
         const struct sg_led_ops *ops,
+        unsigned int gen,
         void *ctx)
 {
     assert(led != NULL);
@@ -43,6 +47,7 @@ void sg_led_init(
     led->ops = ops;
     led->ops_ctx = ctx;
     led->addr = addr;
+    led->gen = gen;
 }
 
 void sg_led_transact(
@@ -150,8 +155,11 @@ static HRESULT sg_led_cmd_get_info(
         struct sg_led_res_get_info *res)
 {
     sg_led_dprintf(led, "Get info\n");
-    sg_res_init(&res->res, req, sizeof(res->payload));
-    memcpy(res->payload, sg_led_info, sizeof(sg_led_info));
+
+    unsigned int len = strlen(sg_led_info[led->gen - 1]);
+
+    sg_res_init(&res->res, req, len);
+    memcpy(res->payload, sg_led_info[led->gen - 1], len);
 
     return S_OK;
 }

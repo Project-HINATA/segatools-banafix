@@ -65,10 +65,23 @@ static HRESULT sg_nfc_cmd_dummy(
         const struct sg_req_header *req,
         struct sg_res_header *res);
 
+static const char *hw_version[] = {
+    "TN32MSEC003S H/W Ver3.0",
+    "837-15286",
+    "837-15396"
+};
+
+static const char *fw_version[] = {
+    "TN32MSEC003S F/W Ver1.2",
+    "\x94",
+    "\x94"
+};
+
 void sg_nfc_init(
         struct sg_nfc *nfc,
         uint8_t addr,
         const struct sg_nfc_ops *ops,
+        unsigned int gen,
         void *ops_ctx)
 {
     assert(nfc != NULL);
@@ -77,6 +90,7 @@ void sg_nfc_init(
     nfc->ops = ops;
     nfc->ops_ctx = ops_ctx;
     nfc->addr = addr;
+    nfc->gen = gen;
 }
 
 #ifdef NDEBUG
@@ -176,6 +190,7 @@ static HRESULT sg_nfc_dispatch(
     case SG_NFC_CMD_MIFARE_SET_KEY_BANA:
     case SG_NFC_CMD_RADIO_ON:
     case SG_NFC_CMD_RADIO_OFF:
+    case SG_NFC_CMD_SEND_HEX_DATA: // TODO: implement?
         return sg_nfc_cmd_dummy(nfc, &req->simple, &res->simple);
 
     default:
@@ -202,9 +217,11 @@ static HRESULT sg_nfc_cmd_get_fw_version(
         const struct sg_req_header *req,
         struct sg_nfc_res_get_fw_version *res)
 {
+    unsigned int len = strlen(fw_version[nfc->gen - 1]);
+
     /* Dest version is not NUL terminated, this is intentional */
-    sg_res_init(&res->res, req, sizeof(res->version));
-    memcpy(res->version, "TN32MSEC003S F/W Ver1.2E", sizeof(res->version));
+    sg_res_init(&res->res, req, len);
+    memcpy(res->version, fw_version[nfc->gen - 1], len);
 
     return S_OK;
 }
@@ -214,9 +231,11 @@ static HRESULT sg_nfc_cmd_get_hw_version(
         const struct sg_req_header *req,
         struct sg_nfc_res_get_hw_version *res)
 {
+    unsigned int len = strlen(hw_version[nfc->gen - 1]);
+
     /* Dest version is not NUL terminated, this is intentional */
-    sg_res_init(&res->res, req, sizeof(res->version));
-    memcpy(res->version, "TN32MSEC003S H/W Ver3.0J", sizeof(res->version));
+    sg_res_init(&res->res, req, len);
+    memcpy(res->version, hw_version[nfc->gen - 1], len);
 
     return S_OK;
 }

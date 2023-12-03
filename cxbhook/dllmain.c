@@ -91,7 +91,7 @@ static DWORD CALLBACK cxb_pre_startup(void)
         goto fail;
     }
 
-    hr = sg_reader_hook_init(&cxb_hook_cfg.aime, 12, cxb_hook_mod);
+    hr = sg_reader_hook_init(&cxb_hook_cfg.aime, 12, 1, cxb_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

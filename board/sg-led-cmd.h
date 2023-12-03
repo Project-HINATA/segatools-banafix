@@ -17,7 +17,7 @@ struct sg_led_res_reset {
 
 struct sg_led_res_get_info {
     struct sg_res_header res;
-    uint8_t payload[9];
+    char payload[12];
 };
 
 struct sg_led_req_set_color {

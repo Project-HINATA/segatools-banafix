@@ -38,6 +38,17 @@ Default: `1`
 Enables the high baudrate of the Aime card reader to be 115200 (instead of 38400).
 This is required for some games (e.g. Chunithm) but not others (e.g. WACCA).
 
+### `gen`
+
+Default: `1`
+
+Changes the Aime card reader generation, this will also change the LED info 
+provided for the game.
+
+- `1`: TN32MSEC003S H/W Ver3.0 / TN32MSEC003S F/W Ver1.2
+- `2`: 837-15286 / 94
+- `3`: 837-15396 / 94
+
 ### `aimePath`
 
 Default: `DEVICE\aime.txt`

@@ -54,7 +54,7 @@ static DWORD CALLBACK swdc_pre_startup(void)
         goto fail;
     }
 
-    hr = sg_reader_hook_init(&swdc_hook_cfg.aime, 3, swdc_hook_mod);
+    hr = sg_reader_hook_init(&swdc_hook_cfg.aime, 3, 3, swdc_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

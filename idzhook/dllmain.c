@@ -97,7 +97,7 @@ static DWORD CALLBACK idz_pre_startup(void)
         goto fail;
     }
 
-    hr = sg_reader_hook_init(&idz_hook_cfg.aime, 10, idz_hook_mod);
+    hr = sg_reader_hook_init(&idz_hook_cfg.aime, 10, 1, idz_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

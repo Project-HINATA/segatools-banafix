@@ -15,12 +15,14 @@ struct sg_led {
     const struct sg_led_ops *ops;
     void *ops_ctx;
     uint8_t addr;
+    unsigned int gen;
 };
 
 void sg_led_init(
         struct sg_led *led,
         uint8_t addr,
         const struct sg_led_ops *ops,
+        unsigned int gen,
         void *ctx);
 
 void sg_led_transact(
