@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "board/config.h"
+#include "board/led15093.h"
 
 #include "gfxhook/gfx.h"
 
@@ -18,6 +19,7 @@ struct mu3_hook_config {
     struct dvd_config dvd;
     struct io4_config io4;
     struct gfx_config gfx;
+    struct led15093_config led15093;
     struct mu3_dll_config dll;
 };
 

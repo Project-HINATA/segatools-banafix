@@ -47,11 +47,10 @@ void led15093_config_load(struct led15093_config *cfg, const wchar_t *filename)
     memset(cfg->boot_chip_number, ' ', sizeof(cfg->boot_chip_number));
 
     cfg->enable = GetPrivateProfileIntW(L"led15093", L"enable", 1, filename);
-    cfg->port_no[0] = GetPrivateProfileIntW(L"led15093", L"portNo0", 0, filename);
-    cfg->port_no[1] = GetPrivateProfileIntW(L"led15093", L"portNo1", 0, filename);
+    cfg->port_no = GetPrivateProfileIntW(L"led15093", L"portNo", 0, filename);
     cfg->high_baudrate = GetPrivateProfileIntW(L"led15093", L"highBaudrate", 0, filename);
     cfg->fw_ver = GetPrivateProfileIntW(L"led15093", L"fwVer", 0xA0, filename);
-    cfg->fw_sum = GetPrivateProfileIntW(L"led15093", L"fwSum", 0xaa53, filename);
+    cfg->fw_sum = GetPrivateProfileIntW(L"led15093", L"fwSum", 0xAA53, filename);
 
     GetPrivateProfileStringW(
             L"led15093",

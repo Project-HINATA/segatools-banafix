@@ -24,7 +24,6 @@
 
 #include "board/led15093-cmd.h"
 #include "board/led15093-frame.h"
-
 #include "board/led15093.h"
 
 #include "hook/iobuf.h"
@@ -101,25 +100,25 @@ static char led15093_chip_num[5];
 static char led15093_boot_chip_num[5];
 static uint8_t led15093_fw_ver;
 static uint16_t led15093_fw_sum;
-static uint8_t led15093_host_adr = 255;
+static uint8_t led15093_board_adr = 1;
+static uint8_t led15093_host_adr = 1;
 
-HRESULT led15093_hook_init(
-        const struct led15093_config *cfg,
-        unsigned int port_no_0,
-        unsigned int port_no_1)
+HRESULT led15093_hook_init(const struct led15093_config *cfg, unsigned int first_port, 
+    unsigned int num_boards, uint8_t board_adr, uint8_t host_adr)
 {
+
     assert(cfg != NULL);
-    unsigned int port_no[2] = {port_no_0, port_no_1};
 
     if (!cfg->enable) {
         return S_FALSE;
     }
 
-    for (int i = 0; i < led15093_nboards; i++) {
-        if (cfg->port_no[i] != 0) {
-            port_no[i] = cfg->port_no[i];
-        }
+    if (cfg->port_no != 0) {
+        first_port = cfg->port_no;
     }
+
+    led15093_board_adr = board_adr;
+    led15093_host_adr = host_adr;
 
     memcpy(led15093_board_num, cfg->board_number, sizeof(led15093_board_num));
     memcpy(led15093_chip_num, cfg->chip_number, sizeof(led15093_chip_num));
@@ -127,17 +126,13 @@ HRESULT led15093_hook_init(
     led15093_fw_ver = cfg->fw_ver;
     led15093_fw_sum = cfg->fw_sum;
 
-    for (int i = 0; i < led15093_nboards; i++)
+    for (int i = 0; i < num_boards; i++)
     {
         _led15093_per_board_vars *vb = &led15093_per_board_vars[i];
 
         InitializeCriticalSection(&vb->lock);
 
-        if (port_no[i] == 0) {
-            continue;
-        }
-
-        uart_init(&vb->boarduart, port_no[i]);
+        uart_init(&vb->boarduart, first_port + i);
         if (cfg->high_baudrate) {
             vb->boarduart.baud.BaudRate = 460800;
         } else {
@@ -160,7 +155,7 @@ HRESULT led15093_hook_init(
             led15093_clear_status(i, 1 + j);
             led15093_clear_report(i, 1 + j);
             vn->boardstatus[3] = 1; // DIPSW1 ON
-            vn->boardadr = 1 + j;
+            vn->boardadr = led15093_board_adr + j;
             vn->enable_bootloader = false;
             vn->enable_response = true;
         }

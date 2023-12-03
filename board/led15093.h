@@ -8,7 +8,7 @@
 struct led15093_config {
     bool enable;
     bool high_baudrate;
-    unsigned int port_no[2];
+    unsigned int port_no;
     char board_number[8];
     char chip_number[5];
     char boot_chip_number[5];
@@ -16,7 +16,6 @@ struct led15093_config {
     uint16_t fw_sum;
 };
 
-HRESULT led15093_hook_init(
-        const struct led15093_config *cfg,
-        unsigned int port_no_0,
-        unsigned int port_no_1);
+HRESULT led15093_hook_init(const struct led15093_config *cfg, unsigned int first_port, 
+    unsigned int num_boards, uint8_t board_adr, uint8_t host_adr);
+

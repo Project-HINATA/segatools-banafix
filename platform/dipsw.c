@@ -74,7 +74,7 @@ static void dipsw_read_sysfile(const wchar_t *sys_file)
 
     if (f == NULL)
     {
-        dprintf("First run detected, DipSw settings can only be applied AFTER the first run\n");
+        dprintf("DipSw: First run detected, DipSw settings can only be applied AFTER the first run\n");
         return;
     }
 
@@ -84,7 +84,7 @@ static void dipsw_read_sysfile(const wchar_t *sys_file)
 
     if (file_size != 0x6000)
     {
-        dprintf("Invalid sysfile.dat file size\n");
+        dprintf("DipSw: Invalid sysfile.dat file size\n");
         fclose(f);
 
         return;
@@ -94,7 +94,6 @@ static void dipsw_read_sysfile(const wchar_t *sys_file)
     fread(dip_switches.data, 1, file_size, f);
     fclose(f);
 
-    // memcpy(dip_switches.dip_switch_block, dip_switches.data + 0x2800, BLOCK_SIZE);
     memcpy(&dip_switches.dip_switch_block, dip_switches.data + 0x2800, BLOCK_SIZE);
 }
 

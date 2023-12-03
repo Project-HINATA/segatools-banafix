@@ -102,7 +102,7 @@ static DWORD CALLBACK carol_pre_startup(void)
         goto fail;
     }
 
-    hr = sg_reader_hook_init(&carol_hook_cfg.aime, 10, carol_hook_mod);
+    hr = sg_reader_hook_init(&carol_hook_cfg.aime, 10, 1, carol_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

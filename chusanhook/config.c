@@ -14,20 +14,20 @@
 
 // Check windows
 #if _WIN32 || _WIN64
-   #if _WIN64
-     #define ENV64BIT
-  #else
-    #define ENV32BIT
-  #endif
+    #if _WIN64
+        #define ENV64BIT
+    #else
+        #define ENV32BIT
+    #endif
 #endif
 
 // Check GCC
 #if __GNUC__
-  #if __x86_64__ || __ppc64__
-    #define ENV64BIT
-  #else
-    #define ENV32BIT
-  #endif
+    #if __x86_64__ || __ppc64__
+        #define ENV64BIT
+    #else
+        #define ENV32BIT
+    #endif
 #endif
 
 void chuni_dll_config_load(
@@ -84,18 +84,7 @@ void led15093_config_load(struct led15093_config *cfg, const wchar_t *filename)
     memset(cfg->boot_chip_number, ' ', sizeof(cfg->boot_chip_number));
 
     cfg->enable = GetPrivateProfileIntW(L"led15093", L"enable", 1, filename);
-    cvt_port = GetPrivateProfileIntW(L"led15093", L"cvtPort", 0, filename);
-
-    if (!cvt_port) {
-        // SP mode: COM20, COM21
-        cfg->port_no[0] = 20;
-        cfg->port_no[1] = 21;
-    } else {
-        // CVT mode: COM2, COM3
-        cfg->port_no[0] = 2;
-        cfg->port_no[1] = 3;
-    }
-
+    cfg->port_no = 0;
     cfg->high_baudrate = GetPrivateProfileIntW(L"led15093", L"highBaudrate", 0, filename);
     cfg->fw_ver = GetPrivateProfileIntW(L"led15093", L"fwVer", 0x90, filename);
     cfg->fw_sum = GetPrivateProfileIntW(L"led15093", L"fwSum", 0xadf7, filename);
@@ -142,7 +131,6 @@ void led15093_config_load(struct led15093_config *cfg, const wchar_t *filename)
         cfg->boot_chip_number[i] = ' ';
     }
 }
-
 
 void chusan_hook_config_load(
         struct chusan_hook_config *cfg,

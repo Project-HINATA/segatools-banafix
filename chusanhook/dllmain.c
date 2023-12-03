@@ -99,7 +99,33 @@ static DWORD CALLBACK chusan_pre_startup(void)
         goto fail;
     }
 
-    hr = led15093_hook_init(&chusan_hook_cfg.led15093, 20, 21);
+    bool *dipsw = &chusan_hook_cfg.platform.dipsw.dipsw[0];
+
+    if (dipsw[1] != dipsw[2]) {
+        dprintf("DipSw: DipSw2 and 3 must be set to the same value!\n");
+        goto fail;
+    }
+
+    for (int i = 0; i < 3; i++) {
+        switch (i) {
+        case 0:
+            dprintf("DipSw: NetInstall: %s\n", dipsw[0] ? "Server" : "Client");
+            break;
+
+        case 1:
+            dprintf("DipSw: Monitor Type: %dFPS\n", dipsw[1] ? 60 : 120);
+            break;
+
+        case 2:
+            dprintf("DipSw: Aime Reader: %s\n", dipsw[2] ? "CVT" : "SP");
+
+            break;
+        }
+    }
+
+    unsigned int first_port = dipsw[1] ? 2 : 20;
+
+    hr = led15093_hook_init(&chusan_hook_cfg.led15093, first_port, 2, 2, 1);
 
     if (FAILED(hr)) {
         goto fail;

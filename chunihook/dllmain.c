@@ -96,7 +96,7 @@ static DWORD CALLBACK chuni_pre_startup(void)
         goto fail;
     }
 
-    hr = led15093_hook_init(&chuni_hook_cfg.led15093, 10, 11);
+    hr = led15093_hook_init(&chuni_hook_cfg.led15093, 10, 2, 2, 1);
 
     if (FAILED(hr)) {
         goto fail;

@@ -1042,7 +1042,7 @@ static HRESULT deck_frame_encode_byte(struct iobuf *dest, uint8_t byte) {
     return S_OK;
 }
 
-// C310FWDLusb stubs
+// C3XXFWDLusb stubs
 
 int fwdlusb_open(uint16_t *rResult) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
@@ -1674,7 +1674,7 @@ int chcusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen) 
             break;
 
         case 20:  // printMode
-            dprintf("Printer: C3xxusb: Unimpl tagNumber 20\n");
+            dprintf("Printer: C3XXusb: Unimpl tagNumber 20\n");
             break;
 
         case 26:  // getPrinterSerial
@@ -1683,7 +1683,7 @@ int chcusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen) 
             break;
 
         case 30:  // TODO
-            dprintf("Printer: C3xxusb: Unimpl tagNumber 30\n");
+            dprintf("Printer: C3XXusb: Unimpl tagNumber 30\n");
             break;
 
         case 31:  // TODO, possibly CardRFIDCheck?

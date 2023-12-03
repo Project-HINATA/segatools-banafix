@@ -96,7 +96,7 @@ static DWORD CALLBACK fgo_pre_startup(void)
         goto fail;
     }
 
-    hr = led15093_hook_init(&fgo_hook_cfg.led15093, 17, 0);
+    hr = led15093_hook_init(&fgo_hook_cfg.led15093, 17, 1, 1, 2);
 
     if (FAILED(hr)) {
         goto fail;
