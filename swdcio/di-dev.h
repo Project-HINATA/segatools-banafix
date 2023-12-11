@@ -11,7 +11,7 @@ union swdc_di_state {
 };
 
 HRESULT swdc_di_dev_start(IDirectInputDevice8W *dev, HWND wnd);
-void swdc_di_dev_start_fx(IDirectInputDevice8W *dev, IDirectInputEffect **out);
+void swdc_di_dev_start_fx(IDirectInputDevice8W *dev, IDirectInputEffect **out, uint16_t strength);
 HRESULT swdc_di_dev_poll(
         IDirectInputDevice8W *dev,
         HWND wnd,

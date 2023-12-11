@@ -75,6 +75,7 @@ static uint8_t idac_di_gear[6];
 static bool idac_di_use_pedals;
 static bool idac_di_reverse_brake_axis;
 static bool idac_di_reverse_accel_axis;
+static uint16_t idac_di_center_spring_strength;
 
 HRESULT idac_di_init(
         const struct idac_di_config *cfg,
@@ -173,7 +174,9 @@ HRESULT idac_di_init(
         return hr;
     }
 
-    idac_di_dev_start_fx(idac_di_dev, &idac_di_fx);
+    // Convert the strength from 0-100 to 0-10000 for DirectInput
+    idac_di_dev_start_fx(idac_di_dev, &idac_di_fx, 
+                         idac_di_center_spring_strength * 100);
 
     if (cfg->pedals_name[0] != L'\0') {
         hr = IDirectInput8_EnumDevices(
@@ -363,6 +366,16 @@ static HRESULT idac_di_config_apply(const struct idac_di_config *cfg)
     for (i = 0 ; i < 6 ; i++) {
         idac_di_gear[i] = cfg->gear[i];
     }
+
+    // FFB configuration
+
+    if (cfg->center_spring_strength < 0 || cfg->center_spring_strength > 100) {
+        dprintf("Wheel: Invalid center spring strength: %i\n", cfg->center_spring_strength);
+
+        return E_INVALIDARG;
+    }
+
+    idac_di_center_spring_strength = cfg->center_spring_strength;
 
     return S_OK;
 }

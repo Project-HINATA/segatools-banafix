@@ -67,6 +67,14 @@ void swdc_di_config_load(struct swdc_di_config *cfg, const wchar_t *filename)
                             L"reverseAccelAxis",
                             0,
                             filename);
+
+    // FFB configuration
+
+    cfg->center_spring_strength = GetPrivateProfileIntW(
+                            L"dinput",
+                            L"centerSpringStrength",
+                            30,
+                            filename);
 }
 
 void swdc_xi_config_load(struct swdc_xi_config *cfg, const wchar_t *filename)

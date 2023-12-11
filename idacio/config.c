@@ -79,6 +79,14 @@ void idac_di_config_load(struct idac_di_config *cfg, const wchar_t *filename)
         cfg->gear[i] = GetPrivateProfileIntW(L"dinput", key, i + 1, filename);
     }
 
+    // FFB configuration
+
+    cfg->center_spring_strength = GetPrivateProfileIntW(
+                            L"dinput",
+                            L"centerSpringStrength",
+                            30,
+                            filename);
+
 }
 
 void idac_xi_config_load(struct idac_xi_config *cfg, const wchar_t *filename)

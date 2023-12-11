@@ -44,7 +44,8 @@ HRESULT idac_di_dev_start(IDirectInputDevice8W *dev, HWND wnd)
     return hr;
 }
 
-void idac_di_dev_start_fx(IDirectInputDevice8W *dev, IDirectInputEffect **out)
+void idac_di_dev_start_fx(
+    IDirectInputDevice8W *dev, IDirectInputEffect **out, uint16_t strength)
 {
     /* Set up force-feedback on devices that support it. This is just a stub
        for the time being, since we don't yet know how the serial port force
@@ -67,7 +68,7 @@ void idac_di_dev_start_fx(IDirectInputDevice8W *dev, IDirectInputEffect **out)
     DWORD axis;
     LONG direction;
     DIEFFECT fx;
-    DICONSTANTFORCE cf;
+    DICONDITION cond;
     HRESULT hr;
 
     assert(dev != NULL);
@@ -77,11 +78,17 @@ void idac_di_dev_start_fx(IDirectInputDevice8W *dev, IDirectInputEffect **out)
 
     dprintf("DirectInput: Starting force feedback (may take a sec)\n");
 
+    // Auto-centering effect
     axis = DIJOFS_X;
     direction = 0;
 
-    memset(&cf, 0, sizeof(cf));
-    cf.lMagnitude = 0;
+    memset(&cond, 0, sizeof(cond));
+    cond.lOffset = 0;
+    cond.lPositiveCoefficient = strength;
+    cond.lNegativeCoefficient = strength;
+    cond.dwPositiveSaturation = strength; // For FG920?
+    cond.dwNegativeSaturation = strength; // For FG920?
+    cond.lDeadBand = 0;
 
     memset(&fx, 0, sizeof(fx));
     fx.dwSize = sizeof(fx);
@@ -93,20 +100,19 @@ void idac_di_dev_start_fx(IDirectInputDevice8W *dev, IDirectInputEffect **out)
     fx.cAxes = 1;
     fx.rgdwAxes = &axis;
     fx.rglDirection = &direction;
-    fx.cbTypeSpecificParams = sizeof(cf);
-    fx.lpvTypeSpecificParams = &cf;
+    fx.cbTypeSpecificParams = sizeof(cond);
+    fx.lpvTypeSpecificParams = &cond;
 
     hr = IDirectInputDevice8_CreateEffect(
             dev,
-            &GUID_ConstantForce,
+            &GUID_Spring,
             &fx,
             &obj,
             NULL);
 
     if (FAILED(hr)) {
-        dprintf("DirectInput: DirectInput force feedback unavailable: %08x\n",
+        dprintf("DirectInput: Centering spring force feedback unavailable: %08x\n",
                 (int) hr);
-
         return;
     }
 
@@ -114,15 +120,15 @@ void idac_di_dev_start_fx(IDirectInputDevice8W *dev, IDirectInputEffect **out)
 
     if (FAILED(hr)) {
         IDirectInputEffect_Release(obj);
-        dprintf("DirectInput: DirectInput force feedback start failed: %08x\n",
+        dprintf("DirectInput: Centering spring force feedback start failed: %08x\n",
                 (int) hr);
-
         return;
     }
 
     *out = obj;
 
-    dprintf("DirectInput: Force feedback initialized and set to zero\n");
+    dprintf("DirectInput: Centering spring effects initialized with strength %d%%\n", 
+            strength / 100);
 }
 
 HRESULT idac_di_dev_poll(

@@ -73,6 +73,7 @@ static uint8_t idz_di_gear[6];
 static bool idz_di_use_pedals;
 static bool idz_di_reverse_brake_axis;
 static bool idz_di_reverse_accel_axis;
+static uint16_t idz_di_center_spring_strength;
 
 HRESULT idz_di_init(
         const struct idz_di_config *cfg,
@@ -171,7 +172,9 @@ HRESULT idz_di_init(
         return hr;
     }
 
-    idz_di_dev_start_fx(idz_di_dev, &idz_di_fx);
+    // Convert the strength from 0-100 to 0-10000 for DirectInput
+    idz_di_dev_start_fx(idz_di_dev, &idz_di_fx, 
+                        idz_di_center_spring_strength * 100);
 
     if (cfg->pedals_name[0] != L'\0') {
         hr = IDirectInput8_EnumDevices(
@@ -345,6 +348,16 @@ static HRESULT idz_di_config_apply(const struct idz_di_config *cfg)
     for (i = 0 ; i < 6 ; i++) {
         idz_di_gear[i] = cfg->gear[i];
     }
+
+    // FFB configuration
+
+    if (cfg->center_spring_strength < 0 || cfg->center_spring_strength > 100) {
+        dprintf("Wheel: Invalid center spring strength: %i\n", cfg->center_spring_strength);
+
+        return E_INVALIDARG;
+    }
+
+    idz_di_center_spring_strength = cfg->center_spring_strength;
 
     return S_OK;
 }

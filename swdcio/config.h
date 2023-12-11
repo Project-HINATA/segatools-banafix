@@ -19,6 +19,9 @@ struct swdc_di_config {
     uint8_t wheel_yellow;
     bool reverse_brake_axis;
     bool reverse_accel_axis;
+
+    // FFB configuration
+    uint16_t center_spring_strength;
 };
 
 struct swdc_xi_config {

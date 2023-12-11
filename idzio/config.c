@@ -76,7 +76,14 @@ void idz_di_config_load(struct idz_di_config *cfg, const wchar_t *filename)
         swprintf_s(key, _countof(key), L"gear%i", i + 1);
         cfg->gear[i] = GetPrivateProfileIntW(L"dinput", key, i + 1, filename);
     }
+    
+    // FFB configuration
 
+    cfg->center_spring_strength = GetPrivateProfileIntW(
+                            L"dinput",
+                            L"centerSpringStrength",
+                            30,
+                            filename);
 }
 
 void idz_xi_config_load(struct idz_xi_config *cfg, const wchar_t *filename)
