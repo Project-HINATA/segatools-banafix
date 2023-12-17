@@ -38,7 +38,7 @@ void chuni_io_jvs_read_coin_counter(uint16_t *out)
         return;
     }
 
-    if (GetAsyncKeyState(chuni_io_cfg.vk_coin)) {
+    if (GetAsyncKeyState(chuni_io_cfg.vk_coin) & 0x8000) {
         if (!chuni_io_coin) {
             chuni_io_coin = true;
             chuni_io_coins++;
@@ -60,15 +60,6 @@ void chuni_io_jvs_poll(uint8_t *opbtn, uint8_t *beams)
 
     if (GetAsyncKeyState(chuni_io_cfg.vk_service) & 0x8000) {
         *opbtn |= CHUNI_IO_OPBTN_SERVICE;
-    }
-
-    if (GetAsyncKeyState(chuni_io_cfg.vk_coin) & 0x8000) {
-        if (!chuni_io_coin) {
-            chuni_io_coin = true;
-            *opbtn |= CHUNI_IO_OPBTN_COIN;
-        }
-    } else {
-        chuni_io_coin = false;
     }
 
     if (chuni_io_cfg.vk_ir_emu) {

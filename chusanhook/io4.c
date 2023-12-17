@@ -73,6 +73,7 @@ static HRESULT chusan_io4_poll(void* ctx, struct io4_state* state)
     beams = 0;
 
     chuni_dll.jvs_poll(&opbtn, &beams);
+    chuni_dll.jvs_read_coin_counter(&coins);
 
     if (chuni_dll.api_version >= 0x0101) {
         // Use correct mapping
@@ -90,9 +91,7 @@ static HRESULT chusan_io4_poll(void* ctx, struct io4_state* state)
         state->buttons[0] |= IO4_BUTTON_SERVICE;
     }
 
-    if (opbtn & CHUNI_IO_OPBTN_COIN) {
-        coins++;
-    }
+    // Update the coin counter with the value from jvs_read_coin_counter
     state->chutes[0] = coins << 8;
 
     for (i = 0; i < 6; i++) {
