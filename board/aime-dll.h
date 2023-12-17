@@ -18,6 +18,7 @@ struct aime_dll {
 
 struct aime_dll_config {
     wchar_t path[MAX_PATH];
+    bool path64;
 };
 
 extern struct aime_dll aime_dll;

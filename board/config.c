@@ -9,18 +9,59 @@
 #include "board/config.h"
 #include "board/sg-reader.h"
 
+#include "util/dprintf.h"
+
+// Check windows
+#if _WIN32 || _WIN64
+    #if _WIN64
+        #define ENV64BIT
+    #else
+        #define ENV32BIT
+    #endif
+#endif
+
+// Check GCC
+#if __GNUC__
+    #if __x86_64__ || __ppc64__
+        #define ENV64BIT
+    #else
+        #define ENV32BIT
+    #endif
+#endif
+
 static void aime_dll_config_load(struct aime_dll_config *cfg, const wchar_t *filename)
 {
     assert(cfg != NULL);
     assert(filename != NULL);
 
-    GetPrivateProfileStringW(
+    // Workaround for x64/x86 external IO dlls
+    // path32 for 32bit, path64 for 64bit
+    // for else.. is that possible? idk
+
+    if (cfg->path64) {
+        #if defined(ENV32BIT)
+            // Always empty, due to amdaemon being 64 bit in 32 bit mode
+            memset(cfg->path, 0, sizeof(cfg->path));
+        #elif defined(ENV64BIT)
+            GetPrivateProfileStringW(
+                    L"aimeio",
+                    L"path",
+                    L"",
+                    cfg->path,
+                    _countof(cfg->path),
+                    filename);
+        #else
+            #error "Unknown environment"
+        #endif
+    } else {
+        GetPrivateProfileStringW(
             L"aimeio",
             L"path",
             L"",
             cfg->path,
             _countof(cfg->path),
             filename);
+    }
 }
 
 void aime_config_load(struct aime_config *cfg, const wchar_t *filename)

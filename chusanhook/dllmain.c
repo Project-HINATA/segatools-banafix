@@ -100,11 +100,7 @@ static DWORD CALLBACK chusan_pre_startup(void)
     }
 
     bool *dipsw = &chusan_hook_cfg.platform.dipsw.dipsw[0];
-
-    if (dipsw[1] != dipsw[2]) {
-        dprintf("DipSw: DipSw2 and 3 must be set to the same value!\n");
-        goto fail;
-    }
+    bool *is_sp = dipsw + 2;
 
     for (int i = 0; i < 3; i++) {
         switch (i) {
@@ -117,13 +113,21 @@ static DWORD CALLBACK chusan_pre_startup(void)
             break;
 
         case 2:
-            dprintf("DipSw: Aime Reader: %s\n", dipsw[2] ? "CVT" : "SP");
+            dprintf("DipSw: Cab Type: %s\n", is_sp ? "SP" : "CVT");
 
             break;
         }
     }
 
-    unsigned int first_port = dipsw[1] ? 2 : 20;
+    unsigned int first_port = is_sp ? 20 : 2;
+
+    if (is_sp) {
+        hr = vfd_hook_init(2);
+
+        if (FAILED(hr)) {
+            goto fail;
+        }
+    }
 
     hr = led15093_hook_init(&chusan_hook_cfg.led15093, first_port, 2, 2, 1);
 
@@ -131,7 +135,7 @@ static DWORD CALLBACK chusan_pre_startup(void)
         goto fail;
     }
 
-    hr = sg_reader_hook_init(&chusan_hook_cfg.aime, 4, dipsw[2] ? 2 : 3, chusan_hook_mod);
+    hr = sg_reader_hook_init(&chusan_hook_cfg.aime, 4, is_sp ? 3: 2, chusan_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

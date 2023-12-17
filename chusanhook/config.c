@@ -141,6 +141,9 @@ void chusan_hook_config_load(
 
     memset(cfg, 0, sizeof(*cfg));
 
+    // Force load the 64bit Aime DLL instead of the 32bit one
+    cfg->aime.dll.path64 = true;
+
     platform_config_load(&cfg->platform, filename);
     aime_config_load(&cfg->aime, filename);
     dvd_config_load(&cfg->dvd, filename);
