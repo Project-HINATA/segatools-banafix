@@ -69,3 +69,18 @@ void fgo_io_get_gamebtns(uint8_t *btn);
    Minimum API version: 0x0100 */
 
 void fgo_io_get_analogs(int16_t *stick_x, int16_t *stick_y);
+
+/* Initialize LED emulation. This function will be called before any
+   other fgo_io_led_*() function calls.
+
+   All subsequent calls may originate from arbitrary threads and some may
+   overlap with each other. Ensuring synchronization inside your IO DLL is
+   your responsibility. */
+
+int fgo_io_led_init();
+
+/* Update the RGB LEDs. 
+   
+   Exact layout is TBD. */
+
+void fgo_io_led_set_leds(uint8_t board, uint8_t *rgb);

@@ -129,7 +129,8 @@ static DWORD CALLBACK chusan_pre_startup(void)
         }
     }
 
-    hr = led15093_hook_init(&chusan_hook_cfg.led15093, first_port, 2, 2, 1);
+    hr = led15093_hook_init(&chusan_hook_cfg.led15093, 
+        chuni_dll.led_init, chuni_dll.led_set_leds, first_port, 2, 2, 1);
 
     if (FAILED(hr)) {
         goto fail;

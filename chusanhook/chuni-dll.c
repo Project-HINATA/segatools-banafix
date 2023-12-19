@@ -30,6 +30,12 @@ const struct dll_bind_sym chuni_dll_syms[] = {
     }, {
         .sym = "chuni_io_slider_set_leds",
         .off = offsetof(struct chuni_dll, slider_set_leds),
+    }, {
+        .sym = "chuni_io_led_init",
+        .off = offsetof(struct chuni_dll, led_init),
+    }, {
+        .sym = "chuni_io_led_set_colors",
+        .off = offsetof(struct chuni_dll, led_set_leds),
     }
 };
 

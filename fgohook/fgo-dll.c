@@ -24,6 +24,12 @@ const struct dll_bind_sym fgo_dll_syms[] = {
     }, {
         .sym = "fgo_io_get_analogs",
         .off = offsetof(struct fgo_dll, get_analogs),
+    }, {
+        .sym = "fgo_io_led_init",
+        .off = offsetof(struct fgo_dll, led_init),
+    }, {
+        .sym = "fgo_io_led_set_leds",
+        .off = offsetof(struct fgo_dll, led_set_leds),
     }
 };
 

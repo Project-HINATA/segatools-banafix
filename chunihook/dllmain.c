@@ -4,6 +4,7 @@
 
 #include "amex/amex.h"
 
+#include "board/led15093.h"
 #include "board/sg-reader.h"
 
 #include "chunihook/config.h"
@@ -96,7 +97,8 @@ static DWORD CALLBACK chuni_pre_startup(void)
         goto fail;
     }
 
-    hr = led15093_hook_init(&chuni_hook_cfg.led15093, 10, 2, 2, 1);
+    hr = led15093_hook_init(&chuni_hook_cfg.led15093, 
+        chuni_dll.led_init, chuni_dll.led_set_leds, 10, 2, 2, 1);
 
     if (FAILED(hr)) {
         goto fail;

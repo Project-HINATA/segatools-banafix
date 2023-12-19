@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "board/io4.h"
+#include "board/led15093.h"
 #include "board/sg-reader.h"
 #include "board/vfd.h"
 
@@ -96,7 +97,8 @@ static DWORD CALLBACK fgo_pre_startup(void)
         goto fail;
     }
 
-    hr = led15093_hook_init(&fgo_hook_cfg.led15093, 17, 1, 1, 2);
+    hr = led15093_hook_init(&fgo_hook_cfg.led15093, 
+        fgo_dll.led_init, fgo_dll.led_set_leds, 17, 1, 1, 2);
 
     if (FAILED(hr)) {
         goto fail;

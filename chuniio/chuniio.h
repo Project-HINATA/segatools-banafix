@@ -145,3 +145,21 @@ void chuni_io_slider_stop(void);
    Minimum API version: 0x0100 */
 
 void chuni_io_slider_set_leds(const uint8_t *rgb);
+
+/* Initialize LED emulation. This function will be called before any
+   other chuni_io_led_*() function calls.
+
+   All subsequent calls may originate from arbitrary threads and some may
+   overlap with each other. Ensuring synchronization inside your IO DLL is
+   your responsibility. */
+
+int chuni_io_led_init();
+
+/* Update the RGB LEDs. rgb is a pointer to an array of 66 * 3 = 198
+   bytes. The majority of these are for the marquee display, but the final
+   LEDs are for the side partitions.
+   
+   Chunithm uses two chains/boards. One is on the left side and one on the
+   right side of the cab. Exact layout is TBD. */
+
+void chuni_io_led_set_colors(uint8_t board, uint8_t *rgb);

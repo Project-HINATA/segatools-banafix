@@ -139,3 +139,13 @@ void fgo_io_get_analogs(int16_t *stick_x, int16_t *stick_y)
         *stick_y = fgo_stick_y;
     }
 }
+
+int fgo_io_led_init()
+{
+    return 0;
+}
+
+void fgo_io_led_set_leds(uint8_t board, uint8_t *rgb)
+{
+    return;
+}
