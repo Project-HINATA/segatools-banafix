@@ -644,9 +644,6 @@ static HRESULT led15093_req_set_led(int board, const struct led15093_req_set_led
 
     memcpy(v->led, req->data, req->hdr.nbytes - 1);
 
-    // Return the current LED data, remove const qualifier
-    set_leds(board, (uint8_t *) req->data);
-
     if (!v->enable_response)
         return S_OK;
 
@@ -680,8 +677,20 @@ static HRESULT led15093_req_set_imm_led(int board, const struct led15093_req_set
         return E_INVALIDARG;
     }
 
-    memcpy(v->led, req->data, req->hdr.nbytes - 1);
+    /*
+    if (board == 0) {
+        dprintf("board %d: red: %d, green: %d, blue: %d\n", board, req->data[0x96], req->data[0x97], req->data[0x98]);
+	}
+	else if (board == 1)
+	{
+		dprintf("board %d: red: %d, green: %d, blue: %d\n", board, req->data[0xb4], req->data[0xb5], req->data[0xb6]);
+    }
+    */
 
+    // Return the current LED data, remove const qualifier
+    set_leds(board, (uint8_t *) req->data);
+
+    memcpy(v->led, req->data, req->hdr.nbytes - 1);
     // fgo_dll.led_gr_set_imm((const uint8_t*)&v->led);
 
     if (!v->enable_response)
