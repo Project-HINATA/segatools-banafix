@@ -19,18 +19,18 @@ static bool any_outputs_enabled;
 
 HANDLE led_init_mutex;
 
-int led_output_init(struct chuni_io_config* const cfg)
+HRESULT led_output_init(struct chuni_io_config* const cfg)
 {
     DWORD dwWaitResult = WaitForSingleObject(led_init_mutex, INFINITE);
     if (dwWaitResult == WAIT_FAILED)
     {
-        // return HRESULT_FROM_WIN32(GetLastError());
-        return 1;
+        return HRESULT_FROM_WIN32(GetLastError());
+        // return 1;
     }
     else if (dwWaitResult != WAIT_OBJECT_0)
     {
-        // return E_FAIL;
-        return 1;
+        return E_FAIL;
+        // return 1;
     }
     
     if (!led_output_is_init)
@@ -65,8 +65,8 @@ int led_output_init(struct chuni_io_config* const cfg)
     led_output_is_init = true;
     
     ReleaseMutex(led_init_mutex);
-    // return S_OK;
-    return 0;
+    return S_OK;
+    // return 0;
 }
 
 struct _chuni_led_data_buf_t* escape_led_data(struct _chuni_led_data_buf_t* unescaped)

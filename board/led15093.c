@@ -239,15 +239,25 @@ static HRESULT led15093_handle_irp_locked(int board, struct irp *irp)
     
     if (irp->op == IRP_OP_OPEN) {
         dprintf("LED 15093: Starting backend DLL\n");
-            int res = led_init();
+        // int res = led_init();
+        hr = led_init();
+        
+        /*
+        if (res != 0) {
+            dprintf("LED 15093: Backend error, LED board disconnected: "
+                    "%d\n",
+                    res);
 
-            if (res != 0) {
-                dprintf("LED 15093: Backend error, LED board disconnected: "
-                        "%d\n",
-                        res);
+            return E_FAIL;
+        }
+        */
+        if (FAILED(hr)) {
+            dprintf("LED 15093: Backend error, LED board disconnected: "
+                    "%x\n",
+                    (int) hr);
 
-                return E_FAIL;
-            }
+            return hr;
+        }
     }
 
     hr = uart_handle_irp(boarduart, irp);

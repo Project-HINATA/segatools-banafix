@@ -166,7 +166,7 @@ static unsigned int __stdcall chuni_io_slider_thread_proc(void *ctx)
     return 0;
 }
 
-int chuni_io_led_init()
+HRESULT chuni_io_led_init(void)
 {
     return led_output_init(&chuni_io_cfg);
 }

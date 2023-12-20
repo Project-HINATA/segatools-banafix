@@ -77,7 +77,7 @@ void fgo_io_get_analogs(int16_t *stick_x, int16_t *stick_y);
    overlap with each other. Ensuring synchronization inside your IO DLL is
    your responsibility. */
 
-int fgo_io_led_init();
+HRESULT fgo_io_led_init(void);
 
 /* Update the RGB LEDs. 
    

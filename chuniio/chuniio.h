@@ -153,7 +153,7 @@ void chuni_io_slider_set_leds(const uint8_t *rgb);
    overlap with each other. Ensuring synchronization inside your IO DLL is
    your responsibility. */
 
-int chuni_io_led_init();
+HRESULT chuni_io_led_init(void);
 
 /* Update the RGB LEDs. rgb is a pointer to an array of 66 * 3 = 198
    bytes. The majority of these are for the marquee display, but the final
