@@ -129,11 +129,16 @@ static DWORD CALLBACK chusan_pre_startup(void)
         }
     }
 
-    hr = led15093_hook_init(&chusan_hook_cfg.led15093, 
-        chuni_dll.led_init, chuni_dll.led_set_leds, first_port, 2, 2, 1);
+    if ( chuni_dll.led_init == NULL || chuni_dll.led_set_leds == NULL )
+    {
+        dprintf("IO DLL doesn't support led_init/led_set_leds, cannot start LED15093 hook\n");
+    } else {
+        hr = led15093_hook_init(&chusan_hook_cfg.led15093, 
+            chuni_dll.led_init, chuni_dll.led_set_leds, first_port, 2, 2, 1);
 
-    if (FAILED(hr)) {
-        goto fail;
+        if (FAILED(hr)) {
+            goto fail;
+        }
     }
 
     hr = sg_reader_hook_init(&chusan_hook_cfg.aime, 4, is_cvt ? 2: 3, chusan_hook_mod);
