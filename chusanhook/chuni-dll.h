@@ -19,6 +19,7 @@ struct chuni_dll {
 
 struct chuni_dll_config {
     wchar_t path[MAX_PATH];
+    uint8_t chu2to3;
 };
 
 extern struct chuni_dll chuni_dll;

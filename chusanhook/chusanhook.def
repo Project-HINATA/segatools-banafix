@@ -22,3 +22,13 @@ EXPORTS
     chuni_io_slider_stop
     chuni_io_led_init
     chuni_io_led_set_colors
+    chu2to3_io_get_api_version
+    chu2to3_io_jvs_init
+    chu2to3_io_jvs_poll
+    chu2to3_io_jvs_read_coin_counter
+    chu2to3_io_slider_init
+    chu2to3_io_slider_set_leds
+    chu2to3_io_slider_start
+    chu2to3_io_slider_stop
+    chu2to3_io_led_init
+    chu2to3_io_led_set_colors
