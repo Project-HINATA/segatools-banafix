@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "chuniio/chu2to3.h"
 #include "chusanhook/chuni-dll.h"
 
 #include "util/dll-bind.h"

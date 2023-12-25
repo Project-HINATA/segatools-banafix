@@ -23,4 +23,4 @@ void chu2to3_io_slider_stop(void);
 void chu2to3_io_slider_set_leds(const uint8_t *rgb);
 HRESULT chu2to3_io_led_init(void);
 void chu2to3_io_led_set_colors(uint8_t board, uint8_t *rgb);
-uint16_t chu2to3_load_dll(wchar_t *dllname);
+uint16_t chu2to3_load_dll(const wchar_t *dllname);

@@ -80,7 +80,7 @@ bool shmem_create()
 
    if (g_hMapFile == NULL)
    {
-      dprintf("shmem_create : Could not create file mapping object (%d).\n",
+      dprintf("shmem_create : Could not create file mapping object (%ld).\n",
              GetLastError());
       return 0;
    }
@@ -92,7 +92,7 @@ bool shmem_create()
 
    if (g_pBuf == NULL)
    {
-      dprintf("shmem_create : Could not map view of file (%d).\n",
+      dprintf("shmem_create : Could not map view of file (%ld).\n",
              GetLastError());
 
        CloseHandle(g_hMapFile);
@@ -112,7 +112,7 @@ bool shmem_load()
 
     if (g_hMapFile == NULL)
     {
-        dprintf("shmem_load : Could not open file mapping object (%d).\n", GetLastError());
+        dprintf("shmem_load : Could not open file mapping object (%ld).\n", GetLastError());
         return 0;
    }
 
@@ -124,7 +124,7 @@ bool shmem_load()
 
     if (g_pBuf == NULL)
     {
-        dprintf("shmem_load : Could not map view of file (%d).\n", GetLastError());
+        dprintf("shmem_load : Could not map view of file (%ld).\n", GetLastError());
         CloseHandle(g_hMapFile);
         return 0;
     }
@@ -148,6 +148,7 @@ static unsigned int __stdcall jvs_poll_thread_proc(void *ctx)
     while (1) {
         _chuni_io_jvs_read_coin_counter(&g_shared_data.coin_counter);
         g_shared_data.opbtn = 0;
+        g_shared_data.beams = 0;
         _chuni_io_jvs_poll(&g_shared_data.opbtn, &g_shared_data.beams);
         SHMEM_WRITE(&g_shared_data, sizeof(shared_data_t));
         Sleep(1);
@@ -156,7 +157,7 @@ static unsigned int __stdcall jvs_poll_thread_proc(void *ctx)
     return 0;
 }
 
-uint16_t chu2to3_load_dll(wchar_t *dllname)
+uint16_t chu2to3_load_dll(const wchar_t *dllname)
 {
     #if defined(ENV64BIT)
     /* x64 must just open the shmem and do nothing else */
@@ -175,7 +176,7 @@ uint16_t chu2to3_load_dll(wchar_t *dllname)
     /* this is the first function called so let's setup the chuniio forwarding */
     hinstLib = LoadLibraryW(dllname);
     if (hinstLib == NULL) {
-        dprintf("ERROR: unable to load %S (error %d)\n",dllname, GetLastError());
+        dprintf("ERROR: unable to load %S (error %ld)\n",dllname, GetLastError());
         return -1;
     }
 
