@@ -30,8 +30,27 @@ const struct dll_bind_sym chuni_dll_syms[] = {
     }, {
         .sym = "chuni_io_slider_set_leds",
         .off = offsetof(struct chuni_dll, slider_set_leds),
+    }, {
+        .sym = "chuni_io_led_init",
+        .off = offsetof(struct chuni_dll, led_init),
+    }, {
+        .sym = "chuni_io_led_set_colors",
+        .off = offsetof(struct chuni_dll, led_set_leds),
     }
 };
+
+/* Helper function to determine upon dll_bind failure whether the required functions were found
+   NOTE: relies on symbols order declared above */
+static HRESULT has_enough_symbols(uint16_t version, uint8_t count)
+{
+    if ( version <= 0x0101 && count == 7 )
+        return S_OK;
+
+    if ( version >= 0x0102 && count == 9 )
+        return S_OK;
+
+    return E_FAIL;
+}
 
 struct chuni_dll chuni_dll;
 
@@ -92,16 +111,24 @@ HRESULT chuni_dll_init(const struct chuni_dll_config *cfg, HINSTANCE self)
     }
 
     sym = chuni_dll_syms;
+    const struct dll_bind_sym *init_sym = &sym[0];
     hr = dll_bind(&chuni_dll, src, &sym, _countof(chuni_dll_syms));
 
     if (FAILED(hr)) {
         if (src != self) {
-            dprintf("Chunithm IO: Custom IO DLL does not provide function "
-                    "\"%s\". Please contact your IO DLL's developer for "
-                    "further assistance.\n",
-                    sym->sym);
+            // Might still be ok depending on external dll API version
+            int bind_count = sym - init_sym;
+            if ( has_enough_symbols(chuni_dll.api_version, bind_count) == S_OK )
+            {
+                hr = S_OK;
+            } else {
+                dprintf("Chunithm IO: Custom IO DLL does not provide function "
+                        "\"%s\". Please contact your IO DLL's developer for "
+                        "further assistance.\n",
+                        sym->sym);
 
-            goto end;
+                goto end;
+            }
         } else {
             dprintf("Internal error: could not reflect \"%s\"\n", sym->sym);
         }

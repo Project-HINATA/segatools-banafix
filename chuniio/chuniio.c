@@ -7,6 +7,7 @@
 
 #include "chuniio/chuniio.h"
 #include "chuniio/config.h"
+#include "chuniio/ledoutput.h"
 
 #include "util/dprintf.h"
 
@@ -18,17 +19,26 @@ static uint8_t chuni_io_hand_pos;
 static HANDLE chuni_io_slider_thread;
 static bool chuni_io_slider_stop_flag;
 static struct chuni_io_config chuni_io_cfg;
-static HANDLE chuni_io_slider_led_port;
 
 uint16_t chuni_io_get_api_version(void)
 {
-    return 0x0101;
+    return 0x0102;
 }
 
 HRESULT chuni_io_jvs_init(void)
 {
     chuni_io_config_load(&chuni_io_cfg, L".\\segatools.ini");
-
+    
+    led_init_mutex = CreateMutex(
+        NULL,              // default security attributes
+        FALSE,             // initially not owned
+        NULL);             // unnamed mutex
+    
+    if (led_init_mutex == NULL)
+    {
+        return E_FAIL;
+    }
+    
     return S_OK;
 }
 
@@ -81,19 +91,19 @@ void chuni_io_jvs_poll(uint8_t *opbtn, uint8_t *beams)
         }
     } else {
         // Use actual AIR
-        // IR format is beams[5:0] = {b5,b6,b3,b4,b1,b2};
-        for (i = 0 ; i < 3 ; i++) {
-            if (GetAsyncKeyState(chuni_io_cfg.vk_ir[i*2]) & 0x8000)
-                *beams |= (1 << (i*2+1));
-            if (GetAsyncKeyState(chuni_io_cfg.vk_ir[i*2+1]) & 0x8000)
-                *beams |= (1 << (i*2));
+        for (i = 0; i < 6; i++) {
+            if(GetAsyncKeyState(chuni_io_cfg.vk_ir[i]) & 0x8000) {
+                *beams |= (1 << i);
+            } else {
+                *beams &= ~(1 << i);
+            }
         }
     }
 }
 
 HRESULT chuni_io_slider_init(void)
 {
-    return S_OK;
+    return led_output_init(&chuni_io_cfg); // because of slider LEDs
 }
 
 void chuni_io_slider_start(chuni_io_slider_callback_t callback)
@@ -111,39 +121,6 @@ void chuni_io_slider_start(chuni_io_slider_callback_t callback)
             callback,
             0,
             NULL);
-
-    chuni_io_slider_led_port = CreateFileW(chuni_io_cfg.led_com,
-            GENERIC_READ | GENERIC_WRITE,
-            0,
-            NULL,
-            OPEN_EXISTING,
-            0,
-            NULL);
-    
-    if (chuni_io_slider_led_port == INVALID_HANDLE_VALUE)
-        dprintf("Chunithm LEDs: Failed to open COM port (Attempted on %S)\n", chuni_io_cfg.led_com);
-    else
-        dprintf("Chunithm LEDs: COM Port Success!\n");
-            
-    DCB dcb_serial_params = { 0 };
-    dcb_serial_params.DCBlength = sizeof(dcb_serial_params);
-    status = GetCommState(chuni_io_slider_led_port, &dcb_serial_params);
-    
-    dcb_serial_params.BaudRate = CBR_115200;  // Setting BaudRate = 115200
-    dcb_serial_params.ByteSize = 8;         // Setting ByteSize = 8
-    dcb_serial_params.StopBits = ONESTOPBIT;// Setting StopBits = 1
-    dcb_serial_params.Parity   = NOPARITY;  // Setting Parity = None
-    SetCommState(chuni_io_slider_led_port, &dcb_serial_params);
-    
-    COMMTIMEOUTS timeouts = { 0 };
-    timeouts.ReadIntervalTimeout         = 50; // in milliseconds
-    timeouts.ReadTotalTimeoutConstant    = 50; // in milliseconds
-    timeouts.ReadTotalTimeoutMultiplier  = 10; // in milliseconds
-    timeouts.WriteTotalTimeoutConstant   = 50; // in milliseconds
-    timeouts.WriteTotalTimeoutMultiplier = 10; // in milliseconds
-    
-    SetCommTimeouts(chuni_io_slider_led_port, &timeouts);
-
 }
 
 void chuni_io_slider_stop(void)
@@ -158,34 +135,11 @@ void chuni_io_slider_stop(void)
     CloseHandle(chuni_io_slider_thread);
     chuni_io_slider_thread = NULL;
     chuni_io_slider_stop_flag = false;
-
-    dprintf("Chunithm LEDs: Closing COM port\n");
-    CloseHandle(chuni_io_slider_led_port);
 }
 
 void chuni_io_slider_set_leds(const uint8_t *rgb)
 {
-    if (chuni_io_slider_led_port != INVALID_HANDLE_VALUE)
-    {
-        char led_buffer[100];
-        DWORD bytes_to_write;         // No of bytes to write into the port
-        DWORD bytes_written = 0;     // No of bytes written to the port
-        bytes_to_write = sizeof(led_buffer);
-        BOOL status;
-        
-        led_buffer[0] = 0xAA;
-        led_buffer[1] = 0xAA;
-        memcpy(led_buffer+2, rgb, sizeof(uint8_t) * 96);
-        led_buffer[98] = 0xDD;
-        led_buffer[99] = 0xDD;
-        
-        status = WriteFile(chuni_io_slider_led_port,        // Handle to the Serial port
-                           led_buffer,     // Data to be written to the port
-                           bytes_to_write,  //No of bytes to write
-                           &bytes_written, //Bytes written
-                           NULL);
-    }
-
+    led_output_update(2, rgb);
 }
 
 static unsigned int __stdcall chuni_io_slider_thread_proc(void *ctx)
@@ -210,4 +164,14 @@ static unsigned int __stdcall chuni_io_slider_thread_proc(void *ctx)
     }
 
     return 0;
+}
+
+HRESULT chuni_io_led_init(void)
+{
+    return led_output_init(&chuni_io_cfg);
+}
+
+void chuni_io_led_set_colors(uint8_t board, uint8_t *rgb)
+{ 
+    led_output_update(board, rgb);
 }

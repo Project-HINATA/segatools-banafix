@@ -13,10 +13,13 @@ struct chuni_dll {
     void (*slider_start)(chuni_io_slider_callback_t callback);
     void (*slider_stop)(void);
     void (*slider_set_leds)(const uint8_t *rgb);
+    HRESULT (*led_init)(void);
+    void (*led_set_leds)(uint8_t board, uint8_t *rgb);
 };
 
 struct chuni_dll_config {
     wchar_t path[MAX_PATH];
+    uint8_t chu2to3;
 };
 
 extern struct chuni_dll chuni_dll;

@@ -17,11 +17,13 @@ add_project_arguments(
     language: 'c',
 )
 
-# Use get_argument_syntax() instead once Meson 0.49.0 releases
-if meson.get_compiler('c').get_id() != 'msvc'
+cc = meson.get_compiler('c')
+
+if cc.get_id() != 'msvc'
     add_project_arguments(
         '-ffunction-sections',
         '-fdata-sections',
+        '-flto',  # Enable Link-Time Optimization
         language: 'c',
     )
 
@@ -30,11 +32,12 @@ if meson.get_compiler('c').get_id() != 'msvc'
         '-Wl,--exclude-all-symbols',
         '-Wl,--gc-sections',
         '-static-libgcc',
+        '-flto',  # Enable Link-Time Optimization
+        '-Wl,-s',  # Strip debug symbols
         language: 'c',
     )
 endif
 
-cc = meson.get_compiler('c')
 shlwapi_lib = cc.find_library('shlwapi')
 dinput8_lib = cc.find_library('dinput8')
 dxguid_lib = cc.find_library('dxguid')

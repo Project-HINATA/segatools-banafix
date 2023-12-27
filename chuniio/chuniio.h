@@ -8,6 +8,7 @@
    - 0x0100: Initial API version (assumed if chuni_io_get_api_version is not
      exported)
    - 0x0101: Fix IR beam mappings
+   - 0x0102: Add air tower led and billboard support
 */
 
 #include <windows.h>
@@ -145,3 +146,30 @@ void chuni_io_slider_stop(void);
    Minimum API version: 0x0100 */
 
 void chuni_io_slider_set_leds(const uint8_t *rgb);
+
+/* Initialize LED emulation. This function will be called before any
+   other chuni_io_led_*() function calls.
+
+   All subsequent calls may originate from arbitrary threads and some may
+   overlap with each other. Ensuring synchronization inside your IO DLL is
+   your responsibility. 
+
+   Minimum API version: 0x0102 */
+
+HRESULT chuni_io_led_init(void);
+
+/* Update the RGB LEDs. rgb is a pointer to an array of up to 63 * 3 = 189 bytes.
+
+   Chunithm uses two chains/boards with WS2811 protocol (each logical led corresponds to 3 physical leds). 
+   board 0 is on the left side and board 1 on the right side of the cab
+
+   left side has 5*10 rgb values for the billboard, followed by 3 rgb values for the air tower
+   right side has 6*10 rgb values for the billboard, followed by 3 rgb values for the air tower
+   
+   Each rgb value is comprised of 3 bytes in R,G,B order
+
+   NOTE: billboard strips have alternating direction (bottom to top, top to bottom, ...)
+
+   Minimum API version: 0x0102 */
+
+void chuni_io_led_set_colors(uint8_t board, uint8_t *rgb);

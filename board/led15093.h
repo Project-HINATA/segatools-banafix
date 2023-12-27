@@ -16,6 +16,9 @@ struct led15093_config {
     uint16_t fw_sum;
 };
 
-HRESULT led15093_hook_init(const struct led15093_config *cfg, unsigned int first_port, 
-    unsigned int num_boards, uint8_t board_adr, uint8_t host_adr);
+typedef HRESULT (*io_led_init_t)(void);
+typedef void (*io_led_set_leds_t)(uint8_t board, uint8_t *rgb);
+
+HRESULT led15093_hook_init(const struct led15093_config *cfg, io_led_init_t _led_init, 
+    io_led_set_leds_t _set_leds, unsigned int first_port, unsigned int num_boards, uint8_t board_adr, uint8_t host_adr);
 

@@ -39,16 +39,27 @@ void chuni_dll_config_load(
 
     // Workaround for x64/x86 external IO dlls
     // path32 for 32bit, path64 for 64bit
-    // for else.. is that possible? idk
+    // path for 32bit only dlls (internal chu2to3 engine)
 
-    #if defined(ENV32BIT)
-        GetPrivateProfileStringW(
-                L"chuniio",
-                L"path32",
-                L"",
-                cfg->path,
-                _countof(cfg->path),
-                filename);
+    GetPrivateProfileStringW(
+            L"chuniio",
+            L"path",
+            L"",
+            cfg->path,
+            _countof(cfg->path),
+            filename);
+    if (cfg->path[0] != L'\0') {
+        cfg->chu2to3 = 1;
+    } else {
+        cfg->chu2to3 = 0;
+    #if defined(ENV32BIT)	
+			GetPrivateProfileStringW(
+					L"chuniio",
+					L"path32",
+					L"",
+					cfg->path,
+					_countof(cfg->path),
+					filename);
     #elif defined(ENV64BIT)
         GetPrivateProfileStringW(
                 L"chuniio",
@@ -60,7 +71,7 @@ void chuni_dll_config_load(
     #else
         #error "Unknown environment"
     #endif
-    
+    }
 }
 
 void slider_config_load(struct slider_config *cfg, const wchar_t *filename)

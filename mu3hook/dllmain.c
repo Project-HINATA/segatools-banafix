@@ -61,11 +61,14 @@ static DWORD CALLBACK mu3_pre_startup(void)
         goto fail;
     }
 
+    /*
+    // Does not work, Unity moment
     hr = led15093_hook_init(&mu3_hook_cfg.led15093, 3, 1, 1, 2);
 
     if (FAILED(hr)) {
         return hr;
     }
+    */
 
     hr = sg_reader_hook_init(&mu3_hook_cfg.aime, 1, 1, mu3_hook_mod);
 

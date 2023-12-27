@@ -57,7 +57,24 @@ void chuni_io_config_load(
                 filename);
     }
 
-    GetPrivateProfileStringW(L"slider", L"ledport", L"COM5", port_input, 6, filename);
-    wcsncpy(cfg->led_com, L"\\\\.\\", 4);
-    wcsncat_s(cfg->led_com, 11, port_input, 6);
+    cfg->led_output_pipe = GetPrivateProfileIntW(L"led", L"cabLedOutputPipe", 1, filename);
+    cfg->led_output_serial = GetPrivateProfileIntW(L"led", L"cabLedOutputSerial", 0, filename);
+    
+    cfg->slider_led_output_pipe = GetPrivateProfileIntW(L"led", L"controllerLedOutputPipe", 1, filename);
+    cfg->slider_led_output_serial = GetPrivateProfileIntW(L"led", L"controllerLedOutputSerial", 0, filename);
+
+    cfg->led_serial_baud = GetPrivateProfileIntW(L"led", L"serialBaud", 921600, filename);
+
+    GetPrivateProfileStringW(
+            L"led",
+            L"serialPort",
+            L"COM5",
+            port_input,
+            6,
+            filename);
+
+    // Sanitize the output path. If it's a serial COM port, it needs to be prefixed
+    // with `\\.\`.
+    wcsncpy(cfg->led_serial_port, L"\\\\.\\", 4);
+    wcsncat_s(cfg->led_serial_port, 11, port_input, 6);
 }

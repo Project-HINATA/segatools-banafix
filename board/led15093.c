@@ -103,11 +103,16 @@ static uint16_t led15093_fw_sum;
 static uint8_t led15093_board_adr = 1;
 static uint8_t led15093_host_adr = 1;
 
-HRESULT led15093_hook_init(const struct led15093_config *cfg, unsigned int first_port, 
-    unsigned int num_boards, uint8_t board_adr, uint8_t host_adr)
+static io_led_init_t led_init;
+static io_led_set_leds_t set_leds;
+
+HRESULT led15093_hook_init(const struct led15093_config *cfg, io_led_init_t _led_init, 
+    io_led_set_leds_t _set_leds, unsigned int first_port, unsigned int num_boards, uint8_t board_adr, uint8_t host_adr)
 {
 
     assert(cfg != NULL);
+    assert(_led_init != NULL);
+    assert(_set_leds != NULL);
 
     if (!cfg->enable) {
         return S_FALSE;
@@ -117,6 +122,8 @@ HRESULT led15093_hook_init(const struct led15093_config *cfg, unsigned int first
         first_port = cfg->port_no;
     }
 
+    led_init = _led_init;
+    set_leds = _set_leds;
     led15093_board_adr = board_adr;
     led15093_host_adr = host_adr;
 
@@ -207,9 +214,9 @@ static HRESULT led15093_handle_irp_locked(int board, struct irp *irp)
 
         if (!v->started) {
             dprintf("LED 15093: Starting LED backend\n");
-            // hr = fgo_dll.led_init();
-            hr = S_OK;
+            hr = led_init();
 
+            // hr = S_OK;
             v->started = true;
             v->start_hr = hr;
 
@@ -229,6 +236,29 @@ static HRESULT led15093_handle_irp_locked(int board, struct irp *irp)
         }
     }
     */
+    
+    if (irp->op == IRP_OP_OPEN) {
+        dprintf("LED 15093: Starting backend DLL\n");
+        // int res = led_init();
+        hr = led_init();
+        
+        /*
+        if (res != 0) {
+            dprintf("LED 15093: Backend error, LED board disconnected: "
+                    "%d\n",
+                    res);
+
+            return E_FAIL;
+        }
+        */
+        if (FAILED(hr)) {
+            dprintf("LED 15093: Backend error, LED board disconnected: "
+                    "%x\n",
+                    (int) hr);
+
+            return hr;
+        }
+    }
 
     hr = uart_handle_irp(boarduart, irp);
 
@@ -657,8 +687,20 @@ static HRESULT led15093_req_set_imm_led(int board, const struct led15093_req_set
         return E_INVALIDARG;
     }
 
-    memcpy(v->led, req->data, req->hdr.nbytes - 1);
+    /*
+    if (board == 0) {
+        dprintf("board %d: red: %d, green: %d, blue: %d\n", board, req->data[0x96], req->data[0x97], req->data[0x98]);
+	}
+	else if (board == 1)
+	{
+		dprintf("board %d: red: %d, green: %d, blue: %d\n", board, req->data[0xb4], req->data[0xb5], req->data[0xb6]);
+    }
+    */
 
+    // Return the current LED data, remove const qualifier
+    set_leds(board, (uint8_t *) req->data);
+
+    memcpy(v->led, req->data, req->hdr.nbytes - 1);
     // fgo_dll.led_gr_set_imm((const uint8_t*)&v->led);
 
     if (!v->enable_response)
