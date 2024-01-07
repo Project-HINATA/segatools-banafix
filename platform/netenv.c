@@ -1,5 +1,4 @@
 #include <windows.h>
-#include <wincrypt.h>
 #include <iphlpapi.h>
 
 #include <stddef.h>
@@ -372,9 +371,12 @@ static uint32_t WINAPI hook_GetBestRoute(
         return ERROR_INVALID_PARAMETER;
     }
 
-    dprintf("Netenv: GetBestRoute ip4 %x -> ip4 %x\n",
-            (int) _byteswap_ulong(src_ip),
-            (int) _byteswap_ulong(dest_ip));
+    uint32_t src_addr = _byteswap_ulong(src_ip);
+    uint32_t dest_addr = _byteswap_ulong(dest_ip);
+
+    dprintf("Netenv: GetBestRoute ip4 %u.%u.%u.%u -> ip4 %u.%u.%u.%u\n",
+            (src_addr >> 24) & 0xff, (src_addr >> 16) & 0xff, (src_addr >> 8) & 0xff, src_addr & 0xff,
+            (dest_addr >> 24) & 0xff, (dest_addr >> 16) & 0xff, (dest_addr >> 8) & 0xff, dest_addr & 0xff);
 
     memset(route, 0, sizeof(*route));
 
@@ -469,8 +471,10 @@ static uint32_t WINAPI hook_IcmpSendEcho2(
         return 0;
     }
 
-    dprintf("Netenv: Virtualized ICMP Ping to ip4 %x\n",
-            (int) _byteswap_ulong(DestinationAddress));
+    uint32_t addr = _byteswap_ulong(DestinationAddress);
+
+    dprintf("Netenv: Virtualized ICMP Ping to ip4 %u.%u.%u.%u\n",
+            (addr >> 24) & 0xff, (addr >> 16) & 0xff, (addr >> 8) & 0xff, addr & 0xff);
 
     pong = (ICMP_ECHO_REPLY *) ReplyBuffer;
     memset(pong, 0, sizeof(*pong));
