@@ -142,7 +142,6 @@ void fgo_io_get_analogs(int16_t *stick_x, int16_t *stick_y)
 
 HRESULT fgo_io_led_init(void)
 {
-    // return 0;
     return S_OK;
 }
 

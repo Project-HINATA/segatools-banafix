@@ -57,7 +57,6 @@ static HRESULT idac_io4_poll(void *ctx, struct io4_state *state)
     struct idac_io_analog_state analog_state;
     HRESULT hr;
 
-    assert(idac_dll.poll != NULL);
     assert(idac_dll.get_opbtns != NULL);
     assert(idac_dll.get_gamebtns != NULL);
     assert(idac_dll.get_analogs != NULL);
@@ -65,13 +64,6 @@ static HRESULT idac_io4_poll(void *ctx, struct io4_state *state)
 
     memset(state, 0, sizeof(*state));
     memset(&analog_state, 0, sizeof(analog_state));
-
-    hr = idac_dll.poll();
-
-    if (FAILED(hr)) {
-        return hr;
-    }
-
     opbtn = 0;
     gamebtn = 0;
     gear = 0;

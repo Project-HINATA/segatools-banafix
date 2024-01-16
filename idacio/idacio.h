@@ -56,13 +56,6 @@ uint16_t idac_io_get_api_version(void);
 
 HRESULT idac_io_init(void);
 
-/* Send any queued outputs (of which there are currently none, though this may
-   change in subsequent API versions) and retrieve any new inputs.
-
-   Minimum API version: 0x0100 */
-
-HRESULT idac_io_poll(void);
-
 /* Get the state of the cabinet's operator buttons as of the last poll. See
    IDAC_IO_OPBTN enum above: this contains bit mask definitions for button
    states returned in *opbtn. All buttons are active-high.
@@ -93,7 +86,7 @@ void idac_io_get_analogs(struct idac_io_analog_state *out);
 /* Poll the current position of the six-speed shifter and return it via the
    gear out parameter. Valid values are 0 for neutral and 1-6 for gears 1-6.
 
-   idzhook internally translates this gear position value into the correct
+   idachook internally translates this gear position value into the correct
    combination of Gear Left, Gear Right, Gear Up, Gear Down buttons that the
    game will then interpret as the current position of the gear lever.
 

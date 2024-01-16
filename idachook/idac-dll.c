@@ -13,9 +13,6 @@ const struct dll_bind_sym idac_dll_syms[] = {
         .sym = "idac_io_init",
         .off = offsetof(struct idac_dll, init),
     }, {
-        .sym = "idac_io_poll",
-        .off = offsetof(struct idac_dll, poll),
-    }, {
         .sym = "idac_io_get_opbtns",
         .off = offsetof(struct idac_dll, get_opbtns),
     }, {

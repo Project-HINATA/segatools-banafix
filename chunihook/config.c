@@ -56,7 +56,7 @@ void led15093_config_load(struct led15093_config *cfg, const wchar_t *filename)
 
     cfg->enable = GetPrivateProfileIntW(L"led15093", L"enable", 1, filename);
     cfg->port_no = 0;
-    cfg->high_baudrate = GetPrivateProfileIntW(L"led15093", L"highBaudrate", 0, filename);
+    cfg->high_baudrate = GetPrivateProfileIntW(L"led15093", L"highBaud", 0, filename);
     cfg->fw_ver = GetPrivateProfileIntW(L"led15093", L"fwVer", 0x90, filename);
     cfg->fw_sum = GetPrivateProfileIntW(L"led15093", L"fwSum", 0xadf7, filename);
 

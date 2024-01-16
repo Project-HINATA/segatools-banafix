@@ -71,7 +71,7 @@ void aime_config_load(struct aime_config *cfg, const wchar_t *filename)
 
     aime_dll_config_load(&cfg->dll, filename);
     cfg->enable = GetPrivateProfileIntW(L"aime", L"enable", 1, filename);
-    cfg->high_baudrate = GetPrivateProfileIntW(L"aime", L"highbaud", 1, filename);
+    cfg->high_baudrate = GetPrivateProfileIntW(L"aime", L"highBaud", 1, filename);
     cfg->gen = GetPrivateProfileIntW(L"aime", L"gen", 0, filename);
 }
 

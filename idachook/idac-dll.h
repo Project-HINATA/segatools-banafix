@@ -7,7 +7,6 @@
 struct idac_dll {
     uint16_t api_version;
     HRESULT (*init)(void);
-    HRESULT (*poll)(void);
     void (*get_opbtns)(uint8_t *opbtn);
     void (*get_gamebtns)(uint8_t *gamebtn);
     void (*get_shifter)(uint8_t *gear);

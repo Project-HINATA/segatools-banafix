@@ -11,7 +11,7 @@ struct fgo_dll {
     void (*get_opbtns)(uint8_t *opbtn);
     void (*get_gamebtns)(uint8_t *gamebtn);
     void (*get_analogs)(int16_t *stick_x, int16_t *stick_y);
-    HRESULT (*led_init)();
+    HRESULT (*led_init)(void);
     void (*led_set_leds)(uint8_t board, uint8_t *rgb);
 };
 

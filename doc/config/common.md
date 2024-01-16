@@ -31,7 +31,7 @@ Default: `1`
 Enable Aime card reader assembly emulation. Disable to use a real SEGA Aime
 reader (COM port number varies by game).
 
-### `highbaud`
+### `highBaud`
 
 Default: `1`
 
