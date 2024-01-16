@@ -7,7 +7,6 @@
 struct swdc_dll {
     uint16_t api_version;
     HRESULT (*init)(void);
-    HRESULT (*poll)(void);
     void (*get_opbtns)(uint8_t *opbtn);
     void (*get_gamebtns)(uint16_t *gamebtn);
     void (*get_analogs)(struct swdc_io_analog_state *out);

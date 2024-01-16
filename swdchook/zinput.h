@@ -8,4 +8,4 @@ struct zinput_config {
     bool enable;
 };
 
-void zinput_hook_init(struct zinput_config *cfg, HINSTANCE self);
+void zinput_hook_init(struct zinput_config *cfg);

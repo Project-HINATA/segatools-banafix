@@ -16,7 +16,6 @@
 #include "swdchook/config.h"
 #include "swdchook/swdc-dll.h"
 #include "swdchook/io4.h"
-#include "swdchook/zinput.h"
 
 #include "platform/platform.h"
 
@@ -39,7 +38,6 @@ static DWORD CALLBACK swdc_pre_startup(void)
     /* Hook Win32 APIs */
 
     serial_hook_init();
-    zinput_hook_init(&swdc_hook_cfg.zinput, swdc_hook_mod);
     dvd_hook_init(&swdc_hook_cfg.dvd, swdc_hook_mod);
 
     /* Initialize emulation hooks */
@@ -49,6 +47,12 @@ static DWORD CALLBACK swdc_pre_startup(void)
             "SDDS",
             "ACA4",
             swdc_hook_mod);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
+    hr = swdc_dll_init(&swdc_hook_cfg.dll, swdc_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;
@@ -66,17 +70,15 @@ static DWORD CALLBACK swdc_pre_startup(void)
         return hr;
     }
 
-    hr = swdc_dll_init(&swdc_hook_cfg.dll, swdc_hook_mod);
-
-    if (FAILED(hr)) {
-        goto fail;
-    }
-
     hr = swdc_io4_hook_init(&swdc_hook_cfg.io4);
 
     if (FAILED(hr)) {
         goto fail;
     }
+
+    /* Hook external DLL APIs */
+
+    zinput_hook_init(&swdc_hook_cfg.zinput);
 
     /* Initialize debug helpers */
 

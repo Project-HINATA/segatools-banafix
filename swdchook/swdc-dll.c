@@ -13,9 +13,6 @@ const struct dll_bind_sym swdc_dll_syms[] = {
         .sym = "swdc_io_init",
         .off = offsetof(struct swdc_dll, init),
     }, {
-        .sym = "swdc_io_poll",
-        .off = offsetof(struct swdc_dll, poll),
-    }, {
         .sym = "swdc_io_get_opbtns",
         .off = offsetof(struct swdc_dll, get_opbtns),
     }, {

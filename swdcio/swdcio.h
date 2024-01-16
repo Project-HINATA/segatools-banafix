@@ -55,7 +55,7 @@ struct swdc_io_analog_state {
 uint16_t swdc_io_get_api_version(void);
 
 /* Initialize the IO DLL. This is the second function that will be called on
-   your DLL, after mu3_io_get_api_version.
+   your DLL, after SWDC_io_get_api_version.
 
    All subsequent calls to this API may originate from arbitrary threads.
 
@@ -63,15 +63,8 @@ uint16_t swdc_io_get_api_version(void);
 
 HRESULT swdc_io_init(void);
 
-/* Send any queued outputs (of which there are currently none, though this may
-   change in subsequent API versions) and retrieve any new inputs.
-
-   Minimum API version: 0x0100 */
-
-HRESULT swdc_io_poll(void);
-
 /* Get the state of the cabinet's operator buttons as of the last poll. See
-   MU3_IO_OPBTN enum above: this contains bit mask definitions for button
+   SWDC_IO_OPBTN enum above: this contains bit mask definitions for button
    states returned in *opbtn. All buttons are active-high.
 
    Minimum API version: 0x0100 */
@@ -79,7 +72,7 @@ HRESULT swdc_io_poll(void);
 void swdc_io_get_opbtns(uint8_t *opbtn);
 
 /* Get the state of the cabinet's gameplay buttons as of the last poll. See
-   MU3_IO_GAMEBTN enum above for bit mask definitions. Inputs are split into
+   SWDC_IO_GAMEBTN enum above for bit mask definitions. Inputs are split into
    a left hand side set of inputs and a right hand side set of inputs: the bit
    mappings are the same in both cases.
 

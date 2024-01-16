@@ -6,9 +6,13 @@
 
 #include "board/io4.h"
 
+#include "util/dprintf.h"
+
 #include "swdchook/swdc-dll.h"
 
-#include "util/dprintf.h"
+static HANDLE mmf;
+static HRESULT init_mmf(void);
+static void swdc_set_gamebtns(uint16_t value);
 
 static HRESULT swdc_io4_poll(void *ctx, struct io4_state *state);
 static uint16_t coins;
@@ -17,8 +21,7 @@ static const struct io4_ops swdc_io4_ops = {
     .poll = swdc_io4_poll,
 };
 
-HRESULT swdc_io4_hook_init(const struct io4_config *cfg)
-{
+HRESULT swdc_io4_hook_init(const struct io4_config *cfg) {
     HRESULT hr;
 
     assert(swdc_dll.init != NULL);
@@ -29,30 +32,54 @@ HRESULT swdc_io4_hook_init(const struct io4_config *cfg)
         return hr;
     }
 
+    hr = init_mmf();
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     return swdc_dll.init();
 }
 
-static HRESULT swdc_io4_poll(void *ctx, struct io4_state *state)
-{
+// Function to initialize the memory-mapped file
+static HRESULT init_mmf(void) {
+    mmf = CreateFileMappingA(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, 2, "SWDCButton");
+    if (mmf == NULL) {
+        return S_FALSE;
+    }
+
+    swdc_set_gamebtns(0);
+
+    return S_OK;
+}
+
+void swdc_set_gamebtns(uint16_t value) {
+    // WaitForSingleObject(mutex, INFINITE);
+
+    // Update the memory-mapped file
+    LPVOID mmf_view = MapViewOfFile(mmf, FILE_MAP_ALL_ACCESS, 0, 0, 2);
+    if (mmf_view != NULL) {
+        uint16_t* ptr = (uint16_t*)mmf_view;
+        *ptr = value;
+
+        UnmapViewOfFile(mmf_view);
+    }
+
+    // ReleaseMutex(mutex);
+}
+
+static HRESULT swdc_io4_poll(void *ctx, struct io4_state *state) {
     uint8_t opbtn;
     uint16_t gamebtn;
     struct swdc_io_analog_state analog_state;
     HRESULT hr;
 
-    assert(swdc_dll.poll != NULL);
     assert(swdc_dll.get_opbtns != NULL);
     assert(swdc_dll.get_gamebtns != NULL);
     assert(swdc_dll.get_analogs != NULL);
 
     memset(state, 0, sizeof(*state));
     memset(&analog_state, 0, sizeof(analog_state));
-
-    hr = swdc_dll.poll();
-
-    if (FAILED(hr)) {
-        return hr;
-    }
-
     opbtn = 0;
     gamebtn = 0;
 
@@ -99,7 +126,17 @@ static HRESULT swdc_io4_poll(void *ctx, struct io4_state *state)
         state->buttons[0] |= 1 << 2;
     }
 
-    /* Update steering wheel buttons */
+/* 
+    Update steering wheel buttons
+
+    Those are connected to the SEGA838-15415 INDICATOR BD MAIN 
+    USB board which is not emulated for now. So those buttons
+    are hooked to the built-in XInput support.
+*/
+
+    /* Instead update gamebtns for the file mapping */
+
+    swdc_set_gamebtns(gamebtn);
 
     if (gamebtn & SWDC_IO_GAMEBTN_STEERING_BLUE) {
         state->buttons[1] |= 1 << 15;

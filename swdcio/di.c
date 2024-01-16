@@ -28,9 +28,6 @@ static BOOL CALLBACK swdc_di_enum_callback(
 static BOOL CALLBACK swdc_di_enum_callback_pedals(
         const DIDEVICEINSTANCEW *dev,
         void *ctx);
-static BOOL CALLBACK swdc_di_enum_callback_shifter(
-        const DIDEVICEINSTANCEW *dev,
-        void *ctx);
 static void swdc_di_get_buttons(uint16_t *gamebtn_out);
 static uint8_t swdc_di_decode_pov(DWORD pov);
 static void swdc_di_get_analogs(struct swdc_io_analog_state *out);

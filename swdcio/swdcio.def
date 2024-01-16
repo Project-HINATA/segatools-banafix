@@ -2,7 +2,6 @@ LIBRARY swdcio
 
 EXPORTS
     swdc_io_init
-    swdc_io_poll
     swdc_io_get_opbtns
     swdc_io_get_gamebtns
     swdc_io_get_analogs

@@ -13,7 +13,6 @@ EXPORTS
     amDllVideoSetResolution @3
     swdc_io_get_api_version
     swdc_io_init
-    swdc_io_poll
     swdc_io_get_opbtns
     swdc_io_get_gamebtns
     swdc_io_get_analogs
