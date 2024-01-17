@@ -129,7 +129,7 @@ static HRESULT swdc_io4_poll(void *ctx, struct io4_state *state) {
 /* 
     Update steering wheel buttons
 
-    Those are connected to the SEGA838-15415 INDICATOR BD MAIN 
+    Those are connected to the SEGA 838-15415 INDICATOR BD MAIN 
     USB board which is not emulated for now. So those buttons
     are hooked to the built-in XInput support.
 */

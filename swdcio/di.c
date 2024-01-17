@@ -408,7 +408,7 @@ static BOOL CALLBACK swdc_di_enum_callback_pedals(
 static void swdc_di_get_buttons(uint16_t *gamebtn_out)
 {
     union swdc_di_state state;
-    uint8_t gamebtn;
+    uint16_t gamebtn;
     HRESULT hr;
 
     assert(gamebtn_out != NULL);
