@@ -396,8 +396,8 @@ is an issue. Billing types are:
 Default: `0x64`
 
 An 8-bit bitfield of unclear meaning. The least significant bit indicates a
-developer dongle, I think? Changing this doesn't seem to have any effect on
-anything other than Project DIVA.
+developer dongle. Changing this doesn't seem to have any effect on
+anything other than SEGA AM2 games.
 
 Other values observed in the wild:
 
