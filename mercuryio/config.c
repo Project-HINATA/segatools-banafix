@@ -27,11 +27,11 @@ void mercury_io_config_load(
     assert(cfg != NULL);
     assert(filename != NULL);
 
-    cfg->vk_test = GetPrivateProfileIntW(L"io4", L"test", 0x2D, filename);
-    cfg->vk_service = GetPrivateProfileIntW(L"io4", L"service", 0x2E, filename);
-    cfg->vk_coin = GetPrivateProfileIntW(L"io4", L"coin", 0x24, filename);
-    cfg->vk_vol_up = GetPrivateProfileIntW(L"io4", L"volup", 0x26, filename);
-    cfg->vk_vol_down = GetPrivateProfileIntW(L"io4", L"voldown", 0x28, filename);
+    cfg->vk_test = GetPrivateProfileIntW(L"io4", L"test", VK_F1, filename);
+    cfg->vk_service = GetPrivateProfileIntW(L"io4", L"service", VK_F2, filename);
+    cfg->vk_coin = GetPrivateProfileIntW(L"io4", L"coin", VK_F3, filename);
+    cfg->vk_vol_up = GetPrivateProfileIntW(L"io4", L"volup", VK_UP, filename);
+    cfg->vk_vol_down = GetPrivateProfileIntW(L"io4", L"voldown", VK_DOWN, filename);
 
     for (i = 0 ; i < 240 ; i++) {
         swprintf_s(key, _countof(key), L"cell%i", i + 1);

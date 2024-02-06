@@ -121,9 +121,10 @@ void idz_io_config_load(struct idz_io_config *cfg, const wchar_t *filename)
     assert(cfg != NULL);
     assert(filename != NULL);
 
-    cfg->vk_test = GetPrivateProfileIntW(L"io3", L"test", '1', filename);
-    cfg->vk_service = GetPrivateProfileIntW(L"io3", L"service", '2', filename);
-    cfg->vk_coin = GetPrivateProfileIntW(L"io3", L"coin", '3', filename);
+    /* Technically it's io4 */
+    cfg->vk_test = GetPrivateProfileIntW(L"io3", L"test", VK_F1, filename);
+    cfg->vk_service = GetPrivateProfileIntW(L"io3", L"service", VK_F2, filename);
+    cfg->vk_coin = GetPrivateProfileIntW(L"io3", L"coin", VK_F3, filename);
     cfg->restrict_ = GetPrivateProfileIntW(L"io3", L"restrict", 97, filename);
 
     GetPrivateProfileStringW(

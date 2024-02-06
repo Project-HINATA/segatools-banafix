@@ -27,9 +27,9 @@ void diva_io_config_load(
     assert(cfg != NULL);
     assert(filename != NULL);
 
-    cfg->vk_test = GetPrivateProfileIntW(L"io3", L"test", '1', filename);
-    cfg->vk_service = GetPrivateProfileIntW(L"io3", L"service", '2', filename);
-    cfg->vk_coin = GetPrivateProfileIntW(L"io3", L"coin", '3', filename);
+    cfg->vk_test = GetPrivateProfileIntW(L"io3", L"test", VK_F1, filename);
+    cfg->vk_service = GetPrivateProfileIntW(L"io3", L"service", VK_F2, filename);
+    cfg->vk_coin = GetPrivateProfileIntW(L"io3", L"coin", VK_F3, filename);
 
     for (i = 0 ; i < _countof(cfg->vk_buttons) ; i++) {
         swprintf_s(key, _countof(key), L"key%i", i + 1);

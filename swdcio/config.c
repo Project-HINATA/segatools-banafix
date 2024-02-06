@@ -112,9 +112,9 @@ void swdc_io_config_load(struct swdc_io_config *cfg, const wchar_t *filename)
     assert(cfg != NULL);
     assert(filename != NULL);
 
-    cfg->vk_test = GetPrivateProfileIntW(L"io4", L"test", '1', filename);
-    cfg->vk_service = GetPrivateProfileIntW(L"io4", L"service", '2', filename);
-    cfg->vk_coin = GetPrivateProfileIntW(L"io4", L"coin", '3', filename);
+    cfg->vk_test = GetPrivateProfileIntW(L"io4", L"test", VK_F1, filename);
+    cfg->vk_service = GetPrivateProfileIntW(L"io4", L"service", VK_F2, filename);
+    cfg->vk_coin = GetPrivateProfileIntW(L"io4", L"coin", VK_F3, filename);
     cfg->restrict_ = GetPrivateProfileIntW(L"io4", L"restrict", 128, filename);
 
     GetPrivateProfileStringW(
