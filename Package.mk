@@ -225,6 +225,7 @@ $(BUILD_DIR_ZIP)/segatools.zip: \
 		$(BUILD_DIR_ZIP)/mu3.zip \
 		$(BUILD_DIR_ZIP)/mai2.zip \
 		$(BUILD_DIR_ZIP)/cm.zip \
+		$(BUILD_DIR_ZIP)/fgo.zip \
 		CHANGELOG.md \
 		README.md \
 
