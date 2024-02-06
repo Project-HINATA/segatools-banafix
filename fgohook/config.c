@@ -116,6 +116,7 @@ void fgo_hook_config_load(
     aime_config_load(&cfg->aime, filename);
     dvd_config_load(&cfg->dvd, filename);
     io4_config_load(&cfg->io4, filename);
+    vfd_config_load(&cfg->vfd, filename);
     touch_screen_config_load(&cfg->touch, filename);
     printer_config_load(&cfg->printer, filename);
     fgo_deck_config_load(&cfg->deck, filename);

@@ -37,5 +37,6 @@ void mai2_hook_config_load(
     aime_config_load(&cfg->aime, filename);
     dvd_config_load(&cfg->dvd, filename);
     io4_config_load(&cfg->io4, filename);
+    vfd_config_load(&cfg->vfd, filename);
     mai2_dll_config_load(&cfg->dll, filename);
 }

@@ -27,13 +27,21 @@ static struct uart vfd_uart;
 static uint8_t vfd_written[512];
 static uint8_t vfd_readable[512];
 
-HRESULT vfd_hook_init(unsigned int port_no)
+HRESULT vfd_hook_init(const struct vfd_config *cfg, unsigned int port_no)
 {
+    assert(cfg != NULL);
+
+    if (!cfg->enable) {
+        return S_FALSE;
+    }
+
     uart_init(&vfd_uart, port_no);
     vfd_uart.written.bytes = vfd_written;
     vfd_uart.written.nbytes = sizeof(vfd_written);
     vfd_uart.readable.bytes = vfd_readable;
     vfd_uart.readable.nbytes = sizeof(vfd_readable);
+
+    dprintf("VFD: hook enabled.\n");
 
     return iohook_push_handler(vfd_handle_irp);
 }

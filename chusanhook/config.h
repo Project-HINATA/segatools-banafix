@@ -20,6 +20,7 @@ struct chusan_hook_config {
     struct dvd_config dvd;
     struct io4_config io4;
     struct gfx_config gfx;
+    struct vfd_config vfd;
     struct chuni_dll_config dll;
     struct slider_config slider;
     struct led15093_config led15093;

@@ -15,6 +15,7 @@ struct mai2_hook_config {
     struct aime_config aime;
     struct dvd_config dvd;
     struct io4_config io4;
+    struct vfd_config vfd;
     struct mai2_dll_config dll;
 };
 

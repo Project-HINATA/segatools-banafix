@@ -42,6 +42,7 @@ void swdc_hook_config_load(
     zinput_config_load(&cfg->zinput, filename);
     dvd_config_load(&cfg->dvd, filename);
     io4_config_load(&cfg->io4, filename);
+    vfd_config_load(&cfg->vfd, filename);
 }
 
 void zinput_config_load(struct zinput_config *cfg, const wchar_t *filename)

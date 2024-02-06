@@ -40,5 +40,6 @@ void mu3_hook_config_load(
     dvd_config_load(&cfg->dvd, filename);
     io4_config_load(&cfg->io4, filename);
     gfx_config_load(&cfg->gfx, filename);
+    vfd_config_load(&cfg->vfd, filename);
     mu3_dll_config_load(&cfg->dll, filename);
 }

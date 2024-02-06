@@ -20,6 +20,7 @@ struct mu3_hook_config {
     struct io4_config io4;
     struct gfx_config gfx;
     // struct led15093_config led15093;
+    struct vfd_config vfd;
     struct mu3_dll_config dll;
 };
 

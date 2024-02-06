@@ -64,7 +64,7 @@ static DWORD CALLBACK swdc_pre_startup(void)
         goto fail;
     }
 
-    hr = vfd_hook_init(4);
+    hr = vfd_hook_init(&swdc_hook_cfg.vfd, 4);
 
     if (FAILED(hr)) {
         return hr;

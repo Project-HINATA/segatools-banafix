@@ -8,6 +8,7 @@
 #include "board/aime-dll.h"
 #include "board/config.h"
 #include "board/sg-reader.h"
+#include "board/vfd.h"
 
 #include "util/dprintf.h"
 
@@ -81,4 +82,12 @@ void io4_config_load(struct io4_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"io4", L"enable", 1, filename);
+}
+
+void vfd_config_load(struct vfd_config *cfg, const wchar_t *filename)
+{
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    cfg->enable = GetPrivateProfileIntW(L"vfd", L"enable", 1, filename);
 }

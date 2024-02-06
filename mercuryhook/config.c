@@ -68,6 +68,7 @@ void mercury_hook_config_load(
     dvd_config_load(&cfg->dvd, filename);
     io4_config_load(&cfg->io4, filename);
     gfx_config_load(&cfg->gfx, filename);
+    vfd_config_load(&cfg->vfd, filename);
     mercury_dll_config_load(&cfg->dll, filename);
     touch_config_load(&cfg->touch, filename);
     elisabeth_config_load(&cfg->elisabeth, filename);

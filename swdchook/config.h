@@ -17,6 +17,7 @@ struct swdc_hook_config {
     struct aime_config aime;
     struct dvd_config dvd;
     struct io4_config io4;
+    struct vfd_config vfd;
     struct swdc_dll_config dll;
     struct zinput_config zinput;
 };

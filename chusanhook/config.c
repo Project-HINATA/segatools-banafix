@@ -160,6 +160,7 @@ void chusan_hook_config_load(
     dvd_config_load(&cfg->dvd, filename);
     io4_config_load(&cfg->io4, filename);
     gfx_config_load(&cfg->gfx, filename);
+    vfd_config_load(&cfg->vfd, filename);
     chuni_dll_config_load(&cfg->dll, filename);
     slider_config_load(&cfg->slider, filename);
     led15093_config_load(&cfg->led15093, filename);

@@ -2,4 +2,9 @@
 
 #include <windows.h>
 
-HRESULT vfd_hook_init(unsigned int port_no);
+struct vfd_config {
+    bool enable;
+};
+
+
+HRESULT vfd_hook_init(const struct vfd_config *cfg, unsigned int port_no);

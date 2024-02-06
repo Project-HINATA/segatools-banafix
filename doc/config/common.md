@@ -84,6 +84,17 @@ emulates an IC card in its proximity. A variety of different IC cards can be
 emulated; the exact choice of card that is emulated depends on the presence or
 absence of the configured card ID files.
 
+## `[vfd]`
+
+Controls emulation of the VFD GP1232A02A FUTABA assembly.
+
+### `enable`
+
+Default: `1`
+
+Enable VFD emulation (currently just stubbed). Disable to use a real VFD
+GP1232A02A FUTABA assembly (COM port number varies by game).
+
 ## `[amvideo]`
 
 Controls the `amvideo.dll` stub built into Segatools. This is a DLL that is

@@ -20,6 +20,7 @@ struct fgo_hook_config {
     struct aime_config aime;
     struct dvd_config dvd;
     struct io4_config io4;
+    struct vfd_config vfd;
     struct touch_screen_config touch;
     struct printer_config printer;
     struct deck_config deck;

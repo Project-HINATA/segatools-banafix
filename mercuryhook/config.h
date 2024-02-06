@@ -19,6 +19,7 @@ struct mercury_hook_config {
     struct dvd_config dvd;
     struct io4_config io4;
     struct gfx_config gfx;
+    struct vfd_config vfd;
     struct mercury_dll_config dll;
     struct touch_config touch;
     struct elisabeth_config elisabeth;
