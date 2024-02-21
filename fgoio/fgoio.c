@@ -67,11 +67,11 @@ HRESULT fgo_io_poll(void)
         fgo_gamebtn |= FGO_IO_GAMEBTN_TARGET;
     }
 
-    if (xb & XINPUT_GAMEPAD_A) {
+    if (xb & XINPUT_GAMEPAD_A || xb & XINPUT_GAMEPAD_B) {
         fgo_gamebtn |= FGO_IO_GAMEBTN_ATTACK;
     }
 
-    if (xb & XINPUT_GAMEPAD_Y) {
+    if (xb & XINPUT_GAMEPAD_Y || xb & XINPUT_GAMEPAD_X) {
         fgo_gamebtn |= FGO_IO_GAMEBTN_NOBLE_PHANTASHM;
     }
     
