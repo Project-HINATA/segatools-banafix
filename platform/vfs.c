@@ -466,10 +466,10 @@ static HRESULT vfs_path_hook_option(
 
 static HRESULT vfs_reg_read_amfs(void *bytes, uint32_t *nbytes)
 {
-    return reg_hook_read_wstr(bytes, nbytes, vfs_config.amfs); // seems to be busted?
+    return reg_hook_read_wstr(bytes, nbytes, L"E:\\");
 }
 
 static HRESULT vfs_reg_read_appdata(void *bytes, uint32_t *nbytes)
 {
-    return reg_hook_read_wstr(bytes, nbytes, vfs_config.appdata);
+    return reg_hook_read_wstr(bytes, nbytes, L"Y:\\");
 }
