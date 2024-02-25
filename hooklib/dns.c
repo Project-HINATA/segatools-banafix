@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <windns.h>
 #include <ws2tcpip.h>
+#include <winhttp.h>
 
 #include <assert.h>
 #include <stdbool.h>
@@ -65,6 +66,12 @@ static int WSAAPI hook_getaddrinfo(
         const char *pServiceName,
         const ADDRINFOA *pHints,
         ADDRINFOA **ppResult);
+    
+static HINTERNET WINAPI hook_WinHttpConnect(
+        HINTERNET hSession,
+        const wchar_t *pwszServerName,
+        INTERNET_PORT nServerPort,
+        DWORD dwReserved);
 
 /* Link pointers */
 
@@ -95,6 +102,12 @@ static int (WSAAPI *next_getaddrinfo)(
         const ADDRINFOA *pHints,
         ADDRINFOA **ppResult);
 
+static HINTERNET (WINAPI *next_WinHttpConnect)(
+        HINTERNET hSession,
+        const wchar_t *pwszServerName,
+        INTERNET_PORT nServerPort,
+        DWORD dwReserved);
+
 static const struct hook_symbol dns_hook_syms_dnsapi[] = {
     {
         .name       = "DnsQuery_A",
@@ -117,6 +130,14 @@ static const struct hook_symbol dns_hook_syms_ws2[] = {
         .ordinal    = 176,
         .patch      = hook_getaddrinfo,
         .link       = (void **) &next_getaddrinfo,
+    }
+};
+
+static const struct hook_symbol dns_hook_syms_winhttp[] = {
+    {
+        .name       = "WinHttpConnect",
+        .patch      = hook_WinHttpConnect,
+        .link       = (void **) &next_WinHttpConnect,
     }
 };
 
@@ -145,6 +166,12 @@ static void dns_hook_init(void)
             "ws2_32.dll",
             dns_hook_syms_ws2,
             _countof(dns_hook_syms_ws2));
+    
+    hook_table_apply(
+            NULL,
+            "winhttp.dll",
+            dns_hook_syms_winhttp,
+            _countof(dns_hook_syms_winhttp));
 }
 
 HRESULT dns_hook_push(const wchar_t *from_src, const wchar_t *to_src)
@@ -459,4 +486,39 @@ end:
     free(str);
 
     return result;
+}
+
+static HINTERNET WINAPI hook_WinHttpConnect(
+        HINTERNET hSession,
+        const wchar_t *pwszServerName,
+        INTERNET_PORT nServerPort,
+        DWORD dwReserved)
+{
+    const struct dns_hook_entry *pos;
+    size_t i;
+
+    if (pwszServerName == NULL) {
+        return NULL;
+    }
+
+    EnterCriticalSection(&dns_hook_lock);
+
+    for (i = 0 ; i < dns_hook_nentries ; i++) {
+        pos = &dns_hook_entries[i];
+
+        if (_wcsicmp(pwszServerName, pos->from) == 0) {
+            if(pos->to == NULL) {
+                LeaveCriticalSection(&dns_hook_lock);
+                return NULL;
+            }
+
+            pwszServerName = pos->to;
+
+            break;
+        }
+    }
+
+    LeaveCriticalSection(&dns_hook_lock);
+
+    return next_WinHttpConnect(hSession, pwszServerName, nServerPort, dwReserved);
 }

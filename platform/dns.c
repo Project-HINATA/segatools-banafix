@@ -82,6 +82,26 @@ HRESULT dns_platform_hook_init(const struct dns_config *cfg)
         return hr;
     }
 
+    // AimePay
+    hr = dns_hook_push(L"api-aime.am-all.net", cfg->startup);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    // E-MONEY
+    hr = dns_hook_push(L"tasms-api-basis.thincacloud.com", cfg->startup);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = dns_hook_push(L"shop.tfps.thincacloud.com", cfg->startup);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     // if your ISP resolves bad domains, it will kill the network. These 2
     // *cannot* resolve
 
