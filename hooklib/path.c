@@ -101,6 +101,40 @@ static BOOL WINAPI hook_PathFileExistsA(LPCSTR pszPath);
 
 static BOOL WINAPI hook_PathFileExistsW(LPCWSTR pszPath);
 
+static BOOL WINAPI hook_MoveFileA(
+        const char *lpExistingFileName,
+        const char *lpNewFileName);
+
+static BOOL WINAPI hook_MoveFileW(
+        const wchar_t *lpExistingFileName,
+        const wchar_t *lpNewFileName);
+
+static BOOL WINAPI hook_MoveFileExA(
+        const char *lpExistingFileName,
+        const char *lpNewFileName,
+        uint32_t dwFlags);
+
+
+static BOOL WINAPI hook_ReplaceFileA(
+        const char *lpReplacedFileName,
+        const char *lpReplacementFileName,
+        const char *lpBackupFileName,
+        uint32_t dwReplaceFlags,
+        void *lpExclude,
+        void *lpReserved);
+
+static BOOL WINAPI hook_ReplaceFileW(
+        const wchar_t *lpReplacedFileName,
+        const wchar_t *lpReplacementFileName,
+        const wchar_t *lpBackupFileName,
+        uint32_t dwReplaceFlags,
+        void *lpExclude,
+        void *lpReserved);
+
+static BOOL WINAPI hook_DeleteFileA(const char *lpFileName);
+
+static BOOL WINAPI hook_DeleteFileW(const wchar_t *lpFileName);
+
 /* Link pointers */
 
 static BOOL (WINAPI *next_CreateDirectoryA)(
@@ -185,6 +219,39 @@ static BOOL (WINAPI *next_PathFileExistsA)(LPCSTR pszPath);
 
 static BOOL (WINAPI *next_PathFileExistsW)(LPCWSTR pszPath);
 
+static BOOL (WINAPI *next_MoveFileA)(
+        const char *lpExistingFileName,
+        const char *lpNewFileName);
+
+static BOOL (WINAPI *next_MoveFileW)(
+        const wchar_t *lpExistingFileName,
+        const wchar_t *lpNewFileName);
+
+static BOOL (WINAPI *next_MoveFileExA)(
+        const char *lpExistingFileName,
+        const char *lpNewFileName,
+        uint32_t dwFlags);
+
+static BOOL (WINAPI *next_ReplaceFileA)(
+        const char *lpReplacedFileName,
+        const char *lpReplacementFileName,
+        const char *lpBackupFileName,
+        uint32_t dwReplaceFlags,
+        void *lpExclude,
+        void *lpReserved);
+
+static BOOL (WINAPI *next_ReplaceFileW)(
+        const wchar_t *lpReplacedFileName,
+        const wchar_t *lpReplacementFileName,
+        const wchar_t *lpBackupFileName,
+        uint32_t dwReplaceFlags,
+        void *lpExclude,
+        void *lpReserved);
+
+static BOOL (WINAPI *next_DeleteFileA)(const char *lpFileName);
+
+static BOOL (WINAPI *next_DeleteFileW)(const wchar_t *lpFileName);
+
 /* Hook table */
 
 static const struct hook_symbol path_hook_syms[] = {
@@ -260,6 +327,34 @@ static const struct hook_symbol path_hook_syms[] = {
         .name   = "PathFileExistsW",
         .patch  = hook_PathFileExistsW,
         .link   = (void **) &next_PathFileExistsW,
+    }, {
+        .name   = "MoveFileA",
+        .patch  = hook_MoveFileA,
+        .link   = (void **) &next_MoveFileA,
+    }, {
+        .name   = "MoveFileW",
+        .patch  = hook_MoveFileW,
+        .link   = (void **) &next_MoveFileW,
+    }, {
+        .name   = "MoveFileExA",
+        .patch  = hook_MoveFileExA,
+        .link   = (void **) &next_MoveFileExA,
+    }, {
+        .name   = "ReplaceFileA",
+        .patch  = hook_ReplaceFileA,
+        .link   = (void **) &next_ReplaceFileA,
+    }, {
+        .name   = "ReplaceFileW",
+        .patch  = hook_ReplaceFileW,
+        .link   = (void **) &next_ReplaceFileW,
+    }, {
+        .name   = "DeleteFileA",
+        .patch  = hook_DeleteFileA,
+        .link   = (void **) &next_DeleteFileA,
+    }, {
+        .name   = "DeleteFileW",
+        .patch  = hook_DeleteFileW,
+        .link   = (void **) &next_DeleteFileW,
     }
 };
 
@@ -903,6 +998,216 @@ static BOOL WINAPI hook_PathFileExistsW(LPCWSTR pszPath)
     ok = next_PathFileExistsW(trans ? trans : pszPath);
 
     free(trans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_MoveFileA(
+        const char *lpExistingFileName,
+        const char *lpNewFileName)
+{
+    char *oldTrans;
+    char *newTrans;
+    BOOL ok;
+
+    ok = path_transform_a(&oldTrans, lpExistingFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = path_transform_a(&newTrans, lpNewFileName);
+
+    if (!ok) {
+        free(oldTrans);
+
+        return FALSE;
+    }
+
+    ok = next_MoveFileA(
+        oldTrans ? oldTrans : lpExistingFileName,
+        newTrans ? newTrans : lpNewFileName);
+    
+    free(oldTrans);
+    free(newTrans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_MoveFileW(
+        const wchar_t *lpExistingFileName,
+        const wchar_t *lpNewFileName)
+{
+    wchar_t *oldTrans;
+    wchar_t *newTrans;
+    BOOL ok;
+
+    ok = path_transform_w(&oldTrans, lpExistingFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = path_transform_w(&newTrans, lpNewFileName);
+
+    if (!ok) {
+        free(oldTrans);
+
+        return FALSE;
+    }
+
+    ok = next_MoveFileW(
+        oldTrans ? oldTrans : lpExistingFileName,
+        newTrans ? newTrans : lpNewFileName);
+    
+    free(oldTrans);
+    free(newTrans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_MoveFileExA(
+        const char *lpExistingFileName,
+        const char *lpNewFileName,
+        uint32_t dwFlags)
+{
+    char *oldTrans;
+    char *newTrans;
+    BOOL ok;
+
+    ok = path_transform_a(&oldTrans, lpExistingFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = path_transform_a(&newTrans, lpNewFileName);
+
+    if (!ok) {
+        free(oldTrans);
+
+        return FALSE;
+    }
+
+    ok = next_MoveFileExA(
+        oldTrans ? oldTrans : lpExistingFileName,
+        newTrans ? newTrans : lpNewFileName,
+        dwFlags);
+    
+    free(oldTrans);
+    free(newTrans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_ReplaceFileA(
+        const char *lpReplacedFileName,
+        const char *lpReplacementFileName,
+        const char *lpBackupFileName,
+        uint32_t dwReplaceFlags,
+        void *lpExclude,
+        void *lpReserved)
+{
+    char *oldTrans;
+    char *newTrans;
+    BOOL ok;
+
+    ok = path_transform_a(&oldTrans, lpReplacedFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = path_transform_a(&newTrans, lpReplacementFileName);
+
+    if (!ok) {
+        free(oldTrans);
+
+        return FALSE;
+    }
+
+    ok = next_ReplaceFileA(
+        oldTrans ? oldTrans : lpReplacedFileName,
+        newTrans ? newTrans : lpReplacementFileName,
+        lpBackupFileName,
+        dwReplaceFlags,
+        lpExclude,
+        lpReserved);
+
+    free(oldTrans);
+    free(newTrans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_ReplaceFileW(
+        const wchar_t *lpReplacedFileName,
+        const wchar_t *lpReplacementFileName,
+        const wchar_t *lpBackupFileName,
+        uint32_t dwReplaceFlags,
+        void *lpExclude,
+        void *lpReserved)
+{
+    wchar_t *oldTrans;
+    wchar_t *newTrans;
+    BOOL ok;
+
+    ok = path_transform_w(&oldTrans, lpReplacedFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = path_transform_w(&newTrans, lpReplacementFileName);
+
+    if (!ok) {
+        free(oldTrans);
+
+        return FALSE;
+    }
+
+    ok = next_ReplaceFileW(
+        oldTrans ? oldTrans : lpReplacedFileName,
+        newTrans ? newTrans : lpReplacementFileName,
+        lpBackupFileName,
+        dwReplaceFlags,
+        lpExclude,
+        lpReserved);
+
+    free(oldTrans);
+    free(newTrans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_DeleteFileA(const char *lpFileName) 
+{
+    char *trans;
+    BOOL ok;
+
+    ok = path_transform_a(&trans, lpFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = next_DeleteFileA(trans ? trans: lpFileName);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_DeleteFileW(const wchar_t *lpFileName)
+{
+    wchar_t *trans;
+    BOOL ok;
+
+    ok = path_transform_w(&trans, lpFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = next_DeleteFileW(trans ? trans: lpFileName);
 
     return ok;
 }
