@@ -277,11 +277,12 @@ static HRESULT vfs_path_hook(const wchar_t *src, wchar_t *dest, size_t *count)
     const wchar_t *redir;
     size_t required;
     size_t redir_len;
+    size_t src_len;
 
     assert(src != NULL);
     assert(count != NULL);
 
-    if (src[0] == L'\0' || src[1] != L':' || !path_is_separator_w(src[2])) {
+    if (src[0] == L'\0' || src[1] != L':') {
         return S_FALSE;
     }
 
@@ -304,10 +305,15 @@ static HRESULT vfs_path_hook(const wchar_t *src, wchar_t *dest, size_t *count)
         return S_FALSE;
     }
 
+    /* GetFileAttributesW would request the src "E:", so fix the src_len in
+       in order to redirect the drive letter successfully */
+
+    src_len = path_is_separator_w(src[2]) ? 3 : 2;
+
     /* Cut off <prefix>\, replace with redir path, count NUL terminator */
 
     redir_len = wcslen(redir);
-    required = wcslen(src) - 3 + redir_len + 1;
+    required = wcslen(src) - src_len + redir_len + 1;
 
     if (dest != NULL) {
         if (required > *count) {
@@ -315,7 +321,7 @@ static HRESULT vfs_path_hook(const wchar_t *src, wchar_t *dest, size_t *count)
         }
 
         wcscpy_s(dest, *count, redir);
-        wcscpy_s(dest + redir_len, *count - redir_len, src + 3);
+        wcscpy_s(dest + redir_len, *count - redir_len, src + src_len);
     }
 
     *count = required;
