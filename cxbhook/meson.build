@@ -30,7 +30,5 @@ shared_library(
         'revio.h',
         'led.c',
         'led.h',
-        'network.c',
-        'network.h',
     ],
 )

@@ -49,7 +49,13 @@ static struct hook_symbol lamp_syms[] = {
 
 HRESULT led_hook_init(struct led_config *cfg)
 {
-    dprintf("LED: Init\n");
+    assert(cfg != NULL);
+
+    if (!cfg->enable) {
+        return S_FALSE;
+    }
+    
+    dprintf("LED: Hook enabled.\n");
     return proc_addr_table_push("CommLamp.dll", lamp_syms, _countof(lamp_syms));
 }
 

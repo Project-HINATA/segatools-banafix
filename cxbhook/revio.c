@@ -82,7 +82,13 @@ static struct hook_symbol revio_syms[] = {
 
 HRESULT revio_hook_init(struct revio_config *cfg)
 {
-    dprintf("Revio: Init\n");
+    assert(cfg != NULL);
+
+    if (!cfg->enable) {
+        return S_FALSE;
+    }
+
+    dprintf("Revio: Hook enabled.\n");
     return proc_addr_table_push("CommIo.dll", revio_syms, _countof(revio_syms));
 }
 

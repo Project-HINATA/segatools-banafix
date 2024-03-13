@@ -23,22 +23,32 @@ void cxb_dll_config_load(
         struct cxb_dll_config *cfg,
         const wchar_t *filename)
 {
+    assert(cfg != NULL);
+    assert(filename != NULL);
 
+    GetPrivateProfileStringW(
+            L"cxbio",
+            L"path",
+            L"",
+            cfg->path,
+            _countof(cfg->path),
+            filename);
 }
 
 void revio_config_load(struct revio_config *cfg, const wchar_t *filename)
 {
+    assert(cfg != NULL);
+    assert(filename != NULL);
 
-}
-
-void network_config_load(struct network_config *cfg, const wchar_t *filename)
-{
-
+    cfg->enable = GetPrivateProfileIntW(L"revio", L"enable", 1, filename);
 }
 
 void led_config_load(struct led_config *cfg, const wchar_t *filename)
 {
+    assert(cfg != NULL);
+    assert(filename != NULL);
 
+    cfg->enable = GetPrivateProfileIntW(L"led", L"enable", 1, filename);
 }
 
 void cxb_hook_config_load(
@@ -56,6 +66,5 @@ void cxb_hook_config_load(
     gfx_config_load(&cfg->gfx, filename);
     cxb_dll_config_load(&cfg->dll, filename);
     revio_config_load(&cfg->revio, filename);
-    network_config_load(&cfg->network, filename);
     led_config_load(&cfg->led, filename);
 }

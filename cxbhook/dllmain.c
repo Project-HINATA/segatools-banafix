@@ -9,7 +9,6 @@
 #include "cxbhook/config.h"
 #include "cxbhook/revio.h"
 #include "cxbhook/led.h"
-#include "cxbhook/network.h"
 
 #include "cxbio/cxbio.h"
 
@@ -98,12 +97,6 @@ static DWORD CALLBACK cxb_pre_startup(void)
     }
 
     hr = revio_hook_init(&cxb_hook_cfg.revio);
-
-    if (FAILED(hr)) {
-        goto fail;
-    }
-
-    hr = network_hook_init(&cxb_hook_cfg.network);
 
     if (FAILED(hr)) {
         goto fail;
