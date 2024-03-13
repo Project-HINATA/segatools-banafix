@@ -153,6 +153,13 @@ setting. Also, loopback addresses are specifically checked for and rejected by
 the games themselves; this needs to be a LAN or WAN IP (or a hostname that
 resolves to one).
 
+### `title`
+
+Default: `title`
+
+Leave it as `title` to use the title server returned by ALL.Net. Rewrites 
+the title server hostname for certain games, such as crossbeats REV.
+
 ### `router`
 
 Default: Empty string (i.e. use value from `default` setting)
@@ -388,13 +395,29 @@ Bit values are:
 - 3: EXP: Export (for Asian markets)
 - 4: CHS: China (Simplified Chinese?)
 
+### `billingCa`
+
+Default: `DEVICE\\ca.crt`
+
+Set the billing certificate path. This has to match the one used for the 
+SSL billing server. The DER certificate must fit in 1024 bytes so it must be
+small.
+
+### `billingPub`
+
+Default: `DEVICE\\billing.pub`
+
+Set the actual keychip RSA public key path. This public key has to match the
+private key `billing.key` of the billing server in order to decrypt/encrypt
+the billing transactions.
+
 ### `billingType`
 
 Default: `1`
 
 Set the billing "type" for the keychip. The type determins what kind of revenue share,
 if any, the game maker has with SEGA. Some games may be picky and require types other 
-then 1 (ex. Crossbeats requires billing type 2), so this option is provided if this
+then 1 (ex. crossbeats REV. requires billing type 2), so this option is provided if this
 is an issue. Billing types are:
 
 - 0: No billing?

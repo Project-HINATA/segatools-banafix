@@ -13,7 +13,6 @@ EXPORTS
     amDllVideoSetResolution @3
     idac_io_get_api_version
     idac_io_init
-    idac_io_poll
     idac_io_get_opbtns
     idac_io_get_gamebtns
     idac_io_get_shifter

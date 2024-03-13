@@ -154,7 +154,7 @@ static int my_cCommIo_GetTrigger()
     
     out &= ~last_triggers;
 
-    dprintf("Revio: GetTrigger %X\n", out);
+    // dprintf("Revio: GetTrigger %X\n", out);
     last_triggers = out;
     return out;
 }
@@ -188,7 +188,7 @@ static int my_cCommIo_GetRelease()
 
     out &= ~btns;
     
-    dprintf("Revio: GetRelease %X\n", out);
+    // dprintf("Revio: GetRelease %X\n", out);
     last_triggers = btns;
     return out;
 }

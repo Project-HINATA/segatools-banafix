@@ -1,6 +1,6 @@
 # Segatools
 
-Version: `2024-02-27`
+Version: `2024-03-13`
 
 Loaders and hardware emulators for SEGA games that run on the Nu and ALLS platforms.
 
@@ -8,7 +8,9 @@ Loaders and hardware emulators for SEGA games that run on the Nu and ALLS platfo
 
 * CHUNITHM
   * up to [CHUNITHM PARADISE LOST](doc/chunihook.md)
-  * starting from CHUNITHM NEW!! 
+  * starting from CHUNITHM NEW!!
+* crossbeats REV.
+  * up to crossbeats REV. SUNRISE
 * Initial D
   * [Initial D Arcade Stage Zero](doc/idzhook.md)
   * Initial D THE ARCADE

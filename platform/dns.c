@@ -82,6 +82,13 @@ HRESULT dns_platform_hook_init(const struct dns_config *cfg)
         return hr;
     }
 
+    // croosbeats REV.
+    hr = dns_hook_push(L"https://rev-ent.ac.capcom.jp:443", cfg->title);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     // AimePay
     hr = dns_hook_push(L"api-aime.am-all.net", cfg->startup);
 

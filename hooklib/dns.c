@@ -13,6 +13,8 @@
 #include "hook/hr.h"
 #include "hook/table.h"
 
+#include "util/dprintf.h"
+
 #include "hooklib/dns.h"
 
 /* Latest w32headers does not include DnsQueryEx, so we'll have to "polyfill"
@@ -66,12 +68,18 @@ static int WSAAPI hook_getaddrinfo(
         const char *pServiceName,
         const ADDRINFOA *pHints,
         ADDRINFOA **ppResult);
-    
+
 static HINTERNET WINAPI hook_WinHttpConnect(
         HINTERNET hSession,
         const wchar_t *pwszServerName,
         INTERNET_PORT nServerPort,
         DWORD dwReserved);
+
+static bool WINAPI hook_WinHttpCrackUrl(
+        const wchar_t *pwszUrl,
+        DWORD dwUrlLength,
+        DWORD dwFlags,
+        LPURL_COMPONENTS lpUrlComponents);
 
 /* Link pointers */
 
@@ -108,6 +116,12 @@ static HINTERNET (WINAPI *next_WinHttpConnect)(
         INTERNET_PORT nServerPort,
         DWORD dwReserved);
 
+static bool (WINAPI *next_WinHttpCrackUrl)(
+        const wchar_t *pwszUrl,
+        DWORD dwUrlLength,
+        DWORD dwFlags,
+        LPURL_COMPONENTS lpUrlComponents);
+
 static const struct hook_symbol dns_hook_syms_dnsapi[] = {
     {
         .name       = "DnsQuery_A",
@@ -138,13 +152,19 @@ static const struct hook_symbol dns_hook_syms_winhttp[] = {
         .name       = "WinHttpConnect",
         .patch      = hook_WinHttpConnect,
         .link       = (void **) &next_WinHttpConnect,
+    }, {
+        .name       = "WinHttpCrackUrl",
+        .patch      = hook_WinHttpCrackUrl,
+        .link       = (void **) &next_WinHttpCrackUrl,
     }
+
 };
 
 static bool dns_hook_initted;
 static CRITICAL_SECTION dns_hook_lock;
 static struct dns_hook_entry *dns_hook_entries;
 static size_t dns_hook_nentries;
+static char received_title_url[255];
 
 static void dns_hook_init(void)
 {
@@ -521,4 +541,49 @@ static HINTERNET WINAPI hook_WinHttpConnect(
     LeaveCriticalSection(&dns_hook_lock);
 
     return next_WinHttpConnect(hSession, pwszServerName, nServerPort, dwReserved);
+}
+
+// Hook to replace CXB title url
+static bool WINAPI hook_WinHttpCrackUrl(
+        const wchar_t *pwszUrl,
+        DWORD dwUrlLength,
+        DWORD dwFlags,
+        LPURL_COMPONENTS lpUrlComponents)
+{
+    const struct dns_hook_entry *pos;
+    size_t i;
+
+    EnterCriticalSection(&dns_hook_lock);
+
+    for (i = 0 ; i < dns_hook_nentries ; i++) {
+        pos = &dns_hook_entries[i];
+
+        if (_wcsicmp(pwszUrl, pos->from) == 0) {
+            wchar_t* toAddr = pos->to;
+            wchar_t titleBuffer[255];
+            
+            if(wcscmp(toAddr, L"title") == 0) {
+                size_t wstr_c;
+                mbstowcs_s(&wstr_c, titleBuffer, 255, received_title_url, strlen(received_title_url));
+                toAddr = titleBuffer;
+            }
+
+            bool result = next_WinHttpCrackUrl(
+                toAddr,
+                wcslen(toAddr),
+                dwFlags,
+                lpUrlComponents
+            );
+            LeaveCriticalSection(&dns_hook_lock);
+            return result;
+        }
+    }
+
+    LeaveCriticalSection(&dns_hook_lock);
+    return next_WinHttpCrackUrl(
+        pwszUrl,
+        dwUrlLength,
+        dwFlags,
+        lpUrlComponents
+    );
 }

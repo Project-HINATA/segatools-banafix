@@ -52,10 +52,6 @@ HRESULT idac_xi_init(const struct idac_xi_config *cfg, const struct idac_io_back
     return S_OK;
 }
 
-HRESULT idac_io_poll(void) {
-    return S_OK;
-}
-
 static HRESULT idac_xi_config_apply(const struct idac_xi_config *cfg) {
     /* Deadzones check */
     if (cfg->left_stick_deadzone > 32767 || cfg->left_stick_deadzone < 0) {

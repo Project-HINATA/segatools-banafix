@@ -113,6 +113,14 @@ void dns_config_load(struct dns_config *cfg, const wchar_t *filename)
             cfg->aimedb,
             _countof(cfg->aimedb),
             filename);
+
+    GetPrivateProfileStringW(
+            L"dns",
+            L"title",
+            L"title",
+            cfg->title,
+            _countof(cfg->title),
+            filename);
 }
 
 void hwmon_config_load(struct hwmon_config *cfg, const wchar_t *filename)
