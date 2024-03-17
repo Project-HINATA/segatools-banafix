@@ -25,6 +25,13 @@ struct sg_res_header {
     uint8_t payload_len;
 };
 
+/* struct to save the version string with its length
+   to fix NUL terminator issues */
+struct version_info {
+    const char *version;
+    uint8_t length;
+};
+
 typedef HRESULT (*sg_dispatch_fn_t)(
         void *ctx,
         const void *req,

@@ -27,11 +27,11 @@ static HRESULT sg_led_cmd_set_color(
         const struct sg_led *led,
         const struct sg_led_req_set_color *req);
 
-const char *sg_led_info[] = {
-    "15084\xFF\x10\x00\x12",
-    "000-00000\xFF\x11\x40",
+static const struct version_info led_version[] = {
+    {"15084\xFF\x10\x00\x12", 9},
+    {"000-00000\xFF\x11\x40", 12},
     // maybe the same?
-    "000-00000\xFF\x11\x40"
+    {"000-00000\xFF\x11\x40", 12}
 };
 
 void sg_led_init(
@@ -156,10 +156,10 @@ static HRESULT sg_led_cmd_get_info(
 {
     sg_led_dprintf(led, "Get info\n");
 
-    unsigned int len = strlen(sg_led_info[led->gen - 1]);
+    const struct version_info *fw = &led_version[led->gen - 1];
 
-    sg_res_init(&res->res, req, len);
-    memcpy(res->payload, sg_led_info[led->gen - 1], len);
+    sg_res_init(&res->res, req, fw->length);
+    memcpy(res->payload, fw->version, fw->length);
 
     return S_OK;
 }

@@ -65,16 +65,16 @@ static HRESULT sg_nfc_cmd_dummy(
         const struct sg_req_header *req,
         struct sg_res_header *res);
 
-static const char *hw_version[] = {
-    "TN32MSEC003S H/W Ver3.0",
-    "837-15286",
-    "837-15396"
+static const struct version_info hw_version[] = {
+    {"TN32MSEC003S H/W Ver3.0", 23},
+    {"837-15286", 9},
+    {"837-15396", 9}
 };
 
-static const char *fw_version[] = {
-    "TN32MSEC003S F/W Ver1.2",
-    "\x94",
-    "\x94"
+static const struct version_info fw_version[] = {
+    {"TN32MSEC003S F/W Ver1.2", 23},
+    {"\x94", 1},
+    {"\x94", 1}
 };
 
 void sg_nfc_init(
@@ -217,11 +217,11 @@ static HRESULT sg_nfc_cmd_get_fw_version(
         const struct sg_req_header *req,
         struct sg_nfc_res_get_fw_version *res)
 {
-    unsigned int len = strlen(fw_version[nfc->gen - 1]);
+    const struct version_info *fw = &fw_version[nfc->gen - 1];
 
     /* Dest version is not NUL terminated, this is intentional */
-    sg_res_init(&res->res, req, len);
-    memcpy(res->version, fw_version[nfc->gen - 1], len);
+    sg_res_init(&res->res, req, fw->length);
+    memcpy(res->version, fw->version, fw->length);
 
     return S_OK;
 }
@@ -231,11 +231,11 @@ static HRESULT sg_nfc_cmd_get_hw_version(
         const struct sg_req_header *req,
         struct sg_nfc_res_get_hw_version *res)
 {
-    unsigned int len = strlen(hw_version[nfc->gen - 1]);
+    const struct version_info *hw = &hw_version[nfc->gen - 1];
 
     /* Dest version is not NUL terminated, this is intentional */
-    sg_res_init(&res->res, req, len);
-    memcpy(res->version, hw_version[nfc->gen - 1], len);
+    sg_res_init(&res->res, req, hw->length);
+    memcpy(res->version, hw->version, hw->length);
 
     return S_OK;
 }
