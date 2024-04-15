@@ -1,13 +1,22 @@
+#include <assert.h>
 #include <stdbool.h>
 
-#include <windows.h>
-
 #include "hook/table.h"
-
-#include "hooklib/dll.h"
 #include "hooklib/path.h"
-
 #include "util/dprintf.h"
+
+#include "doorstop.h"
+#include "hook.h"
+
+static bool unity_hook_initted;
+static struct unity_config unity_config;
+
+static const wchar_t *target_modules[] = {
+    L"mono.dll",
+    L"mono-2.0-bdwgc.dll",
+    L"cri_ware_unity.dll",
+};
+static const size_t target_modules_len = _countof(target_modules);
 
 static void dll_hook_insert_hooks(HMODULE target);
 
@@ -22,28 +31,33 @@ static const struct hook_symbol unity_kernel32_syms[] = {
     },
 };
 
-static const wchar_t *target_modules[] = {
-    L"mono-2.0-bdwgc.dll",
-    L"cri_ware_unity.dll",
-};
-static const size_t target_modules_len = _countof(target_modules);
+void unity_hook_init(const struct unity_config *cfg, HINSTANCE self) {
+    assert(cfg != NULL);
 
-void unity_hook_init(void)
-{
+    if (!cfg->enable) {
+        return;
+    }
+
+    if (unity_hook_initted) {
+        return;
+    }
+
+    memcpy(&unity_config, cfg, sizeof(*cfg));
     dll_hook_insert_hooks(NULL);
+
+    unity_hook_initted = true;
+    dprintf("Unity: Hook enabled.\n");
 }
 
-static void dll_hook_insert_hooks(HMODULE target)
-{
+static void dll_hook_insert_hooks(HMODULE target) {
     hook_table_apply(
-            target,
-            "kernel32.dll",
-            unity_kernel32_syms,
-            _countof(unity_kernel32_syms));
+        target,
+        "kernel32.dll",
+        unity_kernel32_syms,
+        _countof(unity_kernel32_syms));
 }
 
-static HMODULE WINAPI my_LoadLibraryW(const wchar_t *name)
-{
+static HMODULE WINAPI my_LoadLibraryW(const wchar_t *name) {
     const wchar_t *name_end;
     const wchar_t *target_module;
     bool already_loaded;
@@ -65,6 +79,11 @@ static HMODULE WINAPI my_LoadLibraryW(const wchar_t *name)
 
     if (!already_loaded && result != NULL) {
         name_len = wcslen(name);
+
+        // mono entrypoint for injecting target_assembly
+        if (GetProcAddress(result, "mono_jit_init_version")) {
+            doorstop_mono_hook_init(&unity_config, result);
+        }
 
         for (size_t i = 0; i < target_modules_len; i++) {
             target_module = target_modules[i];

@@ -42,6 +42,7 @@ shlwapi_lib = cc.find_library('shlwapi')
 dinput8_lib = cc.find_library('dinput8')
 dxguid_lib = cc.find_library('dxguid')
 xinput_lib = cc.find_library('xinput')
+pathcch_lib = cc.find_library('pathcch')
 
 inc = include_directories('.')
 capnhook = subproject('capnhook')
@@ -55,6 +56,7 @@ subdir('platform')
 subdir('util')
 
 subdir('gfxhook')
+subdir('unityhook')
 
 subdir('aimeio')
 subdir('chuniio')
