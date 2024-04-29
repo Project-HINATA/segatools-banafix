@@ -66,21 +66,22 @@ void doorstop_invoke(void* domain) {
     if (mono_domain_set_config) {
 #define CONFIG_EXT L".config"
 
-        wchar_t exe_path[MAX_PATH];
-        size_t exe_path_len = GetModuleFileNameW(NULL, exe_path, MAX_PATH);
-        wchar_t *folder_name = wcsdup(exe_path);
+        wchar_t config_path[MAX_PATH];
+        size_t config_path_len = GetModuleFileNameW(NULL, config_path, MAX_PATH);
+        wchar_t *folder_name = wcsdup(config_path);
 
-        PathCchRemoveFileSpec(folder_name, exe_path_len + 1);
+        PathCchRemoveFileSpec(folder_name, config_path_len + 1);
+        wmemcpy(config_path + config_path_len, CONFIG_EXT, sizeof(CONFIG_EXT) / sizeof(CONFIG_EXT[0]));
 
-        char *exe_path_n = narrow(exe_path);
+        char *config_path_n = narrow(config_path);
         char *folder_name_n = narrow(folder_name);
 
-        dprintf("Unity: Setting config paths: base dir: %s; config path: %s\n", folder_name_n, exe_path_n);
+        dprintf("Unity: Setting config paths: base dir: %s; config path: %s\n", folder_name_n, config_path_n);
 
-        mono_domain_set_config(domain, folder_name_n, exe_path_n);
+        mono_domain_set_config(domain, folder_name_n, config_path_n);
 
         free(folder_name);
-        free(exe_path_n);
+        free(config_path_n);
         free(folder_name_n);
 
 #undef CONFIG_EXT
