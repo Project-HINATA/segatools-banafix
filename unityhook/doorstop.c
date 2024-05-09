@@ -118,8 +118,18 @@ void doorstop_invoke(void* domain) {
         return;
     }
 
-    void *desc = mono_method_desc_new("*:Main", FALSE);
+    // BepInEx 5.4.23 has upgrade its doorstop version,
+    // which forces entrypoint to Doorstop.Entrypoint:Start
+
+    void *desc = mono_method_desc_new("Doorstop.Entrypoint:Start", TRUE);
     void *method = mono_method_desc_search_in_image(desc, image);
+
+    if (!method) {
+        // Fallback to old entrypoint definition.
+
+        desc = mono_method_desc_new("*:Main", FALSE);
+        method = mono_method_desc_search_in_image(desc, image);
+    }
 
     if (!method) {
         dprintf("Unity: Assembly does not have a valid entrypoint.\n");
