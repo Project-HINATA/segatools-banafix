@@ -194,6 +194,37 @@ static void dns_hook_init(void)
             _countof(dns_hook_syms_winhttp));
 }
 
+// This function match domain and subdomains like *.naominet.jp.
+bool match_domain(const wchar_t* target, const wchar_t* pattern) {
+    if (_wcsicmp(pattern, target) == 0) {
+        return true;
+    }
+
+    int pattern_ptr_index = 0;
+    int target_ptr_index = 0;
+
+    while (pattern[pattern_ptr_index] != '\0' && target[target_ptr_index] != '\0') {
+        if (pattern[pattern_ptr_index] == '*') {
+            pattern_ptr_index++; // Check next character for wildcard match.
+
+            while (pattern[pattern_ptr_index] != target[target_ptr_index]) {
+                target_ptr_index++;
+
+                if (target[target_ptr_index] == '\0') return false;
+            }
+        }
+        else if (pattern[pattern_ptr_index] != target[target_ptr_index]) {
+            return false;
+        }
+        else {
+            pattern_ptr_index++;
+            target_ptr_index++;
+        }
+    }
+
+    return pattern[pattern_ptr_index] == '\0' && target[target_ptr_index] == '\0';
+}
+
 HRESULT dns_hook_push(const wchar_t *from_src, const wchar_t *to_src)
 {
     HRESULT hr;
@@ -297,7 +328,7 @@ static DNS_STATUS WINAPI hook_DnsQuery_A(
     for (i = 0 ; i < dns_hook_nentries ; i++) {
         pos = &dns_hook_entries[i];
 
-        if (_wcsicmp(wstr, pos->from) == 0) {
+        if (match_domain(wstr, pos->from)) {
             if(pos->to == NULL) {
                 LeaveCriticalSection(&dns_hook_lock);
                 hr = HRESULT_FROM_WIN32(DNS_ERROR_RCODE_NAME_ERROR);
@@ -361,7 +392,7 @@ static DNS_STATUS WINAPI hook_DnsQuery_W(
     for (i = 0 ; i < dns_hook_nentries ; i++) {
         pos = &dns_hook_entries[i];
 
-        if (_wcsicmp(pszName, pos->from) == 0) {
+        if (match_domain(pszName, pos->from)) {
             if(pos->to == NULL) {
                 LeaveCriticalSection(&dns_hook_lock);
                 return HRESULT_FROM_WIN32(DNS_ERROR_RCODE_NAME_ERROR);
@@ -405,7 +436,7 @@ static DNS_STATUS WINAPI hook_DnsQueryEx(
     for (i = 0 ; i < dns_hook_nentries ; i++) {
         pos = &dns_hook_entries[i];
 
-        if (_wcsicmp(pRequest->QueryName, pos->from) == 0) {
+        if (match_domain(pRequest->QueryName, pos->from)) {
             if(pos->to == NULL) {
                 LeaveCriticalSection(&dns_hook_lock);
                 return HRESULT_FROM_WIN32(DNS_ERROR_RCODE_NAME_ERROR);
@@ -472,7 +503,7 @@ static int WSAAPI hook_getaddrinfo(
     for (i = 0 ; i < dns_hook_nentries ; i++) {
         pos = &dns_hook_entries[i];
 
-        if (_wcsicmp(wstr, pos->from) == 0) {
+        if (match_domain(wstr, pos->from)) {
             if(pos->to == NULL) {
                 LeaveCriticalSection(&dns_hook_lock);
                 result = EAI_NONAME;
@@ -526,7 +557,7 @@ static HINTERNET WINAPI hook_WinHttpConnect(
     for (i = 0 ; i < dns_hook_nentries ; i++) {
         pos = &dns_hook_entries[i];
 
-        if (_wcsicmp(pwszServerName, pos->from) == 0) {
+        if (match_domain(pwszServerName, pos->from)) {
             if(pos->to == NULL) {
                 LeaveCriticalSection(&dns_hook_lock);
                 return NULL;
@@ -558,7 +589,7 @@ static bool WINAPI hook_WinHttpCrackUrl(
     for (i = 0 ; i < dns_hook_nentries ; i++) {
         pos = &dns_hook_entries[i];
 
-        if (_wcsicmp(pwszUrl, pos->from) == 0) {
+        if (match_domain(pwszUrl, pos->from)) {
             wchar_t* toAddr = pos->to;
             wchar_t titleBuffer[255];
             
