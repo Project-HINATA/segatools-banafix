@@ -79,6 +79,11 @@ static HRESULT io3_cmd_read_analogs(
         struct const_iobuf *req_buf,
         struct iobuf *resp_buf);
 
+static HRESULT io3_cmd_read_rotarys(
+        struct io3 *io3,
+        struct const_iobuf *req_buf,
+        struct iobuf *resp_buf);
+
 static HRESULT io3_cmd_write_gpio(
         struct io3 *io3,
         struct const_iobuf *req_buf,
@@ -115,6 +120,13 @@ static uint8_t io3_features[] = {
        Param3  :    0 : N/A */
 
     0x03, 8, 10, 0,
+
+    /* Feature : 0x04 : Rotary inputs
+       Param1  :    4 : Number of rotary channels
+       Param2  :    0 : N/A
+       Param3  :    0 : N/A */
+
+    0x04, 4, 0, 0,
 
     /* Feature : 0x12 : GPIO outputs
        Param1  :    3 : Number of ports (8 bits per port)
@@ -218,6 +230,9 @@ static HRESULT io3_cmd(
 
     case JVS_CMD_READ_ANALOGS:
         return io3_cmd_read_analogs(io3, req, resp);
+    
+    case JVS_CMD_READ_ROTARYS:
+        return io3_cmd_read_rotarys(io3, req, resp);
 
     case JVS_CMD_WRITE_GPIO:
         return io3_cmd_write_gpio(io3, req, resp);
@@ -526,6 +541,60 @@ static HRESULT io3_cmd_read_analogs(
 
     for (i = 0 ; i < req.nanalogs ; i++) {
         hr = iobuf_write_be16(resp_buf, analogs[i]);
+
+        if (FAILED(hr)) {
+            return hr;
+        }
+    }
+
+    return hr;
+
+}
+
+static HRESULT io3_cmd_read_rotarys(
+        struct io3 *io3,
+        struct const_iobuf *req_buf,
+        struct iobuf *resp_buf)
+{
+    struct jvs_req_read_rotarys req;
+    uint16_t rotarys[4];
+    uint8_t i;
+    HRESULT hr;
+
+    /* Read req */
+
+    hr = iobuf_read(req_buf, &req, sizeof(req));
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    if (req.nrotarys > _countof(rotarys)) {
+        dprintf("JVS I/O: Invalid analog count %i\n", req.nrotarys);
+
+        return E_FAIL;
+    }
+
+    //dprintf("JVS I/O: Read rotarys, nrotarys=%i\n", req.nrotarys);
+
+    /* Write report byte */
+
+    hr = iobuf_write_8(resp_buf, 0x01);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    /* Write analogs */
+
+    memset(rotarys, 0, sizeof(rotarys));
+
+    if (io3->ops->read_rotarys != NULL) {
+        io3->ops->read_rotarys(io3->ops_ctx, rotarys, req.nrotarys);
+    }
+
+    for (i = 0 ; i < req.nrotarys ; i++) {
+        hr = iobuf_write_be16(resp_buf, rotarys[i]);
 
         if (FAILED(hr)) {
             return hr;

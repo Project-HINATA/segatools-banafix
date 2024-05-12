@@ -18,6 +18,7 @@ struct io3_ops {
     void (*write_gpio)(void *ctx, uint32_t state);
     void (*read_switches)(void *ctx, struct io3_switch_state *out);
     void (*read_analogs)(void *ctx, uint16_t *analogs, uint8_t nanalogs);
+    void (*read_rotarys)(void *ctx, uint16_t *rotaries, uint8_t nrotaries);
     void (*read_coin_counter)(void *ctx, uint8_t slot_no, uint16_t *out);
 };
 
