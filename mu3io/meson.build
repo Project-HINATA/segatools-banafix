@@ -8,9 +8,16 @@ mu3io_lib = static_library(
         xinput_lib,
     ],
     sources : [
-        'mu3io.c',
-        'mu3io.h',
         'config.c',
         'config.h',
+        'leddata.h',
+        'ledoutput.c',
+        'ledoutput.h',
+        'mu3io.c',
+        'mu3io.h',
+        'pipeimpl.c',
+        'pipeimpl.h',
+        'serialimpl.c',
+        'serialimpl.h'
     ],
 )

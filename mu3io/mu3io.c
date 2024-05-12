@@ -6,6 +6,8 @@
 
 #include "mu3io/mu3io.h"
 #include "mu3io/config.h"
+#include "mu3io/ledoutput.h"
+
 #include "util/dprintf.h"
 
 static uint8_t mu3_opbtn;
@@ -32,7 +34,17 @@ HRESULT mu3_io_init(void)
     dprintf("XInput: Mouse lever emulation : %i\n", mu3_io_cfg.use_mouse);
     dprintf("XInput: ---  End  configuration ---\n");
 
-    return S_OK;
+    mu3_led_init_mutex = CreateMutex(
+        NULL,              // default security attributes
+        FALSE,             // initially not owned
+        NULL);             // unnamed mutex
+    
+    if (mu3_led_init_mutex == NULL)
+    {
+        return E_FAIL;
+    }
+
+    return mu3_led_output_init(&mu3_io_cfg);
 }
 
 HRESULT mu3_io_poll(void)
@@ -203,5 +215,5 @@ HRESULT mu3_io_led_init(void)
 
 void mu3_io_led_set_colors(uint8_t board, uint8_t *rgb)
 {
-    return;
+    mu3_led_output_update(board, rgb);
 }

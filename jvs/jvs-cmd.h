@@ -9,6 +9,7 @@ enum {
     JVS_CMD_READ_SWITCHES = 0x20,
     JVS_CMD_READ_COIN = 0x21,
     JVS_CMD_READ_ANALOGS = 0x22,
+    JVS_CMD_READ_ROTARYS = 0x23,
     JVS_CMD_WRITE_GPIO = 0x32,
     JVS_CMD_RESET = 0xF0,
     JVS_CMD_ASSIGN_ADDR = 0xF1,
@@ -30,6 +31,11 @@ struct jvs_req_read_coin {
 struct jvs_req_read_analogs {
     uint8_t cmd;
     uint8_t nanalogs;
+};
+
+struct jvs_req_read_rotarys {
+    uint8_t cmd;
+    uint8_t nrotarys;
 };
 
 struct jvs_req_reset {

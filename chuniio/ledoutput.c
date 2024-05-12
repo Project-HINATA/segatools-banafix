@@ -48,15 +48,15 @@ HRESULT led_output_init(struct chuni_io_config* const cfg)
             led_escaped_buf[i].data_len = chuni_led_board_data_lens[i];
         }
         
-        any_outputs_enabled = config->led_output_pipe || config->slider_led_output_pipe
-            || config->led_output_serial || config->slider_led_output_serial;
+        any_outputs_enabled = config->cab_led_output_pipe || config->controller_led_output_pipe
+            || config->cab_led_output_serial || config->controller_led_output_serial;
         
-        if (config->led_output_pipe || config->slider_led_output_pipe)
+        if (config->cab_led_output_pipe || config->controller_led_output_pipe)
         {
             led_pipe_init();  // don't really care about errors here tbh
         }
         
-        if (config->led_output_serial || config->slider_led_output_serial)
+        if (config->cab_led_output_serial || config->controller_led_output_serial)
         {
             led_serial_init(config->led_serial_port, config->led_serial_baud);
         }
@@ -106,13 +106,13 @@ void led_output_update(uint8_t board, const byte* rgb)
     
     if (board < 2)
     {
-        // billboard
-        if (config->led_output_pipe)
+        // billboard (cab)
+        if (config->cab_led_output_pipe)
         {
             led_pipe_update(escaped_data);
         }
         
-        if (config->led_output_serial)
+        if (config->cab_led_output_serial)
         {
             led_serial_update(escaped_data);
         }
@@ -120,12 +120,12 @@ void led_output_update(uint8_t board, const byte* rgb)
     else
     {
         // slider
-        if (config->slider_led_output_pipe)
+        if (config->controller_led_output_pipe)
         {
             led_pipe_update(escaped_data);
         }
         
-        if (config->slider_led_output_serial)
+        if (config->controller_led_output_serial)
         {
             led_serial_update(escaped_data);
         }
