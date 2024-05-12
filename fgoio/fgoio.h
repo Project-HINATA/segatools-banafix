@@ -83,4 +83,4 @@ HRESULT fgo_io_led_init(void);
    
    Exact layout is TBD. */
 
-void fgo_io_led_set_leds(uint8_t board, uint8_t *rgb);
+void fgo_io_led_set_colors(uint8_t board, uint8_t *rgb);

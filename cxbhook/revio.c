@@ -6,7 +6,7 @@
 #include "cxbhook/revio.h"
 #include "cxbhook/cxb-dll.h"
 
-#include "hooklib/procaddr.h"
+#include "hook/procaddr.h"
 
 #include "hook/table.h"
 
@@ -89,7 +89,7 @@ HRESULT revio_hook_init(struct revio_config *cfg)
     }
 
     dprintf("Revio: Hook enabled.\n");
-    return proc_addr_table_push("CommIo.dll", revio_syms, _countof(revio_syms));
+    return proc_addr_table_push(NULL, "CommIo.dll", revio_syms, _countof(revio_syms));
 }
 
 static int my_cCommIo_Open(char *port)

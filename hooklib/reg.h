@@ -12,6 +12,8 @@ struct reg_hook_val {
     uint32_t type;
 };
 
+void reg_hook_insert_hooks(HMODULE target);
+
 HRESULT reg_hook_push_key(
         HKEY root,
         const wchar_t *name,

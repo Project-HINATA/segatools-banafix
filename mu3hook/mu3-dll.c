@@ -24,8 +24,27 @@ const struct dll_bind_sym mu3_dll_syms[] = {
     }, {
         .sym = "mu3_io_get_lever",
         .off = offsetof(struct mu3_dll, get_lever),
+    }, {
+        .sym = "mu3_io_led_init",
+        .off = offsetof(struct mu3_dll, led_init),
+    }, {
+        .sym = "mu3_io_led_set_colors",
+        .off = offsetof(struct mu3_dll, led_set_leds),
     }
 };
+
+/* Helper function to determine upon dll_bind failure whether the required functions were found
+   NOTE: relies on symbols order declared above */
+static HRESULT has_enough_symbols(uint16_t version, uint8_t count)
+{
+    if ( version <= 0x0100 && count == 5 )
+        return S_OK;
+
+    if ( version >= 0x0101 && count == 7 )
+        return S_OK;
+
+    return E_FAIL;
+}
 
 struct mu3_dll mu3_dll;
 
@@ -86,16 +105,25 @@ HRESULT mu3_dll_init(const struct mu3_dll_config *cfg, HINSTANCE self)
     }
 
     sym = mu3_dll_syms;
+    const struct dll_bind_sym *init_sym = &sym[0];
+
     hr = dll_bind(&mu3_dll, src, &sym, _countof(mu3_dll_syms));
 
     if (FAILED(hr)) {
         if (src != self) {
-            dprintf("Ongeki IO: Custom IO DLL does not provide function "
-                    "\"%s\". Please contact your IO DLL's developer for "
-                    "further assistance.\n",
-                    sym->sym);
+            // Might still be ok depending on external dll API version
+            int bind_count = sym - init_sym;
+            if (has_enough_symbols(mu3_dll.api_version, bind_count) == S_OK)
+            {
+                hr = S_OK;
+            } else {
+                dprintf("Ongeki IO: Custom IO DLL does not provide function "
+                        "\"%s\". Please contact your IO DLL's developer for "
+                        "further assistance.\n",
+                        sym->sym);
 
-            goto end;
+                goto end;
+            }
         } else {
             dprintf("Internal error: could not reflect \"%s\"\n", sym->sym);
         }

@@ -8,7 +8,7 @@
 #include <pathcch.h>
 #include <psapi.h>
 
-#include "hooklib/procaddr.h"
+#include "hook/procaddr.h"
 #include "util/dprintf.h"
 
 #include "doorstop.h"
@@ -37,7 +37,7 @@ void doorstop_mono_hook_init(const struct unity_config *cfg, HINSTANCE module) {
 
     memcpy(&unity_config, cfg, sizeof(*cfg));
     load_mono_functions(module);
-    proc_addr_table_push(module_name, unity_mono_syms, _countof(unity_mono_syms));
+    proc_addr_table_push(NULL, module_name, unity_mono_syms, _countof(unity_mono_syms));
 
     doorstop_hook_initted = true;
 }

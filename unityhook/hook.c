@@ -2,7 +2,16 @@
 #include <stdbool.h>
 
 #include "hook/table.h"
+#include "hook/procaddr.h"
+#include "hook/iohook.h"
+
+#include "hooklib/dll.h"
 #include "hooklib/path.h"
+#include "hooklib/printer.h"
+#include "hooklib/reg.h"
+#include "hooklib/touch.h"
+#include "hooklib/serial.h"
+
 #include "util/dprintf.h"
 
 #include "doorstop.h"
@@ -15,21 +24,34 @@ static const wchar_t *target_modules[] = {
     L"mono.dll",
     L"mono-2.0-bdwgc.dll",
     L"cri_ware_unity.dll",
+    L"SerialPortAPI.dll",
+    L"C300usb.dll",
+    L"C300FWDLusb.dll",
+    L"apmled.dll",
+    L"apmmount.dll",
 };
+
 static const size_t target_modules_len = _countof(target_modules);
 
 static void dll_hook_insert_hooks(HMODULE target);
 
-static HMODULE WINAPI my_LoadLibraryW(const wchar_t *name);
+static HMODULE WINAPI hook_LoadLibraryW(const wchar_t *name);
 static HMODULE (WINAPI *next_LoadLibraryW)(const wchar_t *name);
+static HMODULE WINAPI hook_LoadLibraryExW(const wchar_t *name, HANDLE  hFile, DWORD   dwFlags);
+static HMODULE (WINAPI *next_LoadLibraryExW)(const wchar_t *name, HANDLE  hFile, DWORD   dwFlags);
 
 static const struct hook_symbol unity_kernel32_syms[] = {
     {
         .name = "LoadLibraryW",
-        .patch = my_LoadLibraryW,
+        .patch = hook_LoadLibraryW,
         .link = (void **) &next_LoadLibraryW,
-    },
+    }, {
+        .name  = "LoadLibraryExW",
+        .patch = hook_LoadLibraryExW,
+        .link  = (void **) &next_LoadLibraryExW,
+    }
 };
+
 
 void unity_hook_init(const struct unity_config *cfg, HINSTANCE self) {
     assert(cfg != NULL);
@@ -57,7 +79,14 @@ static void dll_hook_insert_hooks(HMODULE target) {
         _countof(unity_kernel32_syms));
 }
 
-static HMODULE WINAPI my_LoadLibraryW(const wchar_t *name) {
+static HMODULE WINAPI hook_LoadLibraryExW(const wchar_t *name, HANDLE  hFile, DWORD   dwFlags)
+{
+    // dprintf("Unity: LoadLibraryExW %ls\n", name);
+    return hook_LoadLibraryW(name);
+}
+
+static HMODULE WINAPI hook_LoadLibraryW(const wchar_t *name)
+{
     const wchar_t *name_end;
     const wchar_t *target_module;
     bool already_loaded;
@@ -107,6 +136,14 @@ static HMODULE WINAPI my_LoadLibraryW(const wchar_t *name) {
 
             dll_hook_insert_hooks(result);
             path_hook_insert_hooks(result);
+
+            // printer_hook_insert_hooks(result);
+
+            reg_hook_insert_hooks(result);
+            
+            proc_addr_insert_hooks(result);
+            serial_hook_apply_hooks(result);
+            iohook_apply_hooks(result);
         }
     }
 

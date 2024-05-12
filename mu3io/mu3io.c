@@ -21,7 +21,7 @@ const double MOUSE_SENSITIVITY = 0.5;
 
 uint16_t mu3_io_get_api_version(void)
 {
-    return 0x0100;
+    return 0x0101;
 }
 
 HRESULT mu3_io_init(void)
@@ -194,4 +194,14 @@ void mu3_io_get_lever(int16_t *pos)
     if (pos != NULL) {
         *pos = mu3_lever_xpos;
     }
+}
+
+HRESULT mu3_io_led_init(void)
+{
+    return S_OK;
+}
+
+void mu3_io_led_set_colors(uint8_t board, uint8_t *rgb)
+{
+    return;
 }

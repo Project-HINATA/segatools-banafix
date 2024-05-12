@@ -14,6 +14,7 @@ add_project_arguments(
     '-D_WIN32_WINNT=_WIN32_WINNT_WIN7',
     '-DMINGW_HAS_SECURE_API=1',
     '-Wno-unused',
+    # '-ggdb',  # Add debug information
     language: 'c',
 )
 
@@ -23,7 +24,6 @@ if cc.get_id() != 'msvc'
     add_project_arguments(
         '-ffunction-sections',
         '-fdata-sections',
-        '-flto',  # Enable Link-Time Optimization
         language: 'c',
     )
 
@@ -32,8 +32,9 @@ if cc.get_id() != 'msvc'
         '-Wl,--exclude-all-symbols',
         '-Wl,--gc-sections',
         '-static-libgcc',
-        '-flto',  # Enable Link-Time Optimization
-        '-Wl,-s',  # Strip debug symbols
+        # '-ggdb',  # Add debug information
+        '-lcrypt32', # Bcrypt needed for prashook
+        # '-Wl,-s',  # Strip debug symbols
         language: 'c',
     )
 endif

@@ -1,5 +1,15 @@
 #pragma once
 
+/*
+   MU3 CUSTOM IO API
+
+   Changelog:
+
+   - 0x0100: Initial API version (assumed if chuni_io_get_api_version is not
+     exported)
+   - 0x0101: Added mu3_io_led_init and mu3_io_set_leds
+*/
+
 #include <windows.h>
 
 #include <stdint.h>
@@ -16,6 +26,29 @@ enum {
     MU3_IO_GAMEBTN_3 = 0x04,
     MU3_IO_GAMEBTN_SIDE = 0x08,
     MU3_IO_GAMEBTN_MENU = 0x10,
+};
+
+enum {
+    /* These are the bitmasks to use when checking which
+       lights are triggered on incoming IO4 GPIO writes. */
+    MU3_IO_LED_L1_R = 1 << 31,
+    MU3_IO_LED_L1_G = 1 << 28,
+    MU3_IO_LED_L1_B = 1 << 30,
+    MU3_IO_LED_L2_R = 1 << 27,
+    MU3_IO_LED_L2_G = 1 << 29,
+    MU3_IO_LED_L2_B = 1 << 26,
+    MU3_IO_LED_L3_R = 1 << 25,
+    MU3_IO_LED_L3_G = 1 << 24,
+    MU3_IO_LED_L3_B = 1 << 23,
+    MU3_IO_LED_R1_R = 1 << 22,
+    MU3_IO_LED_R1_G = 1 << 21,
+    MU3_IO_LED_R1_B = 1 << 20,
+    MU3_IO_LED_R2_R = 1 << 19,
+    MU3_IO_LED_R2_G = 1 << 18,
+    MU3_IO_LED_R2_B = 1 << 17,
+    MU3_IO_LED_R3_R = 1 << 16,
+    MU3_IO_LED_R3_G = 1 << 15,
+    MU3_IO_LED_R3_B = 1 << 14,
 };
 
 /* Get the version of the Ongeki IO API that this DLL supports. This
@@ -83,3 +116,19 @@ void mu3_io_get_gamebtns(uint8_t *left, uint8_t *right);
    Minimum API version: 0x0100 */
 
 void mu3_io_get_lever(int16_t *pos);
+
+
+/* Initialize LED emulation. This function will be called before any
+   other mu3_io_led_*() function calls.
+
+   All subsequent calls may originate from arbitrary threads and some may
+   overlap with each other. Ensuring synchronization inside your IO DLL is
+   your responsibility. */
+
+HRESULT mu3_io_led_init(void);
+
+/* Update the RGB LEDs. 
+   
+   Exact layout is TBD. */
+
+void mu3_io_led_set_colors(uint8_t board, uint8_t *rgb);

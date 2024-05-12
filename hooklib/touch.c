@@ -119,8 +119,17 @@ void touch_screen_hook_init(const struct touch_screen_config *cfg, HINSTANCE sel
     defaultCursor = LoadCursorA(NULL, IDC_CROSS);
 
     memcpy(&touch_config, cfg, sizeof(*cfg));
-    hook_table_apply(NULL, "user32.dll", touch_hooks, _countof(touch_hooks));
+    touch_hook_insert_hooks(NULL);
     dprintf("TOUCH: hook enabled.\n");
+}
+
+void touch_hook_insert_hooks(HMODULE target)
+{
+    hook_table_apply(
+            target,
+            "user32.dll",
+            touch_hooks,
+            _countof(touch_hooks));
 }
 
 static HCURSOR WINAPI hook_SetCursor(HCURSOR cursor) {

@@ -14,3 +14,4 @@ struct touch_screen_config {
     blah blah you know the drill by now. */
 
 void touch_screen_hook_init(const struct touch_screen_config *cfg, HINSTANCE self);
+void touch_hook_insert_hooks(HMODULE target);

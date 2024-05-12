@@ -5,7 +5,7 @@
 #include "cxbhook/led.h"
 #include "cxbhook/cxb-dll.h"
 
-#include "hooklib/procaddr.h"
+#include "hook/procaddr.h"
 
 #include "hook/table.h"
 
@@ -56,7 +56,7 @@ HRESULT led_hook_init(struct led_config *cfg)
     }
     
     dprintf("LED: Hook enabled.\n");
-    return proc_addr_table_push("CommLamp.dll", lamp_syms, _countof(lamp_syms));
+    return proc_addr_table_push(NULL, "CommLamp.dll", lamp_syms, _countof(lamp_syms));
 }
 
 static int my_cCommLamp_Open(char *port)

@@ -18,7 +18,7 @@ EXPORTS
     fgo_io_init
     fgo_io_poll
     fgo_io_led_init
-    fgo_io_led_set_leds
+    fgo_io_led_set_colors
     fwdlusb_open
     fwdlusb_close
     fwdlusb_listupPrinter

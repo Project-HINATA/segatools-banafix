@@ -7,6 +7,7 @@
 #include "hook/table.h"
 
 #include "hooklib/reg.h"
+#include "hook/procaddr.h"
 
 #include "util/dprintf.h"
 #include "util/str.h"
@@ -99,6 +100,29 @@ static LSTATUS WINAPI hook_RegGetValueW(
     uint32_t *numData
 );
 
+static LSTATUS WINAPI hook_RegQueryInfoKeyW(
+    HKEY      hKey,
+    LPWSTR    lpClass,
+    LPDWORD   lpcchClass,
+    LPDWORD   lpReserved,
+    LPDWORD   lpcSubKeys,
+    LPDWORD   lpcbMaxSubKeyLen,
+    LPDWORD   lpcbMaxClassLen,
+    LPDWORD   lpcValues,
+    LPDWORD   lpcbMaxValueNameLen,
+    LPDWORD   lpcbMaxValueLen,
+    LPDWORD   lpcbSecurityDescriptor,
+    PFILETIME lpftLastWriteTime);
+
+static LSTATUS WINAPI hook_RegEnumValueW(
+    HKEY    hkey,
+    DWORD   dwIndex,
+    LPWSTR   lpValueName,
+    LPDWORD lpcchValueName,
+    LPDWORD lpReserved,
+    LPDWORD lpType,
+    LPBYTE  lpData,
+    LPDWORD lpcbData);
 /* Link pointers */
 
 static LSTATUS (WINAPI *next_RegOpenKeyExW)(
@@ -155,6 +179,30 @@ static LSTATUS (WINAPI *next_RegGetValueW)(
     uint32_t *numData
 );
 
+static LSTATUS (WINAPI *next_RegQueryInfoKeyW)(
+    HKEY      hKey,
+    LPWSTR    lpClass,
+    LPDWORD   lpcchClass,
+    LPDWORD   lpReserved,
+    LPDWORD   lpcSubKeys,
+    LPDWORD   lpcbMaxSubKeyLen,
+    LPDWORD   lpcbMaxClassLen,
+    LPDWORD   lpcValues,
+    LPDWORD   lpcbMaxValueNameLen,
+    LPDWORD   lpcbMaxValueLen,
+    LPDWORD   lpcbSecurityDescriptor,
+    PFILETIME lpftLastWriteTime);
+
+static LSTATUS (WINAPI *next_RegEnumValueW)(
+    HKEY    hkey,
+    DWORD   dwIndex,
+    LPWSTR   lpValueName,
+    LPDWORD lpcchValueName,
+    LPDWORD lpReserved,
+    LPDWORD lpType,
+    LPBYTE  lpData,
+    LPDWORD lpcbData);
+
 static const struct hook_symbol reg_hook_syms[] = {
     {
         .name   = "RegOpenKeyExW",
@@ -184,6 +232,14 @@ static const struct hook_symbol reg_hook_syms[] = {
         .name   = "RegGetValueW",
         .patch  = hook_RegGetValueW,
         .link   = (void **) &next_RegGetValueW,
+    }, {
+        .name   = "RegQueryInfoKeyW",
+        .patch  = hook_RegQueryInfoKeyW,
+        .link   = (void **) &next_RegQueryInfoKeyW,
+    }, {
+        .name   = "RegEnumValueW",
+        .patch  = hook_RegEnumValueW,
+        .link   = (void **) &next_RegEnumValueW,
     }
 };
 
@@ -254,11 +310,24 @@ static void reg_hook_init(void)
     InitializeCriticalSection(&reg_hook_lock);
     dprintf("Reg hook init\n");
 
+    reg_hook_insert_hooks(NULL);
+
+    proc_addr_table_push(
+        NULL,
+        "ADVAPI32.dll",
+        (struct hook_symbol *) reg_hook_syms,
+        _countof(reg_hook_syms));
+
+}
+
+void reg_hook_insert_hooks(HMODULE target)
+{
     hook_table_apply(
-            NULL,
+            target,
             "advapi32.dll",
             reg_hook_syms,
             _countof(reg_hook_syms));
+    
 }
 
 static LRESULT reg_hook_propagate_hr(HRESULT hr)
@@ -331,6 +400,7 @@ static LSTATUS reg_hook_open_locked(
         /* Assume reg keys are referenced from a root key and not from some
            intermediary key */
         key = &reg_hook_keys[i];
+        //dprintf("Reg: %ls vs %ls\n", name, key->name);
 
         if (key->root == parent && wstr_ieq(key->name, name)) {
             break;
@@ -819,6 +889,99 @@ static LSTATUS WINAPI hook_RegGetValueW(
     LeaveCriticalSection(&reg_hook_lock);
     err = ERROR_NOT_FOUND;
     return err;
+}
+
+static LSTATUS WINAPI hook_RegQueryInfoKeyW(
+    HKEY      hKey,
+    LPWSTR    lpClass,
+    LPDWORD   lpcchClass,
+    LPDWORD   lpReserved,
+    LPDWORD   lpcSubKeys,
+    LPDWORD   lpcbMaxSubKeyLen,
+    LPDWORD   lpcbMaxClassLen,
+    LPDWORD   lpcValues,
+    LPDWORD   lpcbMaxValueNameLen,
+    LPDWORD   lpcbMaxValueLen,
+    LPDWORD   lpcbSecurityDescriptor,
+    PFILETIME lpftLastWriteTime)
+{
+    struct reg_hook_key *key;
+    LSTATUS err;
+
+    EnterCriticalSection(&reg_hook_lock);
+
+    key = reg_hook_match_key_locked(hKey);
+
+    /* Check if this is a virtualized registry key */
+
+    if (key == NULL) {
+        LeaveCriticalSection(&reg_hook_lock);
+
+        return next_RegQueryInfoKeyW(
+            hKey,
+            lpClass,
+            lpcchClass,
+            lpReserved,
+            lpcSubKeys,
+            lpcbMaxSubKeyLen,
+            lpcbMaxClassLen,
+            lpcValues,
+            lpcbMaxValueNameLen,
+            lpcbMaxValueLen,
+            lpcbSecurityDescriptor,
+            lpftLastWriteTime);
+    }
+
+    // This is the only one I've seen even be changed, so it's all I'm doing
+    // until I see otherwise.
+    *lpcValues = key->nvals;
+    LeaveCriticalSection(&reg_hook_lock);
+    return ERROR_SUCCESS;
+}
+
+static LSTATUS WINAPI hook_RegEnumValueW(
+    HKEY    hkey,
+    DWORD   dwIndex,
+    LPWSTR   lpValueName,
+    LPDWORD lpcchValueName,
+    LPDWORD lpReserved,
+    LPDWORD lpType,
+    LPBYTE  lpData,
+    LPDWORD lpcbData)
+{
+    struct reg_hook_key *key;
+    HRESULT hr;
+    LSTATUS err;
+
+    EnterCriticalSection(&reg_hook_lock);
+
+    key = reg_hook_match_key_locked(hkey);
+
+    /* Check if this is a virtualized registry key */
+
+    if (key == NULL) {
+        LeaveCriticalSection(&reg_hook_lock);
+
+        return next_RegEnumValueW(
+            hkey,
+            dwIndex,
+            lpValueName,
+            lpcchValueName,
+            lpReserved,
+            lpType,
+            lpData,
+            lpcbData);
+    }
+
+    if (dwIndex >= key->nvals) {
+        LeaveCriticalSection(&reg_hook_lock);
+        return ERROR_NO_MORE_ITEMS; // Pretty sure this is what it actually returns here?
+    }
+
+    wcscpy_s(lpValueName, *lpcchValueName, key->vals[dwIndex].name);
+    *lpcchValueName = wcslen(key->vals[dwIndex].name);
+    LeaveCriticalSection(&reg_hook_lock);
+    return ERROR_SUCCESS;
 }
 
 HRESULT reg_hook_read_bin(
