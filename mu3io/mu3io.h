@@ -123,12 +123,33 @@ void mu3_io_get_lever(int16_t *pos);
 
    All subsequent calls may originate from arbitrary threads and some may
    overlap with each other. Ensuring synchronization inside your IO DLL is
-   your responsibility. */
+   your responsibility. 
+   
+   Minimum API version: 0x0101 */
 
 HRESULT mu3_io_led_init(void);
 
-/* Update the RGB LEDs. 
-   
-   Exact layout is TBD. */
+/* Update the RGB LEDs. rgb is a pointer to an array of up to 61 * 3 = 183 bytes.
+
+   ONGEKI uses one board with WS2811 protocol (each logical led corresponds to 3 
+   physical leds). Board 0 is used for all cab lights and both WAD button lights.
+
+   Board 0 has 61 LEDs:
+      [0]-[1]: left side button
+      [2]-[8]: left pillar lower LEDs
+      [9]-[17]: left pillar center LEDs
+      [18]-[24]: left pillar upper LEDs
+      [25]-[35]: billboard LEDs
+      [36]-[42]: right pillar upper LEDs
+      [43]-[51]: right pillar center LEDs
+      [52]-[58]: right pillar lower LEDs
+      [59]-[60]: right side button
+
+   Board 1 has 6 LEDs:
+      [0]-[5]: 3 left and 3 right controller buttons
+
+   Each rgb value is comprised of 3 bytes in R,G,B order
+
+   Minimum API version: 0x0101 */
 
 void mu3_io_led_set_colors(uint8_t board, uint8_t *rgb);

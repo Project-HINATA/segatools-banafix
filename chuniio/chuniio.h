@@ -163,9 +163,17 @@ HRESULT chuni_io_led_init(void);
    Chunithm uses two chains/boards with WS2811 protocol (each logical led corresponds to 3 physical leds). 
    board 0 is on the left side and board 1 on the right side of the cab
 
-   left side has 5*10 rgb values for the billboard, followed by 3 rgb values for the air tower
-   right side has 6*10 rgb values for the billboard, followed by 3 rgb values for the air tower
+   Board 0 has 53 LEDs:
+     [0]-[49]: snakes through left half of billboard (first column starts at top)
+     [50]-[52]: left side partition LEDs
    
+   Board 1 has 63 LEDs:
+     [0]-[59]: right half of billboard (first column starts at bottom)
+     [60]-[62]: right side partition LEDs
+   
+   Board 2 is the slider and has 31 LEDs:
+     [0]-[31]: slider LEDs right to left BRG, alternating between keys and dividers 
+
    Each rgb value is comprised of 3 bytes in R,G,B order
 
    NOTE: billboard strips have alternating direction (bottom to top, top to bottom, ...)
