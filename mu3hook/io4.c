@@ -166,7 +166,7 @@ static HRESULT mu3_io4_write_gpio(uint8_t* payload, size_t len)
         lights_data & MU3_IO_LED_R3_B ? 0xFF : 0x00,
     };
 
-    mu3_io_led_set_colors(1, rgb_out);
+    mu3_dll.led_set_leds(1, rgb_out);
 
     return S_OK;
 }

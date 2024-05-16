@@ -170,7 +170,7 @@ HRESULT chuni_dll_init(const struct chuni_dll_config *cfg, HINSTANCE self)
                         "\"%s\". Please contact your IO DLL's developer for "
                         "further assistance.\n",
                         sym->sym);
-                dprintf("imported %d symbols\n",bind_count);
+                dprintf("imported %d symbols\n", bind_count);
                 goto end;
             }
         } else {

@@ -117,7 +117,6 @@ void mu3_io_get_gamebtns(uint8_t *left, uint8_t *right);
 
 void mu3_io_get_lever(int16_t *pos);
 
-
 /* Initialize LED emulation. This function will be called before any
    other mu3_io_led_*() function calls.
 
@@ -148,7 +147,11 @@ HRESULT mu3_io_led_init(void);
    Board 1 has 6 LEDs:
       [0]-[5]: 3 left and 3 right controller buttons
 
-   Each rgb value is comprised of 3 bytes in R,G,B order
+   Each rgb value is comprised of 3 bytes in R,G,B order. The tricky part is
+   that the board 0 is called from mu3 and the board 1 is called from amdaemon.
+   So the library must be able to handle both calls, using shared memory f.e.
+   This is up to the developer to decide how to handle this, recommended way is
+   to use the amdaemon process as the main one and the mu3 call as a sub one.
 
    Minimum API version: 0x0101 */
 
