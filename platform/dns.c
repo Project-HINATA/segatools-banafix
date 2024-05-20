@@ -108,6 +108,21 @@ HRESULT dns_platform_hook_init(const struct dns_config *cfg)
     if (FAILED(hr)) {
         return hr;
     }
+    
+    // CHN
+    // PowerOn
+    hr = dns_hook_push(L"at.sys-all.cn", cfg->startup);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+    
+    // WeChat AimeDB Server
+    hr = dns_hook_push(L"ai.sys-all.cn", cfg->aimedb);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
 
     // if your ISP resolves bad domains, it will kill the network. These 2
     // *cannot* resolve
