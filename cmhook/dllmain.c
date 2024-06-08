@@ -55,6 +55,12 @@ static DWORD CALLBACK cm_pre_startup(void)
         goto fail;
     }
 
+    hr = cm_dll_init(&cm_hook_cfg.dll, cm_hook_mod);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
     hr = sg_reader_hook_init(&cm_hook_cfg.aime, 1, 1, cm_hook_mod);
 
     if (FAILED(hr)) {
@@ -62,12 +68,6 @@ static DWORD CALLBACK cm_pre_startup(void)
     }
 
     hr = vfd_hook_init(&cm_hook_cfg.vfd, 2);
-
-    if (FAILED(hr)) {
-        goto fail;
-    }
-
-    hr = cm_dll_init(&cm_hook_cfg.dll, cm_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

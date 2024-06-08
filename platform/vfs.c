@@ -9,6 +9,9 @@
 #include "hooklib/path.h"
 #include "hooklib/reg.h"
 
+#include "hook/procaddr.h"
+#include "hook/table.h"
+
 #include "platform/vfs.h"
 
 #include "util/dprintf.h"
@@ -31,6 +34,26 @@ static HRESULT vfs_path_hook_option(
 static HRESULT vfs_reg_read_amfs(void *bytes, uint32_t *nbytes);
 static HRESULT vfs_reg_read_appdata(void *bytes, uint32_t *nbytes);
 
+static wchar_t* hook_System_getAppRootPath();
+static wchar_t* (*next_System_getAppRootPath)();
+
+static wchar_t* hook_AppImage_getOptionMountRootPath();
+static wchar_t* (*next_AppImage_getOptionMountRootPath)();
+
+static const struct hook_symbol amdaemon_syms[] = {
+    {
+        .name = "System_getAppRootPath",
+        .patch = hook_System_getAppRootPath,
+        .link = (void **) &next_System_getAppRootPath,
+    },
+    {
+        .name = "AppImage_getOptionMountRootPath",
+        .patch = hook_AppImage_getOptionMountRootPath,
+        .link = (void **) &next_AppImage_getOptionMountRootPath,
+    },
+};
+
+static wchar_t game[5] = {0};
 static wchar_t vfs_nthome_real[MAX_PATH];
 static const wchar_t vfs_nthome[] = L"C:\\Documents and Settings\\AppUser";
 static const size_t vfs_nthome_len = _countof(vfs_nthome) - 1;
@@ -55,7 +78,7 @@ static const struct reg_hook_val vfs_reg_vals[] = {
 
 static struct vfs_config vfs_config;
 
-HRESULT vfs_hook_init(const struct vfs_config *config)
+HRESULT vfs_hook_init(const struct vfs_config *config, const char* game_id)
 {
     wchar_t temp[MAX_PATH];
     size_t nthome_len;
@@ -67,6 +90,8 @@ HRESULT vfs_hook_init(const struct vfs_config *config)
     if (!config->enable) {
         return S_FALSE;
     }
+
+    mbstowcs(game, game_id, 4);
 
     if (config->amfs[0] == L'\0') {
         dprintf("Vfs: FATAL: AMFS path not specified in INI file\n");
@@ -174,6 +199,13 @@ HRESULT vfs_hook_init(const struct vfs_config *config)
     if (FAILED(hr)) {
         return hr;
     }
+
+    proc_addr_table_push(
+        NULL,
+        "amdaemon_api.dll",
+        amdaemon_syms,
+        _countof(amdaemon_syms)
+    );
 
     return S_OK;
 }
@@ -287,8 +319,6 @@ static HRESULT vfs_path_hook(const wchar_t *src, wchar_t *dest, size_t *count)
     }
 
     switch (src[0]) {
-    // case L'D': // later AMDaemon versions default to D: for AMFS if it can't find it
-    // case L'd':
     case L'e':
     case L'E':
         redir = vfs_config.amfs;
@@ -478,4 +508,22 @@ static HRESULT vfs_reg_read_amfs(void *bytes, uint32_t *nbytes)
 static HRESULT vfs_reg_read_appdata(void *bytes, uint32_t *nbytes)
 {
     return reg_hook_read_wstr(bytes, nbytes, L"Y:\\");
+}
+
+static wchar_t* hook_System_getAppRootPath()
+{
+    wchar_t *path = malloc(sizeof(wchar_t) * MAX_PATH);
+    wcscpy_s(path, MAX_PATH, vfs_config.appdata);
+    wcscat_s(path, MAX_PATH, game);
+    wcscat_s(path, MAX_PATH, L"\\");
+    
+    return path;
+}
+
+static wchar_t* hook_AppImage_getOptionMountRootPath()
+{
+    wchar_t *path = malloc(sizeof(wchar_t) * MAX_PATH);
+    wcscpy_s(path, MAX_PATH, vfs_config.option);
+
+    return path;
 }

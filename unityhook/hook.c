@@ -24,11 +24,13 @@ static const wchar_t *target_modules[] = {
     L"mono.dll",
     L"mono-2.0-bdwgc.dll",
     L"cri_ware_unity.dll",
+    L"amdaemon_api.dll",
     L"SerialPortAPI.dll",
     L"C300usb.dll",
     L"C300FWDLusb.dll",
     L"apmled.dll",
-    L"apmmount.dll",
+    L"HKBSys_api.dll",
+    L"amptw.dll"
 };
 
 static const size_t target_modules_len = _countof(target_modules);
@@ -138,9 +140,7 @@ static HMODULE WINAPI hook_LoadLibraryW(const wchar_t *name)
             path_hook_insert_hooks(result);
 
             // printer_hook_insert_hooks(result);
-
             reg_hook_insert_hooks(result);
-            
             proc_addr_insert_hooks(result);
             serial_hook_apply_hooks(result);
             iohook_apply_hooks(result);

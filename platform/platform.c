@@ -76,7 +76,7 @@ HRESULT platform_hook_init(
         return hr;
     }
 
-    hr = vfs_hook_init(&cfg->vfs);
+    hr = vfs_hook_init(&cfg->vfs, game_id);
 
     if (FAILED(hr)) {
         return hr;

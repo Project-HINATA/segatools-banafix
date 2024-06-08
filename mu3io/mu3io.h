@@ -151,7 +151,7 @@ HRESULT mu3_io_led_init(void);
    that the board 0 is called from mu3 and the board 1 is called from amdaemon.
    So the library must be able to handle both calls, using shared memory f.e.
    This is up to the developer to decide how to handle this, recommended way is
-   to use the amdaemon process as the main one and the mu3 call as a sub one.
+   to use the amdaemon process as the main one and the mu3 process as a sub one.
 
    Minimum API version: 0x0101 */
 
