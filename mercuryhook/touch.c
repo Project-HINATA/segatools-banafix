@@ -130,7 +130,7 @@ static HRESULT touch0_handle_irp_locked(struct irp *irp)
     }
 
     for (;;) {
-#if 0
+#if defined(LOG_MERCURY_SLIDER)
         dprintf("TX0 Buffer:\n");
         dump_iobuf(&touch0_uart.written);
 #endif
@@ -177,7 +177,7 @@ static HRESULT touch1_handle_irp_locked(struct irp *irp)
     }
 
     for (;;) {
-#if 0
+#if defined(LOG_MERCURY_SLIDER)
         dprintf("TX1 Buffer:\n");
         dump_iobuf(&touch1_uart.written);
 #endif
@@ -305,11 +305,11 @@ static HRESULT touch_handle_get_unit_board_ver(const struct touch_req *req)
     resp.cmd = 0xa8;
     resp.checksum = 0;
 
-    if (req->side == 0) {        
+    if (req->side == 0) {
         resp.version[6] = 'R';
         resp.checksum = calc_checksum(&resp, sizeof(resp));
 
-        #if 0
+        #if defined(LOG_MERCURY_SLIDER)
         for (int i = 0; i < sizeof(resp.version); i++) {
             dprintf("0x%02x ", resp.version[i]);
         }
@@ -322,7 +322,7 @@ static HRESULT touch_handle_get_unit_board_ver(const struct touch_req *req)
         resp.version[6] = 'L';
         resp.checksum = calc_checksum(&resp, sizeof(resp));
 
-        #if 0
+        #if defined(LOG_MERCURY_SLIDER)
         for (int i = 0; i < sizeof(resp.version); i++) {
             dprintf("0x%02x ", resp.version[i]);
         }
@@ -370,7 +370,7 @@ static HRESULT touch_handle_mystery2(const struct touch_req *req)
 
     if (req->side == 0) {
         hr = iobuf_write(&touch0_uart.readable, &resp, sizeof(resp));
-    }    
+    }
     else {
         hr = iobuf_write(&touch1_uart.readable, &resp, sizeof(resp));
     }
@@ -388,7 +388,7 @@ static HRESULT touch_handle_start_auto_scan(const struct touch_req *req)
 
     dprintf("Wacca Touch%d: Start Auto", req->side);
 
-    #if 0
+    #if defined(LOG_MERCURY_SLIDER)
     for (int i = 0; i < req->data_length; i++)
         dprintf("0x%02x ", req->data[i]);
     #endif
@@ -451,13 +451,13 @@ static void touch_res_auto_scan(const bool *state)
             counter++;
         }
     }
-    
+
     memcpy(frame0.data1, dataR, sizeof(dataR));
     memcpy(frame0.data2, data2, sizeof(data2));
 
     memcpy(frame1.data1, dataL, sizeof(dataL));
     memcpy(frame1.data2, data2, sizeof(data2));
-    
+
     frame0.checksum = 0;
     frame0.checksum = calc_checksum(&frame0, sizeof(frame0));
 

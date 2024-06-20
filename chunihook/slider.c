@@ -98,7 +98,7 @@ static HRESULT slider_handle_irp_locked(struct irp *irp)
     }
 
     for (;;) {
-#if 0
+#if defined(LOG_CHUNI_SLIDER)
         dprintf("TX Buffer:\n");
         dump_iobuf(&slider_uart.written);
 #endif
@@ -117,7 +117,7 @@ static HRESULT slider_handle_irp_locked(struct irp *irp)
             return hr;
         }
 
-#if 0
+#if defined(LOG_CHUNI_SLIDER)
         dprintf("Deframe Buffer:\n");
         dump_iobuf(&req_iobuf);
 #endif

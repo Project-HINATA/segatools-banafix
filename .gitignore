@@ -18,3 +18,6 @@ build/
 
 # External dependencies
 subprojects/capnhook
+
+# For enabling debug logging on local builds
+MesonLocalOptions.mk

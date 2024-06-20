@@ -115,14 +115,14 @@ static HRESULT sg_reader_handle_irp_locked(struct irp *irp)
 {
     HRESULT hr;
 
-#if 0
+#if defined(LOG_NFC)
     if (irp->op == IRP_OP_WRITE) {
         dprintf("WRITE:\n");
         dump_const_iobuf(&irp->write);
     }
 #endif
 
-#if 0
+#if defined(LOG_NFC)
     if (irp->op == IRP_OP_READ) {
         dprintf("READ:\n");
         dump_iobuf(&sg_reader_uart.readable);

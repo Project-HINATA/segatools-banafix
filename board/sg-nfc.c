@@ -420,7 +420,7 @@ static HRESULT sg_nfc_cmd_felica_encap(
     f_res.nbytes = sizeof(res->payload);
     f_res.pos = 1;
 
-#if 0
+#if defined(LOG_NFC)
     dprintf("FELICA OUTBOUND:\n");
     dump_const_iobuf(&f_req);
 #endif
@@ -434,7 +434,7 @@ static HRESULT sg_nfc_cmd_felica_encap(
     sg_res_init(&res->res, &req->req, f_res.pos);
     res->payload[0] = f_res.pos;
 
-#if 0
+#if defined(LOG_NFC)
     dprintf("FELICA INBOUND:\n");
     dump_iobuf(&f_res);
 #endif

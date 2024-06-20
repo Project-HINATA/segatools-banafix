@@ -158,7 +158,7 @@ static BOOL WINAPI my_GetSystemTime(SYSTEMTIME *out)
         return ok;
     }
 
-#if 0
+#if defined(LOG_CLOCK)
     static int last_second;
 
     if (out->wSecond != last_second) {

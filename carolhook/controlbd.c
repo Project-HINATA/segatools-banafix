@@ -78,7 +78,7 @@ static HRESULT controlbd_frame_decode(struct controlbd_req_any *req, struct iobu
     uint8_t checksum_pos = src->pos - 1;
     uint8_t calculated_checksum = 0;
     uint8_t checksum = 0;
-    
+
     if (src->pos < 6) {
         dprintf("Control Board: Decode Error, request too short (pos is 0x%08X)\n", (int)src->pos);
         return SEC_E_BUFFER_TOO_SMALL;
@@ -137,7 +137,7 @@ static HRESULT controlbd_handle_irp_locked(struct irp *irp)
 
     for (;;) {
         if (controlbd_uart.written.bytes[0] == 0xE0) {
-#if 0
+#if defined(LOG_CAROL_CONTROL_BD)
             dprintf("Control Board: TX Buffer:\n");
             dump_iobuf(&controlbd_uart.written);
 #endif
@@ -147,12 +147,12 @@ static HRESULT controlbd_handle_irp_locked(struct irp *irp)
                 return hr;
             }
 
-            hr = controlbd_req_dispatch(&req);            
+            hr = controlbd_req_dispatch(&req);
             if (FAILED(hr)) {
                 dprintf("Control Board: Dispatch Error: 0X%X\n", (int) hr);
                 return hr;
             }
-#if 0
+#if defined(LOG_CAROL_CONTROL_BD)
             dprintf("Control Board: RX Buffer:\n");
             dump_iobuf(&controlbd_uart.readable);
 #endif
@@ -206,7 +206,7 @@ static HRESULT controlbd_req_dispatch(const struct controlbd_req_any *req)
     case CONTROLBD_CMD_FIRM_SUM:
         return controlbd_req_firmware_checksum();
 
-    case CONTROLBD_CMD_TIMEOUT:        
+    case CONTROLBD_CMD_TIMEOUT:
         dprintf("Control Board: Acknowledge Timeout\n");
         return controlbd_req_ack_any(req->hdr.cmd);
 
@@ -278,7 +278,7 @@ static HRESULT controlbd_req_get_board_info(void)
     resp.rev = 0x90;
     resp.bfr_size = 0x0001;
     resp.ack = 1;
-    
+
     strcpy_s(resp.bd_no, sizeof(resp.bd_no), "15312   ");
     strcpy_s(resp.chip_no, sizeof(resp.chip_no), "6699 ");
     resp.chip_no[5] = 0xFF;
@@ -317,7 +317,7 @@ static HRESULT controlbd_req_polling(const struct controlbd_req_any *req)
     resp.unk7 = 3;
     resp.unk8 = 1;
     resp.unk9 = 1;
-    
+
     resp.btns_pressed = 0; // bit 1 is pen button, bit 2 is dodge
     resp.coord_x = 0x0;
     resp.coord_y = 0x0;
