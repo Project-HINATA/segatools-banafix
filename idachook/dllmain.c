@@ -67,19 +67,26 @@ static DWORD CALLBACK idac_pre_startup(void)
         goto fail;
     }
 
-    hr = sg_reader_hook_init(&idac_hook_cfg.aime, 3, 3, idac_hook_mod);
-
-    if (FAILED(hr)) {
-        goto fail;
-    }
-
     hr = idac_dll_init(&idac_hook_cfg.dll, idac_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;
     }
 
+    hr = sg_reader_hook_init(&idac_hook_cfg.aime, 3, 3, idac_hook_mod);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
     hr = idac_io4_hook_init(&idac_hook_cfg.io4);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
+    hr = led15070_hook_init(&idac_hook_cfg.led15070, idac_dll.led_init, 
+        idac_dll.led_set_fet_output, NULL, idac_dll.led_gs_update, 2, 1);
 
     if (FAILED(hr)) {
         goto fail;

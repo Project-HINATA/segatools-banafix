@@ -19,7 +19,7 @@ static bool idac_io_coin;
 
 uint16_t idac_io_get_api_version(void)
 {
-    return 0x0100;
+    return 0x0101;
 }
 
 HRESULT idac_io_init(void)
@@ -117,4 +117,45 @@ void idac_io_get_analogs(struct idac_io_analog_state *out)
     out->wheel = (tmp.wheel * idac_io_cfg.restrict_) / 128;
     out->accel = tmp.accel;
     out->brake = tmp.brake;
+}
+
+HRESULT idac_io_led_init(void)
+{
+    return S_OK;
+}
+
+void idac_io_led_set_fet_output(const uint8_t *rgb)
+{
+#if 0
+    dprintf("IDAC LED: LEFT SEAT LED: %02X\n", rgb[0]);
+    dprintf("IDAC LED: RIGHT SEAT LED: %02X\n", rgb[1]);
+#endif
+
+    return;
+}
+
+void idac_io_led_gs_update(const uint8_t *rgb)
+{
+#if 0
+    for (int i = 0; i < 9; i++) {
+        dprintf("IDAC LED: LED %d: %02X %02X %02X Speed: %02X\n",
+                i, rgb[i * 4], rgb[i * 4 + 1], rgb[i * 4 + 2], rgb[i * 4 + 3]);
+    }
+#endif
+
+    return;
+}
+
+void idac_io_led_set_leds(const uint8_t *rgb)
+{
+#if 0
+    dprintf("IDAC LED: START: %02X\n", rgb[0]);
+    dprintf("IDAC LED: VIEW CHANGE: %02X\n", rgb[1]);
+    dprintf("IDAC LED: UP: %02X\n", rgb[2]);
+    dprintf("IDAC LED: DOWN: %02X\n", rgb[3]);
+    dprintf("IDAC LED: RIGHT: %02X\n", rgb[4]);
+    dprintf("IDAC LED: LEFT: %02X\n", rgb[5]);
+#endif
+
+    return;
 }

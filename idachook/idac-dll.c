@@ -24,6 +24,18 @@ const struct dll_bind_sym idac_dll_syms[] = {
     }, {
         .sym = "idac_io_get_analogs",
         .off = offsetof(struct idac_dll, get_analogs),
+    }, {
+        .sym = "idac_io_led_init",
+        .off = offsetof(struct idac_dll, led_init),
+    }, {
+        .sym = "idac_io_led_set_fet_output",
+        .off = offsetof(struct idac_dll, led_set_fet_output),
+    }, {
+        .sym = "idac_io_led_gs_update",
+        .off = offsetof(struct idac_dll, led_gs_update),
+    }, {
+        .sym = "idac_io_led_set_leds",
+        .off = offsetof(struct idac_dll, led_set_leds),
     }
 };
 

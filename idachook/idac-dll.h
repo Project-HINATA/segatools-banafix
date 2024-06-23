@@ -11,6 +11,10 @@ struct idac_dll {
     void (*get_gamebtns)(uint8_t *gamebtn);
     void (*get_shifter)(uint8_t *gear);
     void (*get_analogs)(struct idac_io_analog_state *out);
+    HRESULT (*led_init)(void);
+    void (*led_set_fet_output)(const uint8_t *rgb);
+    void (*led_gs_update)(const uint8_t *rgb);
+    void (*led_set_leds)(const uint8_t *rgb);
 };
 
 struct idac_dll_config {

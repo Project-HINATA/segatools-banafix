@@ -1,3 +1,14 @@
+/*
+    "Initial D ARCADE STAGE Zero" (idz) hook
+
+    Devices
+
+      JVS:  837-15257 "Type 4" I/O Board
+     COM1:  838-15069 MOTOR DRIVE BD RS232/422 Board
+    COM10:  837-15286 "Gen 2" Aime Reader
+    COM11:  837-15070-02 IC BD LED Controller Board
+*/
+
 #include <windows.h>
 #include <shlwapi.h>
 

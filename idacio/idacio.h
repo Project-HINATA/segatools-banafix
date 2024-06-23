@@ -19,6 +19,17 @@ enum {
     IDAC_IO_GAMEBTN_VIEW_CHANGE = 0x20,
 };
 
+enum {
+    /* These are the bitmasks to use when checking which
+       lights are triggered on incoming IO4 GPIO writes. */
+    IDAC_IO_LED_START = 1 << 31,
+    IDAC_IO_LED_VIEW_CHANGE = 1 << 30,
+    IDAC_IO_LED_UP = 1 << 25,
+    IDAC_IO_LED_DOWN = 1 << 24,
+    IDAC_IO_LED_LEFT = 1 << 23,
+    IDAC_IO_LED_RIGHT = 1 << 22,
+};
+
 struct idac_io_analog_state {
     /* Current steering wheel position, where zero is the centered position.
 
@@ -93,3 +104,59 @@ void idac_io_get_analogs(struct idac_io_analog_state *out);
    Minimum API version: 0x0100 */
 
 void idac_io_get_shifter(uint8_t *gear);
+
+/* Initialize LED emulation. This function will be called before any
+   other idac_io_led_*() function calls.
+
+   All subsequent calls may originate from arbitrary threads and some may
+   overlap with each other. Ensuring synchronization inside your IO DLL is
+   your responsibility. 
+   
+   Minimum API version: 0x0101 */
+
+HRESULT idac_io_led_init(void);
+
+/* Update the FET outputs. rgb is a pointer to an array up to 3 bytes.
+
+   The following bits are used to control the FET outputs:
+   [0]: LEFT SEAT LED
+   [1]: RIGHT SEAT LED
+
+   The LED is truned on when the byte is 255 and turned off when the byte is 0.
+
+   Minimum API version: 0x0101 */
+
+void idac_io_led_set_fet_output(const uint8_t *rgb);
+
+/* Update the RGB LEDs. rgb is a pointer to an array up to 32 * 4 = 128 bytes. 
+
+   The LEDs are laid out as follows:
+   [0]: LEFT UP LED
+   [1-2]: LEFT CENTER LED
+   [3]: LEFT DOWN LED
+   [5]: RIGHT UP LED
+   [6-7]: RIGHT CENTER LED
+   [8]: RIGHT DOWN LED
+
+   Each rgb value is comprised for 4 bytes in the order of R, G, B, Speed.
+   Speed is a value from 0 to 255, where 0 is the fastest speed and 255 is the slowest.
+
+   Minimum API version: 0x0101 */
+
+void idac_io_led_gs_update(const uint8_t *rgb);
+
+/* Update the cabinet button LEDs. rgb is a pointer to an array up to 6 bytes.
+
+   The LEDs are laid out as follows:
+   [0]: START LED
+   [1]: VIEW CHANGE LED
+   [2]: UP LED
+   [3]: DOWN LED
+   [4]: RIGHT LED
+   [5]: LEFT LED
+
+   The LED is turned on when the byte is 255 and turned off when the byte is 0.
+
+   Minimum API version: 0x0101 */
+
+void idac_io_led_set_leds(const uint8_t *rgb);

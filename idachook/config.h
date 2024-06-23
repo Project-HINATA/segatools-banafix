@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "board/config.h"
+#include "board/led15070.h"
 
 #include "hooklib/dvd.h"
 
@@ -19,6 +20,7 @@ struct idac_hook_config {
     struct io4_config io4;
     struct idac_dll_config dll;
     struct zinput_config zinput;
+    struct led15070_config led15070;
 };
 
 void idac_dll_config_load(
