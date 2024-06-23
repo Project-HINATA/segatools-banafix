@@ -1,3 +1,16 @@
+/*
+    "WACCA" (mercury) hook
+
+    Devices
+
+    USB:    837-15257-01 "Type 4" I/O Board
+    USB:    14-1497-R "Elisabeth" LED Board Controller
+    COM1:   837-15396 "Gen 3" Aime Reader
+    COM2:   200-6275 VFD GP1232A02A FUTABA Board
+    COM3:   PSS-7135-L02-01 "Left Side" Touch Board
+    COM4:   PSS-7135-L02-01 "Right Sdde" Touch Board
+*/
+
 #include <windows.h>
 
 #include "board/io4.h"

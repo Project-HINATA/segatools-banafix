@@ -1,3 +1,18 @@
+/*
+    "SEGA World Drivers Championship" (swdc) hook
+
+    Devices
+
+    USB:    837-15257 "Type 4" I/O Board
+    USB:    838-15415 Indicator BD Main Board (COM21)
+            WITH
+            838-15416 Indicator BD LED Board
+    COM1:   838-15069 MOTOR DRIVE BD RS232/422 board
+    COM2:   837-15396 "Gen 3" Aime reader
+    COM3:   837-15070-04 IC BD LED controller board
+    COM4:   200-6275 VFD GP1232A02A FUTABA board
+*/
+
 #include <windows.h>
 #include <shlwapi.h>
 

@@ -1,3 +1,15 @@
+/*
+    "O.N.G.E.K.I." (mu3) hook
+
+    Devices
+
+    USB:    837-15257-01 "Type 4" I/O Board
+    USB:    3 * 601-13216 USB "QR Code" Camera (SDDT1-SDDT3)
+    COM1:   837-15396 "Gen 3" Aime Reader
+    COM2:   200-6275 VFD GP1232A02A FUTABA Board
+    COM3:   837-15093-06 LED Controller Board
+*/
+
 #include <windows.h>
 
 #include <stdlib.h>

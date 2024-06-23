@@ -1,3 +1,14 @@
+/*
+    "Hatsune Miku Project DIVA Arcade " (diva) hook
+
+    Devices
+
+      JVS:  837-14572 "Type 3" I/O Board
+     COM1:  3M Touch Systems 78-0011-2353-4 Touch Controller Board
+    COM10:  TN32MSEC003S "Gen 1" Aime Reader
+    COM11:  837-15275 Touch Slider
+*/
+
 #include <windows.h>
 
 #include <stdlib.h>

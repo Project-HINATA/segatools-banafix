@@ -1,3 +1,27 @@
+/*
+    "CHUNITHM NEW" (chusan) hook
+
+    Devices
+
+    USB:    837-15257-02 "Type 4" I/O Board
+    COM1:   837-15330 Ground Slider
+
+    [CVT mode (DIPSW2 ON)]
+
+    COM2:   837-15093-06 LED Controller Board
+    COM3:   837-15093-06 LED Controller Board
+    COM4:   837-15286 "Gen 2" Aime Reader
+
+    [SP mode (DIPSW2 OFF)]
+
+    USB:    837-15067-02 USB Serial I/F Board
+            connected to
+            837-15093-06 LED Controller Board (COM20)
+            837-15093-06 LED Controller Board (COM21)
+    COM2:   200-6275 VFD GP1232A02A FUTABA Board
+    COM4:   837-15396 "Gen 3" Aime Reader
+*/
+
 #include <windows.h>
 
 #include <stddef.h>

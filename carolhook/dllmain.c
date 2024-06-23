@@ -1,3 +1,31 @@
+/*
+    "Wonderland Wars" (carol*) hook
+
+    Devices:
+
+    JVS:    837-14572 "Type 3" I/O Board
+
+    [Satellite]
+
+    USB:    "WinTouch" Controller Board
+                ^ (DIPSW2 ON, Version 5.xx.xx or above)
+    COM1:   3M Touch Systems 78-0011-2353-4 Touch Controller Board
+                ^ (DIPSW2 OFF)
+    COM10:  TN32MSEC003S "Gen 1" Aime Reader
+            OR
+            837-15286 "Gen 2" Aime Reader
+                ^ (Version 1.6x.xx or above)
+    COM11:  837-15070-02 LED Controller Board
+    COM12:  837-15312 Pen Controller I/O Board
+
+    [Terminal]
+
+    COM10:  837-15286 "Gen 2" Aime Reader
+
+    *: SEGA's abbreviation for Lewis Carroll, author of Alice's Adventures in
+    Wonderland.
+*/
+
 #include <windows.h>
 
 #include <stdlib.h>

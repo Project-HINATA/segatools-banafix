@@ -1,3 +1,16 @@
+/*
+    "Card Maker" (cm) hook
+
+    Devices
+
+    USB:    837-15257-01 "Type 4" I/O Board
+    USB:    838-20006 "WinTouch" Controller Board
+    USB:    630-00009 Sinfonia CHC-C310 Printer
+    COM1:   837-15396 "Gen 3" Aime Reader
+    COM2:   200-6275 VFD GP1232A02A FUTABA Board
+    COM3:   220-5872 AS-6DB Coin Selector
+*/
+
 #include <windows.h>
 
 #include <stdlib.h>

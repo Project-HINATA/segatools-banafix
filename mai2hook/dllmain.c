@@ -1,3 +1,22 @@
+/*
+    "maimai DX" (mai2) hook
+
+    Devices
+
+    USB:    837-15257-01 "Type 4" I/O Board
+    USB:    2 * 601-13216 USB "QR Code" Camera (SDEZ2, SDEZ3)
+    USB:    601-13249 USB "Player" Camera (SDEZ1)
+    USB:    837-15067-02 IC BD USB to Serial 232
+            connected to
+            837-15070-04 LED Board Controller (COM21)
+            837-15070-04 LED Board Controller (COM23)
+
+    COM1:   837-15396 "Gen 3" Aime Reader
+    COM2:   200-6275 VFD GP1232A02A FUTABA Board
+    COM3:   509-6483 Touch Panel Controller
+    COM4:   509-6483 Touch Panel Controller
+*/
+
 #include <windows.h>
 
 #include "board/io4.h"
@@ -5,6 +24,8 @@
 #include "board/vfd.h"
 
 #include "hook/process.h"
+#include "hook/table.h"
+#include "hook/iohook.h"
 
 #include "hooklib/serial.h"
 #include "hooklib/spike.h"

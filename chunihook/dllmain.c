@@ -1,3 +1,15 @@
+/*
+    "CHUNITHM" (chuni) hook
+
+    Devices
+
+    JVS:    837-14572 "Type 3" I/O Board
+    COM1:   837-15330 Ground Slider
+    COM10:  837-15093-06 LED Controller Board
+    COM11:  837-15093-06 LED Controller Board
+    COM12:  TN32MSEC003S "Gen 1" Aime Reader
+*/
+
 #include <windows.h>
 
 #include <stdlib.h>

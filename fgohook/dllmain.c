@@ -1,3 +1,20 @@
+/*
+    "Fate Grand/Order Arcade" (fgo) hook
+
+    Devices
+
+    USB:    837-15257 "Type 4" I/O Board
+    USB:    838-15405 "WinTouch" Controller Board
+    USB:    630-00008 Sinfonia CHC-C330 Printer
+    USB:    837-14509-02 USB-SER I/F BD Mini-B FTDI Board
+            connected to
+            837-15093-06 LED Controller Board
+    COM1:   200-6275 VFD GP1232A02A FUTABA Board
+    COM2:   837-15345 RFID Deck Reader Noard
+    COM3:   837-15396 "Gen 3" Aime Reader
+    COM4:   837-15347 RFID Reader/Writer Board (inside the printer)
+*/
+
 #include <windows.h>
 
 #include <stdlib.h>

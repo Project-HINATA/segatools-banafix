@@ -1,3 +1,16 @@
+/*
+    "Initial D THE ARCADE" (idac) hook
+
+    Devices
+
+     USB:   837-15257 "Type 4" I/O Board
+    COM1:   838-15069 MOTOR DRIVE BD RS232/422 Board
+    COM2:   837-15070-02 IC BD LED Controller Board
+    COM3:   837-15286 "Gen 2" Aime Reader (DIPSW2 OFF)
+            OR
+            837-15396 "Gen 3" Aime Reader (DIPSW2 ON)
+*/
+
 #include <windows.h>
 #include <shlwapi.h>
 
@@ -5,6 +18,7 @@
 
 #include "board/sg-reader.h"
 #include "board/io4.h"
+#include "board/ffb.h"
 
 #include "hook/process.h"
 
