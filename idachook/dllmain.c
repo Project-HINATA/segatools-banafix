@@ -18,7 +18,6 @@
 
 #include "board/sg-reader.h"
 #include "board/io4.h"
-#include "board/ffb.h"
 
 #include "hook/process.h"
 
