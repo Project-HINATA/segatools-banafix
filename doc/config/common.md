@@ -352,7 +352,7 @@ Enable keychip emulation. Disable to use a real keychip.
 Default: `A69E-01A88888888`
 
 Keychip serial number. Keychip serials observed in the wild follow this
-pattern: `A6xE-01Ayyyyyyyy`.
+pattern: `A\d{2}(E|X)-(01|20)[ABCDU]\d{8}`.
 
 ### `gameId`
 
