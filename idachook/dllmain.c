@@ -91,6 +91,13 @@ static DWORD CALLBACK idac_pre_startup(void)
         goto fail;
     }
 
+    /* Initialize native plugin DLL hooks
+
+       There seems to be an issue with other DLL hooks if `LoadLibraryW` is
+       hooked earlier in the initialization. */
+
+    indrun_hook_init(&idac_hook_cfg.indrun);
+
     /* Initialize debug helpers */
 
     spike_hook_init(L".\\segatools.ini");

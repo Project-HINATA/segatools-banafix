@@ -66,6 +66,16 @@ void idac_dll_config_load(
             filename);
 }
 
+void indrun_config_load(
+        struct indrun_config *cfg,
+        const wchar_t *filename)
+{
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    cfg->enable = GetPrivateProfileIntW(L"indrun", L"enable", 1, filename);
+}
+
 void idac_hook_config_load(
         struct idac_hook_config *cfg,
         const wchar_t *filename)
@@ -80,6 +90,7 @@ void idac_hook_config_load(
     dvd_config_load(&cfg->dvd, filename);
     io4_config_load(&cfg->io4, filename);
     led15070_config_load(&cfg->led15070, filename);
+    indrun_config_load(&cfg->indrun, filename);
 }
 
 void zinput_config_load(struct zinput_config *cfg, const wchar_t *filename)
