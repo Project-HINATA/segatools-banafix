@@ -14,7 +14,7 @@ DIST_DIR := dist
 # Add "-D[option]=[value]" here as necessary
 MESON_OPTIONS :=
 # For options that shouldn't be committed
-include MesonLocalOptions.mk
+-include MesonLocalOptions.mk
 
 # -----------------------------------------------------------------------------
 # Targets
