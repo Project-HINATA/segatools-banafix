@@ -54,7 +54,7 @@ HRESULT touch_hook_init(const struct touch_config *cfg)
     if (!cfg->enable) {
         return S_OK;
     }
-    
+
     InitializeCriticalSection(&touch_lock);
 
     uart_init(&touch_uart, 1);
@@ -112,7 +112,7 @@ static HRESULT touch_handle_irp_locked(struct irp *irp)
     }
 
     for (;;) {
-#if 0
+#if defined(LOG_CAROL_TOUCH)
         dprintf("Touchscreen: TX Buffer:\n");
         dump_iobuf(&touch_uart.written);
 #endif
@@ -188,7 +188,7 @@ static void touch_scan_auto(const bool is_pressed, const uint16_t mouse_x, const
         resp.touches[0].touch_id = 1;
         tmp_x = mouse_x & 0x7FFF;
         tmp_y = mouse_y & 0x7FFF;
-        
+
         resp.touches[0].x1 = tmp_x & 0x7F;
         resp.touches[0].x2 = (tmp_x >> 7) & 0x7F;
         resp.touches[0].y1 = tmp_y & 0x7F;
@@ -201,7 +201,7 @@ static void touch_scan_auto(const bool is_pressed, const uint16_t mouse_x, const
             dprintf("Touch: Mouse down! x %02X %02X y: %02X %02X\n", resp.touches[0].x1, resp.touches[0].x2, resp.touches[0].y1, resp.touches[0].y2);
 #endif
 
-    
+
         last_x1 = resp.touches[0].x1;
         last_x2 = resp.touches[0].x2;
         last_y1 = resp.touches[0].y1;
@@ -220,7 +220,7 @@ static void touch_scan_auto(const bool is_pressed, const uint16_t mouse_x, const
     iobuf_write(&touch_uart.readable, &resp, sizeof(resp));
     LeaveCriticalSection(&touch_lock);
 
-#if 0     
+#if defined(LOG_CAROL_TOUCH)
     dprintf("Touch: RX Buffer: (pos %08x)\n", (uint32_t)touch_uart.readable.pos);
     dump_iobuf(&touch_uart.readable);
 #endif

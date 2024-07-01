@@ -39,6 +39,43 @@ if cc.get_id() != 'msvc'
     )
 endif
 
+if get_option('log_all') or get_option('log_jvs')
+    add_project_arguments('-DLOG_JVS', language: 'c')
+endif
+if get_option('log_all') or get_option('log_io3')
+    add_project_arguments('-DLOG_IO3', language: 'c')
+endif
+if get_option('log_all') or get_option('log_led15093')
+    add_project_arguments('-DLOG_LED15093', language: 'c')
+endif
+if get_option('log_all') or get_option('log_nfc')
+    add_project_arguments('-DLOG_NFC', language: 'c')
+endif
+if get_option('log_all') or get_option('log_carol_control_bd')
+    add_project_arguments('-DLOG_CAROL_CONTROL_BD', language: 'c')
+endif
+if get_option('log_all') or get_option('log_carol_led_bd')
+    add_project_arguments('-DLOG_CAROL_LED_BD', language: 'c')
+endif
+if get_option('log_all') or get_option('log_carol_touch')
+    add_project_arguments('-DLOG_CAROL_TOUCH', language: 'c')
+endif
+if get_option('log_all') or get_option('log_chuni_slider')
+    add_project_arguments('-DLOG_CHUNI_SLIDER', language: 'c')
+endif
+if get_option('log_all') or get_option('log_chusan_slider')
+    add_project_arguments('-DLOG_CHUSAN_SLIDER', language: 'c')
+endif
+if get_option('log_all') or get_option('log_diva_slider')
+    add_project_arguments('-DLOG_DIVA_SLIDER', language: 'c')
+endif
+if get_option('log_all') or get_option('log_mercury_slider')
+    add_project_arguments('-DLOG_MERCURY_SLIDER', language: 'c')
+endif
+if get_option('log_all') or get_option('log_clock')
+    add_project_arguments('-DLOG_CLOCK', language: 'c')
+endif
+
 shlwapi_lib = cc.find_library('shlwapi')
 dinput8_lib = cc.find_library('dinput8')
 dxguid_lib = cc.find_library('dxguid')

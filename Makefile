@@ -11,6 +11,11 @@ DOC_DIR := doc
 
 DIST_DIR := dist
 
+# Add "-D[option]=[value]" here as necessary
+MESON_OPTIONS :=
+# For options that shouldn't be committed
+-include MesonLocalOptions.mk
+
 # -----------------------------------------------------------------------------
 # Targets
 # -----------------------------------------------------------------------------
@@ -19,9 +24,9 @@ include Package.mk
 
 .PHONY: build # Build the project
 build:
-	$(V)meson --cross cross-mingw-32.txt $(BUILD_DIR_32)
+	$(V)meson setup $(MESON_OPTIONS) --cross cross-mingw-32.txt $(BUILD_DIR_32)
 	$(V)ninja -C $(BUILD_DIR_32)
-	$(V)meson --cross cross-mingw-64.txt $(BUILD_DIR_64)
+	$(V)meson setup $(MESON_OPTIONS) --cross cross-mingw-64.txt $(BUILD_DIR_64)
 	$(V)ninja -C $(BUILD_DIR_64)
 
 .PHONY: dist # Build and create a zip distribution package

@@ -230,7 +230,7 @@ static HRESULT io3_cmd(
 
     case JVS_CMD_READ_ANALOGS:
         return io3_cmd_read_analogs(io3, req, resp);
-    
+
     case JVS_CMD_READ_ROTARYS:
         return io3_cmd_read_rotarys(io3, req, resp);
 
@@ -390,7 +390,7 @@ static HRESULT io3_cmd_read_switches(
         return hr;
     }
 
-#if 0
+#if defined(LOG_IO3)
     dprintf("JVS I/O: Read switches, np=%i, bpp=%i\n",
             req.num_players,
             req.bytes_per_player);

@@ -94,7 +94,7 @@ static HRESULT ledbd_handle_irp_locked(struct irp *irp)
     }
 
     for (;;) {
-#if 0
+#if defined(LOG_CAROL_LED_BD)
         dprintf("LED Board: TX Buffer:\n");
         dump_iobuf(&ledbd_uart.written);
 #endif

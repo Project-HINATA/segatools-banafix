@@ -185,14 +185,14 @@ static HRESULT jvs_ioctl_sense(struct irp *irp)
 
 static HRESULT jvs_ioctl_transact(struct irp *irp)
 {
-#if 0
+#if defined(LOG_JVS)
     dprintf("\nJVS Port: Outbound frame:\n");
     dump_const_iobuf(&irp->write);
 #endif
 
     jvs_bus_transact(jvs_root, irp->write.bytes, irp->write.nbytes, &irp->read);
 
-#if 0
+#if defined(LOG_JVS)
     dprintf("JVS Port: Inbound frame:\n");
     dump_iobuf(&irp->read);
     dprintf("\n");

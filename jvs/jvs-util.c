@@ -46,7 +46,7 @@ void jvs_crack_request(
         return;
     }
 
-#if 0
+#if defined(LOG_JVS)
     dprintf("Decoded request:\n");
     dump_iobuf(&decode);
 #endif
@@ -96,7 +96,7 @@ void jvs_crack_request(
         resp_bytes[2] = 0x01;   /* Status: Success */
     }
 
-#if 0
+#if defined(LOG_JVS)
     dprintf("Encoding response:\n");
     dump_iobuf(&encode);
 #endif

@@ -1,6 +1,6 @@
 /*
     SEGA 837-15093-XX LED Controller Board emulator
-    
+
     Supported variants:
 
     837-15093
@@ -106,7 +106,7 @@ static uint8_t led15093_host_adr = 1;
 static io_led_init_t led_init;
 static io_led_set_leds_t set_leds;
 
-HRESULT led15093_hook_init(const struct led15093_config *cfg, io_led_init_t _led_init, 
+HRESULT led15093_hook_init(const struct led15093_config *cfg, io_led_init_t _led_init,
     io_led_set_leds_t _set_leds, unsigned int first_port, unsigned int num_boards, uint8_t board_adr, uint8_t host_adr)
 {
 
@@ -236,12 +236,12 @@ static HRESULT led15093_handle_irp_locked(int board, struct irp *irp)
         }
     }
     */
-    
+
     if (irp->op == IRP_OP_OPEN) {
         dprintf("LED 15093: Starting backend DLL\n");
         // int res = led_init();
         hr = led_init();
-        
+
         /*
         if (res != 0) {
             dprintf("LED 15093: Backend error, LED board disconnected: "
@@ -267,7 +267,7 @@ static HRESULT led15093_handle_irp_locked(int board, struct irp *irp)
     }
 
     for (;;) {
-#if 0
+#if defined(LOG_LED15093)
         dprintf("TX Buffer:\n");
         dump_iobuf(&boarduart->written);
 #endif
@@ -294,7 +294,7 @@ static HRESULT led15093_handle_irp_locked(int board, struct irp *irp)
             return hr;
         }
 
-#if 0
+#if defined(LOG_LED15093)
         dprintf("Deframe Buffer:\n");
         dump_iobuf(&req_iobuf);
 #endif
@@ -717,7 +717,7 @@ static HRESULT led15093_req_set_imm_led(int board, const struct led15093_req_set
     resp.status = v->status_code;
     if (req->cmd == LED_15093_CMD_SET_IMM_LED) {
         resp.cmd = LED_15093_CMD_SET_IMM_LED;
-    } 
+    }
     // else {
     //     resp.cmd = LED_15093_CMD_SET_IMM_LED_LEGACY;
     // }
