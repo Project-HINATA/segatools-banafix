@@ -109,16 +109,22 @@ HRESULT dns_platform_hook_init(const struct dns_config *cfg)
         return hr;
     }
     
-    // CHN
-    // PowerOn
+    // WAHLAP PowerOn
     hr = dns_hook_push(L"at.sys-all.cn", cfg->startup);
 
     if (FAILED(hr)) {
         return hr;
     }
     
-    // WeChat AimeDB Server
+    // WAHLAP WeChat AimeDB Server
     hr = dns_hook_push(L"ai.sys-all.cn", cfg->aimedb);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+    
+    // WAHLAP Billing
+    hr = dns_hook_push(L"ib.sys-all.cn", cfg->billing);
 
     if (FAILED(hr)) {
         return hr;
