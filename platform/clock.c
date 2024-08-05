@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "hook/table.h"
+#include "hook/procaddr.h"
 
 #include "platform/clock.h"
 
@@ -236,6 +237,13 @@ HRESULT clock_hook_init(const struct clock_config *cfg)
                 "kernel32.dll",
                 clock_base_hook_syms,
                 _countof(clock_base_hook_syms));
+        
+        proc_addr_table_push(
+                NULL,
+                "kernel32.dll",
+                clock_base_hook_syms,
+                _countof(clock_base_hook_syms)
+        );
     }
 
     if (cfg->timezone) {
@@ -244,6 +252,13 @@ HRESULT clock_hook_init(const struct clock_config *cfg)
                 "kernel32.dll",
                 clock_read_hook_syms,
                 _countof(clock_read_hook_syms));
+        
+        proc_addr_table_push(
+                NULL,
+                "kernel32.dll",
+                clock_read_hook_syms,
+                _countof(clock_read_hook_syms)
+        );
     }
 
     if (!cfg->writeable) {
@@ -253,6 +268,13 @@ HRESULT clock_hook_init(const struct clock_config *cfg)
                 "kernel32.dll",
                 clock_write_hook_syms,
                 _countof(clock_write_hook_syms));
+        
+        proc_addr_table_push(
+                NULL,
+                "kernel32.dll",
+                clock_write_hook_syms,
+                _countof(clock_write_hook_syms)
+        );
     }
 
     return S_OK;
