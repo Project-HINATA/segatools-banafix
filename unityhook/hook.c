@@ -139,11 +139,13 @@ static HMODULE WINAPI hook_LoadLibraryW(const wchar_t *name)
             dll_hook_insert_hooks(result);
             path_hook_insert_hooks(result);
 
-            // printer_hook_insert_hooks(result);
             reg_hook_insert_hooks(result);
             proc_addr_insert_hooks(result);
-            serial_hook_apply_hooks(result);
-            iohook_apply_hooks(result);
+
+            // Not needed?
+            // serial_hook_apply_hooks(result);
+            // Unity will crash during option loading when we hook this twice
+            // iohook_apply_hooks(result);
         }
     }
 
