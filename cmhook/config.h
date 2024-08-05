@@ -6,6 +6,7 @@
 
 #include "hooklib/dvd.h"
 #include "hooklib/touch.h"
+#include "hooklib/printer.h"
 
 #include "cmhook/cm-dll.h"
 
@@ -21,6 +22,7 @@ struct cm_hook_config {
     struct vfd_config vfd;
     struct cm_dll_config dll;
     struct touch_screen_config touch;
+    struct printer_config printer;
     struct unity_config unity;
 };
 

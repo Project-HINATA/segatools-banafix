@@ -6,6 +6,7 @@
     c310emu (rakisaionji)
     segatools-kancolle (OLEG)
     c310emu (doremi)
+    chc (emihiok)
 */
 
 #include "hooklib/printer.h"
@@ -18,6 +19,7 @@
 #include <windows.h>
 
 #include "hook/table.h"
+#include "hook/procaddr.h"
 #include "hooklib/dll.h"
 #include "hooklib/uart.h"
 #include "util/dprintf.h"
@@ -52,7 +54,11 @@ static int32_t CURVE[3][3];
 static uint8_t POLISH[2];
 static int32_t MTF[9];
 
-/* C3xxFWDLusb API hooks */
+/* Printer status */
+
+static uint8_t STATUS = 0;
+
+/* C3XXFWDLusb API hooks */
 
 int fwdlusb_open(uint16_t *rResult);
 void fwdlusb_close();
@@ -71,7 +77,7 @@ int fwdlusb_ReleaseThread(uint16_t *rResult);
 int fwdlusb_AttachThreadCount(uint16_t *rCount, uint16_t *rMaxCount);
 int fwdlusb_getErrorLog(uint16_t index, uint8_t *rData, uint16_t *rResult);
 
-/* C3xxusb API hooks */
+/* C3XXusb API hooks */
 
 int chcusb_MakeThread(uint16_t maxCount);
 int chcusb_open(uint16_t *rResult);
@@ -136,6 +142,65 @@ int chcusb_getEEPROM(uint8_t index, uint8_t *rData, uint16_t *rResult);
 int chcusb_setParameter(uint8_t a1, uint32_t a2, uint16_t *rResult);
 int chcusb_getParameter(uint8_t a1, uint8_t *a2, uint16_t *rResult);
 int chcusb_universal_command(int32_t a1, uint8_t a2, int32_t a3, uint8_t *a4, uint16_t *rResult);
+
+/* PrintDLL API hooks */
+
+void CFW_close(const void *handle);
+int CFW_getFirmwareInfo(const void *handle, uint8_t update, LPCSTR filename, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult);
+int CFW_getPrinterInfo(const void *handle, uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen);
+int CFW_init(LPCSTR dllpath);
+int CFW_listupPrinter(const void *handle, uint8_t *rIdArray);
+int CFW_listupPrinterSN(const void *handle, uint64_t *rSerialArray);
+int CFW_open(const void *handle, uint16_t *rResult);
+int CFW_resetPrinter(const void *handle, uint16_t *rResult);
+int CFW_selectPrinter(const void *handle, uint8_t printerId, uint16_t *rResult);
+int CFW_selectPrinterSN(const void *handle, uint64_t printerSN, uint16_t *rResult);
+int CFW_status(const void *handle, uint16_t *rResult);
+int CFW_statusAll(const void *handle, uint8_t *idArray, uint16_t *rResultArray);
+void CFW_term(const void *handle);
+int CFW_updateFirmware(const void *handle, uint8_t update, LPCSTR filename, uint16_t *rResult);
+int CHCUSB_AttachThreadCount(const void *handle, uint16_t *rCount, uint16_t *rMaxCount);
+int CHCUSB_MakeThread(const void *handle, uint16_t maxCount);
+int CHCUSB_ReleaseThread(const void *handle, uint16_t *rResult);
+int CHCUSB_blinkLED(const void *handle, uint16_t *rResult);
+int CHCUSB_cancelCopies(const void *handle, uint16_t pageId, uint16_t *rResult);
+void CHCUSB_close(const void *handle);
+int CHCUSB_commCardRfidReader(const void *handle, uint8_t *sendData, uint8_t *rRecvData, uint32_t sendSize, uint32_t *rRecvSize, uint16_t *rResult);
+int CHCUSB_copies(const void *handle, uint16_t copies, uint16_t *rResult);
+int CHCUSB_endpage(const void *handle, uint16_t *rResult);
+int CHCUSB_exitCard(const void *handle, uint16_t *rResult);
+int CHCUSB_getCardRfidTID(const void *handle, uint8_t *rCardTID, uint16_t *rResult);
+int CHCUSB_getErrorLog(const void *handle, uint16_t index, uint8_t *rData, uint16_t *rResult);
+int CHCUSB_getErrorStatus(const void *handle, uint16_t *rBuffer);
+int CHCUSB_getGamma(const void *handle, LPCSTR filename, uint8_t *r, uint8_t *g, uint8_t *b, uint16_t *rResult);
+int CHCUSB_getMtf(const void *handle, LPCSTR filename, int32_t *mtf, uint16_t *rResult);
+int CHCUSB_getPrintIDStatus(const void *handle, uint16_t pageId, uint8_t *rBuffer, uint16_t *rResult);
+int CHCUSB_getPrinterInfo(const void *handle, uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen);
+int CHCUSB_getPrinterToneCurve(const void *handle, uint16_t type, uint16_t number, uint16_t *data, uint16_t *rResult);
+int CHCUSB_imageformat(const void *handle, uint16_t format, uint16_t ncomp, uint16_t depth, uint16_t width, uint16_t height, uint8_t *inputImage, uint16_t *rResult);
+int CHCUSB_init(LPCSTR dllpath);
+int CHCUSB_listupPrinter(const void *handle, uint8_t *rIdArray);
+int CHCUSB_listupPrinterSN(const void *handle, uint64_t *rSerialArray);
+int CHCUSB_makeGamma(const void *handle, uint16_t k, uint8_t *intoneR, uint8_t *intoneG, uint8_t *intoneB);
+int CHCUSB_open(const void *handle, uint16_t *rResult);
+int CHCUSB_resetPrinter(const void *handle, uint16_t *rResult);
+int CHCUSB_selectPrinter(const void *handle, uint8_t printerId, uint16_t *rResult);
+int CHCUSB_selectPrinterSN(const void *handle, uint64_t printerSN, uint16_t *rResult);
+int CHCUSB_setIcctable(const void *handle, uint16_t intents, uint8_t *intoneR, uint8_t *intoneG, uint8_t *intoneB, uint8_t *outtoneR, uint8_t *outtoneG, uint8_t *outtoneB, uint16_t *rResult);
+int CHCUSB_setIcctableProfile(const void *handle, LPCSTR icc1, LPCSTR icc2, uint16_t intents, uint16_t *rResult);
+int CHCUSB_setPrintStandby(const void *handle, uint16_t position, uint16_t *rResult);
+int CHCUSB_setPrinterInfo(const void *handle, uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult);
+int CHCUSB_setPrinterToneCurve(const void *handle, uint16_t type, uint16_t number, uint16_t *data, uint16_t *rResult);
+int CHCUSB_setmtf(const void *handle, int32_t *mtf);
+int CHCUSB_startpage(const void *handle, uint16_t postCardState, uint16_t *pageId, uint16_t *rResult);
+int CHCUSB_status(const void *handle, uint16_t *rResult);
+int CHCUSB_statusAll(const void *handle, uint8_t *idArray, uint16_t *rResultArray);
+int CHCUSB_testCardFeed(const void *handle, uint16_t mode, uint16_t times, uint16_t *rResult);
+void CHCUSB_term(const void *handle);
+int CHCUSB_updateCardRfidReader(const void *handle, uint8_t *data, uint32_t size, uint16_t *rResult);
+int CHCUSB_write(const void *handle, uint8_t *data, uint32_t offset, uint32_t *writeSize, uint16_t *rResult);
+int CHCUSB_writeHolo(const void *handle, uint8_t *data, uint32_t offset, uint32_t *writeSize, uint16_t *rResult);
+int CHCUSB_writeLaminate(const void *handle, uint8_t *data, uint32_t offset, uint32_t *writeSize, uint16_t *rResult);
 
 /* Bitmap writing utils */
 
@@ -253,331 +318,831 @@ static uint8_t deck_readable_bytes[1024];
 static uint8_t current_card_idx = 0;
 static bool read_pending = false;
 
-/* C3xxFWDLusb hook tbl. */
+/* C3XXFWDLusb hook tbl. The ordinals are required, as some games, for example
+   Sekito, will import this library by ordinal and not by name. */
 
 static const struct hook_symbol C3XXFWDLusb_hooks[] = {
-    {.name = "fwdlusb_open",
-     .patch = fwdlusb_open,
-     .link = NULL},
-    {.name = "fwdlusb_close",
-     .patch = fwdlusb_close,
-     .link = NULL},
-    {.name = "fwdlusb_listupPrinter",
-     .patch = fwdlusb_listupPrinter,
-     .link = NULL},
-    {.name = "fwdlusb_listupPrinterSN",
-     .patch = fwdlusb_listupPrinterSN,
-     .link = NULL},
-    {.name = "fwdlusb_selectPrinter",
-     .patch = fwdlusb_selectPrinter,
-     .link = NULL},
-    {.name = "fwdlusb_selectPrinterSN",
-     .patch = fwdlusb_selectPrinterSN,
-     .link = NULL},
-    {.name = "fwdlusb_getPrinterInfo",
-     .patch = fwdlusb_getPrinterInfo,
-     .link = NULL},
-    {.name = "fwdlusb_status",
-     .patch = fwdlusb_status,
-     .link = NULL},
-    {.name = "fwdlusb_statusAll",
-     .patch = fwdlusb_statusAll,
-     .link = NULL},
-    {.name = "fwdlusb_resetPrinter",
-     .patch = fwdlusb_resetPrinter,
-     .link = NULL},
-    {.name = "fwdlusb_updateFirmware",
-     .patch = fwdlusb_updateFirmware,
-     .link = NULL},
-    {.name = "fwdlusb_getFirmwareInfo",
-     .patch = fwdlusb_getFirmwareInfo,
-     .link = NULL},
-    {.name = "fwdlusb_MakeThread",
-     .patch = fwdlusb_MakeThread,
-     .link = NULL},
-    {.name = "fwdlusb_ReleaseThread",
-     .patch = fwdlusb_ReleaseThread,
-     .link = NULL},
-    {.name = "fwdlusb_AttachThreadCount",
-     .patch = fwdlusb_AttachThreadCount,
-     .link = NULL},
-    {.name = "fwdlusb_getErrorLog",
-     .patch = fwdlusb_getErrorLog,
-     .link = NULL},
-};
-
-/* C310A-Busb/C320Ausb/C330Ausb hook tbl. */
-
-static const struct hook_symbol C3XXusb_hooks[] = {
-    {.name = "chcusb_MakeThread",
-     .patch = chcusb_MakeThread,
-     .link = NULL},
-    {.name = "chcusb_open",
-     .patch = chcusb_open,
-     .link = NULL},
-    {.name = "chcusb_close",
-     .patch = chcusb_close,
-     .link = NULL},
-    {.name = "chcusb_ReleaseThread",
-     .patch = chcusb_ReleaseThread,
-     .link = NULL},
-    {.name = "chcusb_listupPrinter",
-     .patch = chcusb_listupPrinter,
-     .link = NULL},
-    {.name = "chcusb_listupPrinterSN",
-     .patch = chcusb_listupPrinterSN,
-     .link = NULL},
-    {.name = "chcusb_selectPrinter",
-     .patch = chcusb_selectPrinter,
-     .link = NULL},
-    {.name = "chcusb_selectPrinterSN",
-     .patch = chcusb_selectPrinterSN,
-     .link = NULL},
-    {.name = "chcusb_getPrinterInfo",
-     .patch = chcusb_getPrinterInfo,
-     .link = NULL},
-    {.name = "chcusb_imageformat",
-     .patch = chcusb_imageformat,
-     .link = NULL},
-    {.name = "chcusb_setmtf",
-     .patch = chcusb_setmtf,
-     .link = NULL},
-    {.name = "chcusb_makeGamma",
-     .patch = chcusb_makeGamma,
-     .link = NULL},
-    {.name = "chcusb_setIcctable",
-     .patch = chcusb_setIcctable,
-     .link = NULL},
-    {.name = "chcusb_copies",
-     .patch = chcusb_copies,
-     .link = NULL},
-    {.name = "chcusb_status",
-     .patch = chcusb_status,
-     .link = NULL},
-    {.name = "chcusb_statusAll",
-     .patch = chcusb_statusAll,
-     .link = NULL},
-    {.name = "chcusb_startpage",
-     .patch = chcusb_startpage,
-     .link = NULL},
-    {.name = "chcusb_endpage",
-     .patch = chcusb_endpage,
-     .link = NULL},
-    {.name = "chcusb_write",
-     .patch = chcusb_write,
-     .link = NULL},
-    {.name = "chcusb_writeLaminate",
-     .patch = chcusb_writeLaminate,
-     .link = NULL},
-    {.name = "chcusb_writeHolo",
-     .patch = chcusb_writeHolo,
-     .link = NULL},
-    {.name = "chcusb_setPrinterInfo",
-     .patch = chcusb_setPrinterInfo,
-     .link = NULL},
-    {.name = "chcusb_getGamma",
-     .patch = chcusb_getGamma,
-     .link = NULL},
-    {.name = "chcusb_getMtf",
-     .patch = chcusb_getMtf,
-     .link = NULL},
-    {.name = "chcusb_cancelCopies",
-     .patch = chcusb_cancelCopies,
-     .link = NULL},
-    {.name = "chcusb_setPrinterToneCurve",
-     .patch = chcusb_setPrinterToneCurve,
-     .link = NULL},
-    {.name = "chcusb_getPrinterToneCurve",
-     .patch = chcusb_getPrinterToneCurve,
-     .link = NULL},
-    {.name = "chcusb_blinkLED",
-     .patch = chcusb_blinkLED,
-     .link = NULL},
-    {.name = "chcusb_resetPrinter",
-     .patch = chcusb_resetPrinter,
-     .link = NULL},
-    {.name = "chcusb_AttachThreadCount",
-     .patch = chcusb_AttachThreadCount,
-     .link = NULL},
-    {.name = "chcusb_getPrintIDStatus",
-     .patch = chcusb_getPrintIDStatus,
-     .link = NULL},
-    {.name = "chcusb_setPrintStandby",
-     .patch = chcusb_setPrintStandby,
-     .link = NULL},
-    {.name = "chcusb_testCardFeed",
-     .patch = chcusb_testCardFeed,
-     .link = NULL},
-    {.name = "chcusb_exitCard",
-     .patch = chcusb_exitCard,
-     .link = NULL},
-    {.name = "chcusb_getCardRfidTID",
-     .patch = chcusb_getCardRfidTID,
-     .link = NULL},
-    {.name = "chcusb_commCardRfidReader",
-     .patch = chcusb_commCardRfidReader,
-     .link = NULL},
-    {.name = "chcusb_updateCardRfidReader",
-     .patch = chcusb_updateCardRfidReader,
-     .link = NULL},
-    {.name = "chcusb_getErrorLog",
-     .patch = chcusb_getErrorLog,
-     .link = NULL},
-    {.name = "chcusb_getErrorStatus",
-     .patch = chcusb_getErrorStatus,
-     .link = NULL},
-    {.name = "chcusb_setCutList",
-     .patch = chcusb_setCutList,
-     .link = NULL},
-    {.name = "chcusb_setLaminatePattern",
-     .patch = chcusb_setLaminatePattern,
-     .link = NULL},
-    {.name = "chcusb_color_adjustment",
-     .patch = chcusb_color_adjustment,
-     .link = NULL},
-    {.name = "chcusb_color_adjustmentEx",
-     .patch = chcusb_color_adjustmentEx,
-     .link = NULL},
-    {.name = "chcusb_getEEPROM",
-     .patch = chcusb_getEEPROM,
-     .link = NULL},
-    {.name = "chcusb_setParameter",
-     .patch = chcusb_setParameter,
-     .link = NULL},
-    {.name = "chcusb_getParameter",
-     .patch = chcusb_getParameter,
-     .link = NULL},
-    {.name = "chcusb_universal_command",
-     .patch = chcusb_universal_command,
-     .link = NULL},
+    {
+        .name       = "fwdlusb_open",
+        .ordinal    = 0x0001,
+        .patch      = fwdlusb_open,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_close",
+        .ordinal    = 0x0002,
+        .patch      = fwdlusb_close,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_listupPrinter",
+        .ordinal    = 0x0003,
+        .patch      = fwdlusb_listupPrinter,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_listupPrinterSN",
+        .ordinal    = 0x0004,
+        .patch      = fwdlusb_listupPrinterSN,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_selectPrinter",
+        .ordinal    = 0x0005,
+        .patch      = fwdlusb_selectPrinter,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_selectPrinterSN",
+        .ordinal    = 0x0006,
+        .patch      = fwdlusb_selectPrinterSN,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_getPrinterInfo",
+        .ordinal    = 0x0007,
+        .patch      = fwdlusb_getPrinterInfo,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_status",
+        .ordinal    = 0x0008,
+        .patch      = fwdlusb_status,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_statusAll",
+        .ordinal    = 0x0009,
+        .patch      = fwdlusb_statusAll,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_resetPrinter",
+        .ordinal    = 0x000a,
+        .patch      = fwdlusb_resetPrinter,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_updateFirmware",
+        .ordinal    = 0x000b,
+        .patch      = fwdlusb_updateFirmware,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_getFirmwareInfo",
+        .ordinal    = 0x000c,
+        .patch      = fwdlusb_getFirmwareInfo,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_MakeThread",
+        .ordinal    = 0x0065,
+        .patch      = fwdlusb_MakeThread,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_ReleaseThread",
+        .ordinal    = 0x0066,
+        .patch      = fwdlusb_ReleaseThread,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_AttachThreadCount",
+        .ordinal    = 0x0067,
+        .patch      = fwdlusb_AttachThreadCount,
+        .link       = NULL
+    }, {
+        .name       = "fwdlusb_getErrorLog",
+        .ordinal    = 0x0068,
+        .patch      = fwdlusb_getErrorLog,
+        .link       = NULL
+    },
 };
 
 /* C300usb hook tbl */
 
-static struct hook_symbol C300usb_hooks[] = {
-    {.name = "chcusb_MakeThread",
-     .patch = chcusb_MakeThread,
-     .link = NULL},
-    {.name = "chcusb_open",
-     .patch = chcusb_open,
-     .link = NULL},
-    {.name = "chcusb_close",
-     .patch = chcusb_close,
-     .link = NULL},
-    {.name = "chcusb_ReleaseThread",
-     .patch = chcusb_ReleaseThread,
-     .link = NULL},
-    {.name = "chcusb_listupPrinter",
-     .patch = chcusb_listupPrinter,
-     .link = NULL},
-    {.name = "chcusb_listupPrinterSN",
-     .patch = chcusb_listupPrinterSN,
-     .link = NULL},
-    {.name = "chcusb_selectPrinter",
-     .patch = chcusb_selectPrinter,
-     .link = NULL},
-    {.name = "chcusb_selectPrinterSN",
-     .patch = chcusb_selectPrinterSN,
-     .link = NULL},
-    {.name = "chcusb_getPrinterInfo",
-     .patch = chcusb_getPrinterInfo,
-     .link = NULL},
-    {.name = "chcusb_imageformat",
-     .patch = chcusb_imageformat,
-     .link = NULL},
-    {.name = "chcusb_setmtf",
-     .patch = chcusb_setmtf,
-     .link = NULL},
-    {.name = "chcusb_makeGamma",
-     .patch = chcusb_makeGamma,
-     .link = NULL},
-    {.name = "chcusb_setIcctable",
-     .patch = chcusb_setIcctable,
-     .link = NULL},
-    {.name = "chcusb_copies",
-     .patch = chcusb_copies,
-     .link = NULL},
-    {.name = "chcusb_status",
-     .patch = chcusb_status,
-     .link = NULL},
-    {.name = "chcusb_statusAll",
-     .patch = chcusb_statusAll,
-     .link = NULL},
-    {.name = "chcusb_startpage",
-     .patch = chcusb_startpage,
-     .link = NULL},
-    {.name = "chcusb_endpage",
-     .patch = chcusb_endpage,
-     .link = NULL},
-    {.name = "chcusb_write",
-     .patch = chcusb_write,
-     .link = NULL},
-    {.name = "chcusb_writeLaminate",
-     .patch = chcusb_writeLaminate,
-     .link = NULL},
-    {.name = "chcusb_setPrinterInfo",
-     .patch = chcusb_setPrinterInfo,
-     .link = NULL},
-    {.name = "chcusb_getGamma",
-     .patch = chcusb_getGamma,
-     .link = NULL},
-    {.name = "chcusb_getMtf",
-     .patch = chcusb_getMtf,
-     .link = NULL},
-    {.name = "chcusb_cancelCopies",
-     .patch = chcusb_cancelCopies,
-     .link = NULL},
-    {.name = "chcusb_setPrinterToneCurve",
-     .patch = chcusb_setPrinterToneCurve,
-     .link = NULL},
-    {.name = "chcusb_getPrinterToneCurve",
-     .patch = chcusb_getPrinterToneCurve,
-     .link = NULL},
-    {.name = "chcusb_blinkLED",
-     .patch = chcusb_blinkLED,
-     .link = NULL},
-    {.name = "chcusb_resetPrinter",
-     .patch = chcusb_resetPrinter,
-     .link = NULL},
-    {.name = "chcusb_AttachThreadCount",
-     .patch = chcusb_AttachThreadCount,
-     .link = NULL},
-    {.name = "chcusb_getPrintIDStatus",
-     .patch = chcusb_getPrintIDStatus,
-     .link = NULL},
-    {.name = "chcusb_setPrintStandby",
-     .patch = chcusb_setPrintStandby,
-     .link = NULL},
-    {.name = "chcusb_testCardFeed",
-     .patch = chcusb_testCardFeed,
-     .link = NULL},
-    {.name = "chcusb_setParameter",
-     .patch = chcusb_setParameter,
-     .link = NULL},
-    {.name = "chcusb_getParameter",
-     .patch = chcusb_getParameter,
-     .link = NULL},
-    {.name = "chcusb_getErrorStatus",
-     .patch = chcusb_getErrorStatus,
-     .link = NULL},
-    {.name = "chcusb_setCutList",
-     .patch = chcusb_setCutList,
-     .link = NULL},
-    {.name = "chcusb_setLaminatePattern",
-     .patch = chcusb_setLaminatePattern,
-     .link = NULL},
-    {.name = "chcusb_color_adjustment",
-     .patch = chcusb_color_adjustment,
-     .link = NULL},
-    {.name = "chcusb_color_adjustmentEx",
-     .patch = chcusb_color_adjustmentEx,
-     .link = NULL},
-    {.name = "chcusb_getEEPROM",
-     .patch = chcusb_getEEPROM,
-     .link = NULL},
-    {.name = "chcusb_universal_command",
-     .patch = chcusb_universal_command,
-     .link = NULL},
+static const struct hook_symbol C300usb_hooks[] = {
+    {
+        .name       = "chcusb_MakeThread",
+        .ordinal    = 0x0001,
+        .patch      = chcusb_MakeThread,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_open",
+        .ordinal    = 0x0002,
+        .patch      = chcusb_open,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_close",
+        .ordinal    = 0x0003,
+        .patch      = chcusb_close,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_ReleaseThread",
+        .ordinal    = 0x0004,
+        .patch      = chcusb_ReleaseThread,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_listupPrinter",
+        .ordinal    = 0x0005,
+        .patch      = chcusb_listupPrinter,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_listupPrinterSN",
+        .ordinal    = 0x0006,
+        .patch      = chcusb_listupPrinterSN,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_selectPrinter",
+        .ordinal    = 0x0007,
+        .patch      = chcusb_selectPrinter,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_selectPrinterSN",
+        .ordinal    = 0x0008,
+        .patch      = chcusb_selectPrinterSN,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getPrinterInfo",
+        .ordinal    = 0x0009,
+        .patch      = chcusb_getPrinterInfo,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_imageformat",
+        .ordinal    = 0x000a,
+        .patch      = chcusb_imageformat,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setmtf",
+        .ordinal    = 0x000b,
+        .patch      = chcusb_setmtf,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_makeGamma",
+        .ordinal    = 0x000c,
+        .patch      = chcusb_makeGamma,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setIcctable",
+        .ordinal    = 0x000d,
+        .patch      = chcusb_setIcctable,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_copies",
+        .ordinal    = 0x000e,
+        .patch      = chcusb_copies,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_status",
+        .ordinal    = 0x000f,
+        .patch      = chcusb_status,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_statusAll",
+        .ordinal    = 0x0010,
+        .patch      = chcusb_statusAll,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_startpage",
+        .ordinal    = 0x0011,
+        .patch      = chcusb_startpage,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_endpage",
+        .ordinal    = 0x0012,
+        .patch      = chcusb_endpage,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_write",
+        .ordinal    = 0x0013,
+        .patch      = chcusb_write,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_writeLaminate",
+        .ordinal    = 0x0014,
+        .patch      = chcusb_writeLaminate,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setPrinterInfo",
+        .ordinal    = 0x0015,
+        .patch      = chcusb_setPrinterInfo,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getGamma",
+        .ordinal    = 0x0016,
+        .patch      = chcusb_getGamma,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getMtf",
+        .ordinal    = 0x0017,
+        .patch      = chcusb_getMtf,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_cancelCopies",
+        .ordinal    = 0x0018,
+        .patch      = chcusb_cancelCopies,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setPrinterToneCurve",
+        .ordinal    = 0x0019,
+        .patch      = chcusb_setPrinterToneCurve,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getPrinterToneCurve",
+        .ordinal    = 0x001a,
+        .patch      = chcusb_getPrinterToneCurve,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_blinkLED",
+        .ordinal    = 0x001b,
+        .patch      = chcusb_blinkLED,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_resetPrinter",
+        .ordinal    = 0x001c,
+        .patch      = chcusb_resetPrinter,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_AttachThreadCount",
+        .ordinal    = 0x001d,
+        .patch      = chcusb_AttachThreadCount,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getPrintIDStatus",
+        .ordinal    = 0x001e,
+        .patch      = chcusb_getPrintIDStatus,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setPrintStandby",
+        .ordinal    = 0x001f,
+        .patch      = chcusb_setPrintStandby,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_testCardFeed",
+        .ordinal    = 0x0020,
+        .patch      = chcusb_testCardFeed,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setParameter",
+        .ordinal    = 0x0021,
+        .patch      = chcusb_setParameter,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getParameter",
+        .ordinal    = 0x0022,
+        .patch      = chcusb_getParameter,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getErrorStatus",
+        .ordinal    = 0x0023,
+        .patch      = chcusb_getErrorStatus,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setCutList",
+        .ordinal    = 0x0028,
+        .patch      = chcusb_setCutList,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setLaminatePattern",
+        .ordinal    = 0x0029,
+        .patch      = chcusb_setLaminatePattern,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_color_adjustment",
+        .ordinal    = 0x002a,
+        .patch      = chcusb_color_adjustment,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_color_adjustmentEx",
+        .ordinal    = 0x002b,
+        .patch      = chcusb_color_adjustmentEx,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getEEPROM",
+        .ordinal    = 0x003a,
+        .patch      = chcusb_getEEPROM,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_universal_command",
+        .ordinal    = 0x0049,
+        .patch      = chcusb_universal_command,
+        .link       = NULL
+    },
+};
+
+/* C310A-Busb/C320Ausb/C330Ausb hook tbl. The ordinals are required, as some
+   games, for example Sekito, will import this library by ordinal and not by
+   name. */
+
+static const struct hook_symbol C3XXusb_hooks[] = {
+    {
+        .name       = "chcusb_MakeThread",
+        .ordinal    = 0x0001,
+        .patch      = chcusb_MakeThread,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_open",
+        .ordinal    = 0x0002,
+        .patch      = chcusb_open,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_close",
+        .ordinal    = 0x0003,
+        .patch      = chcusb_close,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_ReleaseThread",
+        .ordinal    = 0x0004,
+        .patch      = chcusb_ReleaseThread,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_listupPrinter",
+        .ordinal    = 0x0005,
+        .patch      = chcusb_listupPrinter,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_listupPrinterSN",
+        .ordinal    = 0x0006,
+        .patch      = chcusb_listupPrinterSN,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_selectPrinter",
+        .ordinal    = 0x0007,
+        .patch      = chcusb_selectPrinter,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_selectPrinterSN",
+        .ordinal    = 0x0008,
+        .patch      = chcusb_selectPrinterSN,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getPrinterInfo",
+        .ordinal    = 0x0009,
+        .patch      = chcusb_getPrinterInfo,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_imageformat",
+        .ordinal    = 0x000a,
+        .patch      = chcusb_imageformat,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setmtf",
+        .ordinal    = 0x000b,
+        .patch      = chcusb_setmtf,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_makeGamma",
+        .ordinal    = 0x000c,
+        .patch      = chcusb_makeGamma,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setIcctable",
+        .ordinal    = 0x000d,
+        .patch      = chcusb_setIcctable,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_copies",
+        .ordinal    = 0x000e,
+        .patch      = chcusb_copies,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_status",
+        .ordinal    = 0x000f,
+        .patch      = chcusb_status,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_statusAll",
+        .ordinal    = 0x0010,
+        .patch      = chcusb_statusAll,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_startpage",
+        .ordinal    = 0x0011,
+        .patch      = chcusb_startpage,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_endpage",
+        .ordinal    = 0x0012,
+        .patch      = chcusb_endpage,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_write",
+        .ordinal    = 0x0013,
+        .patch      = chcusb_write,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_writeLaminate",
+        .ordinal    = 0x0014,
+        .patch      = chcusb_writeLaminate,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_writeHolo",
+        .ordinal    = 0x0015,
+        .patch      = chcusb_writeHolo,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setPrinterInfo",
+        .ordinal    = 0x0016,
+        .patch      = chcusb_setPrinterInfo,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getGamma",
+        .ordinal    = 0x0017,
+        .patch      = chcusb_getGamma,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getMtf",
+        .ordinal    = 0x0018,
+        .patch      = chcusb_getMtf,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_cancelCopies",
+        .ordinal    = 0x0019,
+        .patch      = chcusb_cancelCopies,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setPrinterToneCurve",
+        .ordinal    = 0x001a,
+        .patch      = chcusb_setPrinterToneCurve,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getPrinterToneCurve",
+        .ordinal    = 0x001b,
+        .patch      = chcusb_getPrinterToneCurve,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_blinkLED",
+        .ordinal    = 0x001c,
+        .patch      = chcusb_blinkLED,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_resetPrinter",
+        .ordinal    = 0x001d,
+        .patch      = chcusb_resetPrinter,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_AttachThreadCount",
+        .ordinal    = 0x001e,
+        .patch      = chcusb_AttachThreadCount,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getPrintIDStatus",
+        .ordinal    = 0x001f,
+        .patch      = chcusb_getPrintIDStatus,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setPrintStandby",
+        .ordinal    = 0x0020,
+        .patch      = chcusb_setPrintStandby,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_testCardFeed",
+        .ordinal    = 0x0021,
+        .patch      = chcusb_testCardFeed,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_exitCard",
+        .ordinal    = 0x0022,
+        .patch      = chcusb_exitCard,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getCardRfidTID",
+        .ordinal    = 0x0023,
+        .patch      = chcusb_getCardRfidTID,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_commCardRfidReader",
+        .ordinal    = 0x0024,
+        .patch      = chcusb_commCardRfidReader,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_updateCardRfidReader",
+        .ordinal    = 0x0025,
+        .patch      = chcusb_updateCardRfidReader,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getErrorLog",
+        .ordinal    = 0x0026,
+        .patch      = chcusb_getErrorLog,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getErrorStatus",
+        .ordinal    = 0x0027,
+        .patch      = chcusb_getErrorStatus,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setCutList",
+        .ordinal    = 0x0028,
+        .patch      = chcusb_setCutList,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setLaminatePattern",
+        .ordinal    = 0x0029,
+        .patch      = chcusb_setLaminatePattern,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_color_adjustment",
+        .ordinal    = 0x002a,
+        .patch      = chcusb_color_adjustment,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_color_adjustmentEx",
+        .ordinal    = 0x002b,
+        .patch      = chcusb_color_adjustmentEx,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getEEPROM",
+        .ordinal    = 0x003a,
+        .patch      = chcusb_getEEPROM,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_setParameter",
+        .ordinal    = 0x0040,
+        .patch      = chcusb_setParameter,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_getParameter",
+        .ordinal    = 0x0041,
+        .patch      = chcusb_getParameter,
+        .link       = NULL
+    }, {
+        .name       = "chcusb_universal_command",
+        .ordinal    = 0x0049,
+        .patch      = chcusb_universal_command,
+        .link       = NULL
+    },
+};
+
+/* PrintDLL hook tbl */
+
+static struct hook_symbol printdll_hooks[] = {
+    {
+        .name       = "CFW_close",
+        .ordinal    = 0x0001,
+        .patch      = CFW_close,
+        .link       = NULL
+    }, {
+        .name       = "CFW_getFirmwareInfo",
+        .ordinal    = 0x0002,
+        .patch      = CFW_getFirmwareInfo,
+        .link       = NULL
+    }, {
+        .name       = "CFW_getPrinterInfo",
+        .ordinal    = 0x0003,
+        .patch      = CFW_getPrinterInfo,
+        .link       = NULL
+    }, {
+        .name       = "CFW_init",
+        .ordinal    = 0x0004,
+        .patch      = CFW_init,
+        .link       = NULL
+    }, {
+        .name       = "CFW_listupPrinter",
+        .ordinal    = 0x0005,
+        .patch      = CFW_listupPrinter,
+        .link       = NULL
+    }, {
+        .name       = "CFW_listupPrinterSN",
+        .ordinal    = 0x0006,
+        .patch      = CFW_listupPrinterSN,
+        .link       = NULL
+    }, {
+        .name       = "CFW_open",
+        .ordinal    = 0x0007,
+        .patch      = CFW_open,
+        .link       = NULL
+    }, {
+        .name       = "CFW_resetPrinter",
+        .ordinal    = 0x0008,
+        .patch      = CFW_resetPrinter,
+        .link       = NULL
+    }, {
+        .name       = "CFW_selectPrinter",
+        .ordinal    = 0x0009,
+        .patch      = CFW_selectPrinter,
+        .link       = NULL
+    }, {
+        .name       = "CFW_selectPrinterSN",
+        .ordinal    = 0x000a,
+        .patch      = CFW_selectPrinterSN,
+        .link       = NULL
+    }, {
+        .name       = "CFW_status",
+        .ordinal    = 0x000b,
+        .patch      = CFW_status,
+        .link       = NULL
+    }, {
+        .name       = "CFW_statusAll",
+        .ordinal    = 0x000c,
+        .patch      = CFW_statusAll,
+        .link       = NULL
+    }, {
+        .name       = "CFW_term",
+        .ordinal    = 0x000d,
+        .patch      = CFW_term,
+        .link       = NULL
+    }, {
+        .name       = "CFW_updateFirmware",
+        .ordinal    = 0x000e,
+        .patch      = CFW_updateFirmware,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_AttachThreadCount",
+        .ordinal    = 0x000f,
+        .patch      = CHCUSB_AttachThreadCount,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_MakeThread",
+        .ordinal    = 0x0010,
+        .patch      = CHCUSB_MakeThread,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_ReleaseThread",
+        .ordinal    = 0x0011,
+        .patch      = CHCUSB_ReleaseThread,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_blinkLED",
+        .ordinal    = 0x0012,
+        .patch      = CHCUSB_blinkLED,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_cancelCopies",
+        .ordinal    = 0x0013,
+        .patch      = CHCUSB_cancelCopies,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_close",
+        .ordinal    = 0x0014,
+        .patch      = CHCUSB_close,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_commCardRfidReader",
+        .ordinal    = 0x0015,
+        .patch      = CHCUSB_commCardRfidReader,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_copies",
+        .ordinal    = 0x0016,
+        .patch      = CHCUSB_copies,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_endpage",
+        .ordinal    = 0x0017,
+        .patch      = CHCUSB_endpage,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_exitCard",
+        .ordinal    = 0x0018,
+        .patch      = CHCUSB_exitCard,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_getCardRfidTID",
+        .ordinal    = 0x0019,
+        .patch      = CHCUSB_getCardRfidTID,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_getErrorLog",
+        .ordinal    = 0x001a,
+        .patch      = CHCUSB_getErrorLog,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_getErrorStatus",
+        .ordinal    = 0x001b,
+        .patch      = CHCUSB_getErrorStatus,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_getGamma",
+        .ordinal    = 0x001c,
+        .patch      = CHCUSB_getGamma,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_getMtf",
+        .ordinal    = 0x001d,
+        .patch      = CHCUSB_getMtf,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_getPrintIDStatus",
+        .ordinal    = 0x001e,
+        .patch      = CHCUSB_getPrintIDStatus,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_getPrinterInfo",
+        .ordinal    = 0x001f,
+        .patch      = CHCUSB_getPrinterInfo,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_getPrinterToneCurve",
+        .ordinal    = 0x0020,
+        .patch      = CHCUSB_getPrinterToneCurve,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_imageformat",
+        .ordinal    = 0x0021,
+        .patch      = CHCUSB_imageformat,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_init",
+        .ordinal    = 0x0022,
+        .patch      = CHCUSB_init,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_listupPrinter",
+        .ordinal    = 0x0023,
+        .patch      = CHCUSB_listupPrinter,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_listupPrinterSN",
+        .ordinal    = 0x0024,
+        .patch      = CHCUSB_listupPrinterSN,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_makeGamma",
+        .ordinal    = 0x0025,
+        .patch      = CHCUSB_makeGamma,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_open",
+        .ordinal    = 0x0026,
+        .patch      = CHCUSB_open,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_resetPrinter",
+        .ordinal    = 0x0027,
+        .patch      = CHCUSB_resetPrinter,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_selectPrinter",
+        .ordinal    = 0x0028,
+        .patch      = CHCUSB_selectPrinter,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_selectPrinterSN",
+        .ordinal    = 0x0029,
+        .patch      = CHCUSB_selectPrinterSN,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_setIcctable",
+        .ordinal    = 0x002a,
+        .patch      = CHCUSB_setIcctable,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_setIcctableProfile",
+        .ordinal    = 0x002b,
+        .patch      = CHCUSB_setIcctableProfile,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_setPrintStandby",
+        .ordinal    = 0x002c,
+        .patch      = CHCUSB_setPrintStandby,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_setPrinterInfo",
+        .ordinal    = 0x002d,
+        .patch      = CHCUSB_setPrinterInfo,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_setPrinterToneCurve",
+        .ordinal    = 0x0023,
+        .patch      = CHCUSB_setPrinterToneCurve,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_setmtf",
+        .ordinal    = 0x002f,
+        .patch      = CHCUSB_setmtf,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_startpage",
+        .ordinal    = 0x0030,
+        .patch      = CHCUSB_startpage,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_status",
+        .ordinal    = 0x0031,
+        .patch      = CHCUSB_status,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_statusAll",
+        .ordinal    = 0x0032,
+        .patch      = CHCUSB_statusAll,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_term",
+        .ordinal    = 0x0033,
+        .patch      = CHCUSB_term,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_testCardFeed",
+        .ordinal    = 0x0034,
+        .patch      = CHCUSB_testCardFeed,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_updateCardRfidReader",
+        .ordinal    = 0x0035,
+        .patch      = CHCUSB_updateCardRfidReader,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_write",
+        .ordinal    = 0x0036,
+        .patch      = CHCUSB_write,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_writeHolo",
+        .ordinal    = 0x0037,
+        .patch      = CHCUSB_writeHolo,
+        .link       = NULL
+    }, {
+        .name       = "CHCUSB_writeLaminate",
+        .ordinal    = 0x0038,
+        .patch      = CHCUSB_writeLaminate,
+        .link       = NULL
+    },
 };
 
 static struct printer_config printer_config;
@@ -600,29 +1165,23 @@ void printer_hook_init(const struct printer_config *cfg, int rfid_port_no, HINST
     rotate180 = cfg->rotate_180;
 
     memcpy(&printer_config, cfg, sizeof(*cfg));
-    hook_table_apply(NULL, "C300usb.dll", C300usb_hooks, _countof(C300usb_hooks));
-    hook_table_apply(NULL, "C300FWDLusb.dll", C3XXFWDLusb_hooks, _countof(C3XXFWDLusb_hooks));
-    hook_table_apply(NULL, "C310Ausb.dll", C3XXusb_hooks, _countof(C3XXusb_hooks));
-    hook_table_apply(NULL, "C310Busb.dll", C3XXusb_hooks, _countof(C3XXusb_hooks));
-    hook_table_apply(NULL, "C310FWDLusb.dll", C3XXFWDLusb_hooks, _countof(C3XXFWDLusb_hooks));
-    hook_table_apply(NULL, "C310BFWDLusb.dll", C3XXFWDLusb_hooks, _countof(C3XXFWDLusb_hooks));
-    hook_table_apply(NULL, "C320Ausb.dll", C3XXusb_hooks, _countof(C3XXusb_hooks));
-    hook_table_apply(NULL, "C320AFWDLusb.dll", C3XXFWDLusb_hooks, _countof(C3XXFWDLusb_hooks));
-    hook_table_apply(NULL, "C330Ausb.dll", C3XXusb_hooks, _countof(C3XXusb_hooks));
-    hook_table_apply(NULL, "C330AFWDLusb.dll", C3XXFWDLusb_hooks, _countof(C3XXFWDLusb_hooks));
+    printer_hook_insert_hooks(NULL);
 
+    /*
     if (self != NULL) {
-        dll_hook_push(self, L"C300usb.dll");      // TODO: This doesn't work. Unity moment
-        dll_hook_push(self, L"C300FWDLusb.dll");  // TODO: ...and this...
+        // dll_hook_push(self, L"PrintDLL.dll"); // TODO: This doesn't work. Unity moment
+        dll_hook_push(self, L"C300usb.dll");
+        dll_hook_push(self, L"C300FWDLusb.dll");
         dll_hook_push(self, L"C310Ausb.dll");
-        dll_hook_push(self, L"C310Busb.dll");  // TODO: ...and this...
+        dll_hook_push(self, L"C310Busb.dll");
         dll_hook_push(self, L"C310FWDLusb.dll");
-        dll_hook_push(self, L"C310BFWDLusb.dll");  // TODO: ...aaaand this.
+        dll_hook_push(self, L"C310BFWDLusb.dll");
         dll_hook_push(self, L"C320Ausb.dll");
         dll_hook_push(self, L"C320AFWDLusb.dll");
         dll_hook_push(self, L"C330Ausb.dll");
         dll_hook_push(self, L"C330AFWDLusb.dll");
     }
+    */
 
     // Load firmware if has previously been written to
     fwFile = CreateFileW(cfg->main_fw_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -663,6 +1222,22 @@ void printer_hook_init(const struct printer_config *cfg, int rfid_port_no, HINST
     }
 
     dprintf("Printer: hook enabled.\n");
+}
+
+void printer_hook_insert_hooks(HMODULE target) {
+    hook_table_apply(target, "C310Ausb.dll", C3XXusb_hooks, _countof(C3XXusb_hooks));
+    hook_table_apply(target, "C310Busb.dll", C3XXusb_hooks, _countof(C3XXusb_hooks));
+    hook_table_apply(target, "C310FWDLusb.dll", C3XXFWDLusb_hooks, _countof(C3XXFWDLusb_hooks));
+    hook_table_apply(target, "C310BFWDLusb.dll", C3XXFWDLusb_hooks, _countof(C3XXFWDLusb_hooks));
+    hook_table_apply(target, "C320Ausb.dll", C3XXusb_hooks, _countof(C3XXusb_hooks));
+    hook_table_apply(target, "C320AFWDLusb.dll", C3XXFWDLusb_hooks, _countof(C3XXFWDLusb_hooks));
+    hook_table_apply(target, "C330Ausb.dll", C3XXusb_hooks, _countof(C3XXusb_hooks));
+    hook_table_apply(target, "C330AFWDLusb.dll", C3XXFWDLusb_hooks, _countof(C3XXFWDLusb_hooks));
+
+    /* Unity workaround */
+    proc_addr_table_push(target, "PrintDLL.dll", printdll_hooks, _countof(printdll_hooks));
+    proc_addr_table_push(target, "C300usb.dll", C300usb_hooks, _countof(C300usb_hooks));
+    proc_addr_table_push(target, "C300FWDLusb.dll", C3XXFWDLusb_hooks, _countof(C3XXFWDLusb_hooks));
 }
 
 static void generate_rfid(void) {
@@ -1824,6 +2399,8 @@ int chcusb_statusAll(uint8_t *idArray, uint16_t *rResultArray) {
 int chcusb_startpage(uint16_t postCardState, uint16_t *pageId, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
+    STATUS = 2;
+
     *pageId = 1;
     *rResult = 0;
     return 1;
@@ -1866,13 +2443,13 @@ int chcusb_writeLaminate(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) 
     SYSTEMTIME t;
     GetLocalTime(&t);
 
-    char dumpPath[0x80];
-    sprintf_s(
-        dumpPath, 0x80,
-        "C3XXusb_%04d%02d%02d_%02d%02d%02d_writeLaminate.bin",
-        t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
+    wchar_t dumpPath[MAX_PATH];
+    swprintf_s(
+        dumpPath, MAX_PATH,
+        L"%s\\C3XX_%04d%02d%02d_%02d%02d%02d_writeLaminate.bmp",
+        printer_out_path, t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
 
-    // WriteArrayToFile(dumpPath, data, *writeSize, FALSE);
+    // WriteDataToBitmapFile(dumpPath, 8, WIDTH, HEIGHT, data, HOLO_SIZE, NULL, 0, rotate180);
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
     // *writeSize = written;
@@ -1885,13 +2462,13 @@ int chcusb_writeHolo(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) {
     SYSTEMTIME t;
     GetLocalTime(&t);
 
-    char dumpPath[0x80];
-    sprintf_s(
-        dumpPath, 0x80,
-        "C3XXusb_%04d%02d%02d_%02d%02d%02d_writeHolo.bin",
-        t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
+    wchar_t dumpPath[MAX_PATH];
+    swprintf_s(
+        dumpPath, MAX_PATH,
+        L"%s\\C3XX_%04d%02d%02d_%02d%02d%02d_writeHolo.bmp",
+        printer_out_path, t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
 
-    // WriteArrayToFile(dumpPath, data, HOLO_SIZE, FALSE);
+    WriteDataToBitmapFile(dumpPath, 8, WIDTH, HEIGHT, data, HOLO_SIZE, NULL, 0, rotate180);
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
     *writeSize = HOLO_SIZE;
@@ -2014,14 +2591,34 @@ int chcusb_AttachThreadCount(uint16_t *rCount, uint16_t *rMaxCount) {
 int chcusb_getPrintIDStatus(uint16_t pageId, uint8_t *rBuffer, uint16_t *rResult) {
     // dprintf("Printer: C3XXusb: %s\n", __func__);
     memset(rBuffer, 0, 8);
-    *((uint16_t *)(rBuffer + 6)) = 2300;
+
+    if (STATUS > 1)
+    {
+        STATUS = 0;
+        *((uint16_t*)(rBuffer + 6)) = 2212;
+    }
+    else
+    {
+        *((uint16_t*)(rBuffer + 6)) = 2300;
+    }
+
     *rResult = 0;
     return 1;
 }
 
 int chcusb_setPrintStandby(uint16_t position, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
-    *rResult = 0;
+
+    if (STATUS == 0)
+    {
+        STATUS = 1;
+        *rResult = 2100;
+    }
+    else
+    {
+        *rResult = 0;
+    }
+
     return 1;
 }
 
@@ -2176,6 +2773,313 @@ int chcusb_universal_command(int32_t a1, uint8_t a2, int32_t a3, uint8_t *a4, ui
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
+}
+
+/* PrintDll hooks */
+
+int CFW_AttachThreadCount(const void *handle, uint16_t *rCount, uint16_t *rMaxCount)
+{
+   return fwdlusb_AttachThreadCount(rCount, rMaxCount);
+}
+
+void CFW_close(const void *handle)
+{
+   fwdlusb_close();
+}
+
+int CFW_getErrorLog(const void *handle, uint16_t index, uint8_t *rData, uint16_t *rResult)
+{
+   return fwdlusb_getErrorLog(index, rData, rResult);
+}
+
+int CFW_getFirmwareInfo(const void *handle, uint8_t update, LPCSTR filename, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult)
+{
+   return fwdlusb_getFirmwareInfo(update, filename, rBuffer, rLen, rResult);
+}
+
+int CFW_getPrinterInfo(const void *handle, uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen)
+{
+   return fwdlusb_getPrinterInfo(tagNumber, rBuffer, rLen);
+}
+
+int CFW_init(LPCSTR dllpath)
+{
+    dprintf("Printer PrintDLL: %s (dllpath: %s)\n", __func__, dllpath);
+    return 1;
+}
+
+int CFW_listupPrinter(const void *handle, uint8_t *rIdArray)
+{
+   return fwdlusb_listupPrinter(rIdArray);
+}
+
+int CFW_listupPrinterSN(const void *handle, uint64_t *rSerialArray)
+{
+   return fwdlusb_listupPrinterSN(rSerialArray);
+}
+
+int CFW_MakeThread(const void *handle, uint16_t maxCount)
+{
+   return fwdlusb_MakeThread(maxCount);
+}
+
+int CFW_open(const void *handle, uint16_t *rResult)
+{
+   return fwdlusb_open(rResult);
+}
+
+int CFW_ReleaseThread(const void *handle, uint16_t *rResult)
+{
+   return fwdlusb_ReleaseThread(rResult);
+}
+
+int CFW_resetPrinter(const void *handle, uint16_t *rResult)
+{
+   return fwdlusb_resetPrinter(rResult);
+}
+
+int CFW_selectPrinter(const void *handle, uint8_t printerId, uint16_t *rResult)
+{
+   return fwdlusb_selectPrinter(printerId, rResult);
+}
+
+int CFW_selectPrinterSN(const void *handle, uint64_t printerSN, uint16_t *rResult)
+{
+   return fwdlusb_selectPrinterSN(printerSN, rResult);
+}
+
+int CFW_status(const void *handle, uint16_t *rResult)
+{
+   return fwdlusb_status(rResult);
+}
+
+int CFW_statusAll(const void *handle, uint8_t *idArray, uint16_t *rResultArray)
+{
+   return fwdlusb_statusAll(idArray, rResultArray);
+}
+
+void CFW_term(const void *handle)
+{
+    dprintf("Printer PrintDLL: %s\n", __func__);
+}
+
+int CFW_updateFirmware(const void *handle, uint8_t update, LPCSTR filename, uint16_t *rResult)
+{
+   return fwdlusb_updateFirmware(update, filename, rResult);
+}
+
+int CHCUSB_AttachThreadCount(const void *handle, uint16_t *rCount, uint16_t *rMaxCount)
+{
+    return chcusb_AttachThreadCount(rCount, rMaxCount);
+}
+
+int CHCUSB_MakeThread(const void *handle, uint16_t maxCount)
+{
+    return chcusb_MakeThread(maxCount);
+}
+
+int CHCUSB_ReleaseThread(const void *handle, uint16_t *rResult)
+{
+    return chcusb_ReleaseThread(rResult);
+}
+
+int CHCUSB_blinkLED(const void *handle, uint16_t *rResult)
+{
+    return chcusb_blinkLED(rResult);
+}
+
+int CHCUSB_cancelCopies(const void *handle, uint16_t pageId, uint16_t *rResult)
+{
+    return chcusb_cancelCopies(pageId, rResult);
+}
+
+void CHCUSB_close(const void *handle)
+{
+    chcusb_close();
+}
+
+int CHCUSB_commCardRfidReader(const void *handle, uint8_t *sendData, uint8_t *rRecvData, uint32_t sendSize, uint32_t *rRecvSize, uint16_t *rResult)
+{
+    return chcusb_commCardRfidReader(sendData, rRecvData, sendSize, rRecvSize, rResult);
+}
+
+int CHCUSB_copies(const void *handle, uint16_t copies, uint16_t *rResult)
+{
+    return chcusb_copies(copies, rResult);
+}
+
+int CHCUSB_endpage(const void *handle, uint16_t *rResult)
+{
+    return chcusb_endpage(rResult);
+}
+
+int CHCUSB_exitCard(const void *handle, uint16_t *rResult)
+{
+    return chcusb_exitCard(rResult);
+}
+
+int CHCUSB_getCardRfidTID(const void *handle, uint8_t *rCardTID, uint16_t *rResult)
+{
+    return chcusb_getCardRfidTID(rCardTID, rResult);
+}
+
+int CHCUSB_getErrorLog(const void *handle, uint16_t index, uint8_t *rData, uint16_t *rResult)
+{
+    return chcusb_getErrorLog(index, rData, rResult);
+}
+
+int CHCUSB_getErrorStatus(const void *handle, uint16_t *rBuffer)
+{
+    return chcusb_getErrorStatus(rBuffer);
+}
+
+int CHCUSB_getGamma(const void *handle, LPCSTR filename, uint8_t *r, uint8_t *g, uint8_t *b, uint16_t *rResult)
+{
+    return chcusb_getGamma(filename, r, g, b, rResult);
+}
+
+int CHCUSB_getMtf(const void *handle, LPCSTR filename, int32_t *mtf, uint16_t *rResult)
+{
+    return chcusb_getMtf(filename, mtf, rResult);
+}
+
+int CHCUSB_getPrintIDStatus(const void *handle, uint16_t pageId, uint8_t *rBuffer, uint16_t *rResult)
+{
+    return chcusb_getPrintIDStatus(pageId, rBuffer, rResult);
+}
+
+int CHCUSB_getPrinterInfo(const void *handle, uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen)
+{
+    return chcusb_getPrinterInfo(tagNumber, rBuffer, rLen);
+}
+
+int CHCUSB_getPrinterToneCurve(const void *handle, uint16_t type, uint16_t number, uint16_t *data, uint16_t *rResult)
+{
+    return chcusb_getPrinterToneCurve(type, number, data, rResult);
+}
+
+int CHCUSB_imageformat(const void *handle, uint16_t format, uint16_t ncomp, uint16_t depth, uint16_t width, uint16_t height, uint8_t *inputImage, uint16_t *rResult)
+{
+    return chcusb_imageformat(format, ncomp, depth, width, height, rResult);
+}
+
+int CHCUSB_init(LPCSTR dllpath)
+{
+    dprintf("Printer PrintDLL: %s (dllpath: %s)\n", __func__, dllpath);
+    return 1;
+}
+
+int CHCUSB_listupPrinter(const void *handle, uint8_t *rIdArray)
+{
+    return chcusb_listupPrinter(rIdArray);
+}
+
+int CHCUSB_listupPrinterSN(const void *handle, uint64_t *rSerialArray)
+{
+    return chcusb_listupPrinterSN(rSerialArray);
+}
+
+int CHCUSB_makeGamma(const void *handle, uint16_t k, uint8_t *intoneR, uint8_t *intoneG, uint8_t *intoneB)
+{
+    return chcusb_makeGamma(k, intoneR, intoneG, intoneB);
+}
+
+int CHCUSB_open(const void *handle, uint16_t *rResult)
+{
+    return chcusb_open(rResult);
+}
+
+int CHCUSB_resetPrinter(const void *handle, uint16_t *rResult)
+{
+    return chcusb_resetPrinter(rResult);
+}
+
+int CHCUSB_selectPrinter(const void *handle, uint8_t printerId, uint16_t *rResult)
+{
+    return chcusb_selectPrinter(printerId, rResult);
+}
+
+int CHCUSB_selectPrinterSN(const void *handle, uint64_t printerSN, uint16_t *rResult)
+{
+    return chcusb_selectPrinterSN(printerSN, rResult);
+}
+
+int CHCUSB_setIcctableProfile(const void *handle, LPCSTR icc1, LPCSTR icc2, uint16_t intents, uint16_t *rResult)
+{
+    dprintf("Printer PrintDLL: %s (icc1: %s, icc2: %s)\n",
+            __func__, icc1, icc2);
+    *rResult = 0;
+    return 1;
+}
+
+int CHCUSB_setIcctable(const void *handle, uint16_t intents, uint8_t *intoneR, uint8_t *intoneG, uint8_t *intoneB, uint8_t *outtoneR, uint8_t *outtoneG, uint8_t *outtoneB, uint16_t *rResult)
+{
+    return chcusb_setIcctable("CFW", "CFW", intents, intoneR, intoneG, intoneB, outtoneR, outtoneG, outtoneB, rResult);
+}
+
+int CHCUSB_setPrintStandby(const void *handle, uint16_t position, uint16_t *rResult)
+{
+    return chcusb_setPrintStandby(position, rResult);
+}
+
+int CHCUSB_setPrinterInfo(const void *handle, uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult)
+{
+    return chcusb_setPrinterInfo(tagNumber, rBuffer, rLen, rResult);
+}
+
+int CHCUSB_setPrinterToneCurve(const void *handle, uint16_t type, uint16_t number, uint16_t *data, uint16_t *rResult)
+{
+    return chcusb_setPrinterToneCurve(type, number, data, rResult);
+}
+
+int CHCUSB_setmtf(const void *handle, int32_t *mtf)
+{
+    return chcusb_setmtf(mtf);
+}
+
+int CHCUSB_startpage(const void *handle, uint16_t postCardState, uint16_t *pageId, uint16_t *rResult)
+{
+    return chcusb_startpage(postCardState, pageId, rResult);
+}
+
+int CHCUSB_status(const void *handle, uint16_t *rResult)
+{
+    return chcusb_status(rResult);
+}
+
+int CHCUSB_statusAll(const void *handle, uint8_t *idArray, uint16_t *rResultArray)
+{
+    return chcusb_statusAll(idArray, rResultArray);
+}
+
+int CHCUSB_testCardFeed(const void *handle, uint16_t mode, uint16_t times, uint16_t *rResult)
+{
+    return chcusb_testCardFeed(mode, times, rResult);
+}
+
+void CHCUSB_term(const void *handle)
+{
+    dprintf("Printer PrintDLL: %s\n", __func__);
+}
+
+int CHCUSB_updateCardRfidReader(const void *handle, uint8_t *data, uint32_t size, uint16_t *rResult)
+{
+    return chcusb_updateCardRfidReader(data, size, rResult);
+}
+
+int CHCUSB_write(const void *handle, uint8_t *data, uint32_t offset, uint32_t *writeSize, uint16_t *rResult)
+{
+    return chcusb_write(data, writeSize, rResult);
+}
+
+int CHCUSB_writeHolo(const void *handle, uint8_t *data, uint32_t offset, uint32_t *writeSize, uint16_t *rResult)
+{
+    return chcusb_writeHolo(data, writeSize, rResult);
+}
+
+int CHCUSB_writeLaminate(const void *handle, uint8_t *data, uint32_t offset, uint32_t *writeSize, uint16_t *rResult)
+{
+    return chcusb_writeLaminate(data, writeSize, rResult);
 }
 
 // copy pasted from https://dev.s-ul.net/domeori/c310emu

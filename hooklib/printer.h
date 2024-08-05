@@ -14,3 +14,4 @@ struct printer_config {
 };
 
 void printer_hook_init(const struct printer_config *cfg, int rfid_port_no, HINSTANCE self);
+void printer_hook_insert_hooks(HMODULE target);

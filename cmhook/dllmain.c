@@ -56,6 +56,10 @@ static DWORD CALLBACK cm_pre_startup(void)
     touch_screen_hook_init(&cm_hook_cfg.touch, cm_hook_mod);
     serial_hook_init();
 
+    /* Hook external DLL APIs */
+
+    printer_hook_init(&cm_hook_cfg.printer, 4, cm_hook_mod);
+
     /* Initialize emulation hooks */
 
     hr = platform_hook_init(
