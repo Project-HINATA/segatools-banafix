@@ -18,6 +18,8 @@ struct chuni_io_config {
     bool controller_led_output_pipe;
     bool controller_led_output_serial;
 
+    bool controller_led_output_openithm;
+
     // The name of a COM port to output LED data on, in serial mode
     wchar_t led_serial_port[12];
     int32_t led_serial_baud;
