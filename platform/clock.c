@@ -20,7 +20,9 @@ static BOOL WINAPI my_SetTimeZoneInformation(TIME_ZONE_INFORMATION *tzinfo);
 
 static BOOL (WINAPI * next_GetSystemTimeAsFileTime)(FILETIME *out);
 static int64_t clock_current_day;
+static bool clock_timezone;
 static bool clock_time_warp;
+static bool clock_writeable;
 
 static const struct hook_symbol clock_base_hook_syms[] = {
     {
@@ -226,56 +228,41 @@ HRESULT clock_hook_init(const struct clock_config *cfg)
 {
     assert(cfg != NULL);
 
+    clock_timezone = cfg->timezone;
     clock_time_warp = cfg->timewarp;
+    clock_writeable = cfg->writeable;
 
-    if (cfg->timezone || cfg->timewarp || !cfg->writeable) {
+    clock_hook_insert_hooks(NULL);
+
+    return S_OK;
+}
+
+void clock_hook_insert_hooks(HMODULE target) {
+    if (clock_timezone || clock_time_warp || !clock_writeable) {
         /* All the clock hooks require the core GSTAFT hook to be installed */
         /* Note the ! up there btw. */
 
         hook_table_apply(
-                NULL,
+                target,
                 "kernel32.dll",
                 clock_base_hook_syms,
                 _countof(clock_base_hook_syms));
-        
-        proc_addr_table_push(
-                NULL,
-                "kernel32.dll",
-                clock_base_hook_syms,
-                _countof(clock_base_hook_syms)
-        );
     }
 
-    if (cfg->timezone) {
+    if (clock_timezone) {
         hook_table_apply(
-                NULL,
+                target,
                 "kernel32.dll",
                 clock_read_hook_syms,
                 _countof(clock_read_hook_syms));
-        
-        proc_addr_table_push(
-                NULL,
-                "kernel32.dll",
-                clock_read_hook_syms,
-                _countof(clock_read_hook_syms)
-        );
     }
 
-    if (!cfg->writeable) {
+    if (!clock_writeable) {
         /* Install hook if this config parameter is FALSE! */
         hook_table_apply(
-                NULL,
+                target,
                 "kernel32.dll",
                 clock_write_hook_syms,
                 _countof(clock_write_hook_syms));
-        
-        proc_addr_table_push(
-                NULL,
-                "kernel32.dll",
-                clock_write_hook_syms,
-                _countof(clock_write_hook_syms)
-        );
     }
-
-    return S_OK;
 }

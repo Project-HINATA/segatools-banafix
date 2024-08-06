@@ -1,6 +1,8 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include "platform/clock.h"
+
 #include "hook/table.h"
 #include "hook/procaddr.h"
 #include "hook/iohook.h"
@@ -140,6 +142,7 @@ static HMODULE WINAPI hook_LoadLibraryW(const wchar_t *name)
             path_hook_insert_hooks(result);
 
             reg_hook_insert_hooks(result);
+            clock_hook_insert_hooks(result);
             proc_addr_insert_hooks(result);
 
             // Not needed?
