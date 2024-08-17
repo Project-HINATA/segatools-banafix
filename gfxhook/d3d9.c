@@ -224,9 +224,19 @@ static HRESULT STDMETHODCALLTYPE my_IDirect3D9_CreateDevice(
         gfx_util_frame_window(hwnd);
     }
 
-    dprintf("Gfx: Using adapter %d\n", gfx_config.monitor);
+    UINT max_adapter = IDirect3D9_GetAdapterCount(real);
+    adapter = gfx_config.monitor;
+    if (adapter >= max_adapter) {
+        dprintf(
+            "Gfx: Requested adapter %d but maximum is %d. Using primary monitor\n",
+            gfx_config.monitor, max_adapter - 1
+        );
+        adapter = D3DADAPTER_DEFAULT;
+    } else {
+        dprintf("Gfx: Using adapter %d\n", gfx_config.monitor);
+    }
 
-    return IDirect3D9_CreateDevice(real, gfx_config.monitor, type, hwnd, flags, pp, pdev);
+    return IDirect3D9_CreateDevice(real, adapter, type, hwnd, flags, pp, pdev);
 }
 
 static HRESULT STDMETHODCALLTYPE my_IDirect3D9Ex_CreateDevice(
