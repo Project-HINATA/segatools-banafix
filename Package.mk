@@ -203,6 +203,22 @@ $(BUILD_DIR_ZIP)/cm.zip:
 	$(V)strip $(BUILD_DIR_ZIP)/cm/*.{exe,dll}
 	$(V)cd $(BUILD_DIR_ZIP)/cm ; zip -r ../cm.zip *
 
+$(BUILD_DIR_ZIP)/tokyo.zip:
+	$(V)echo ... $@
+	$(V)mkdir -p $(BUILD_DIR_ZIP)/tokyo
+	$(V)mkdir -p $(BUILD_DIR_ZIP)/tokyo/DEVICE
+	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
+		$(BUILD_DIR_64)/tokyohook/tokyohook.dll \
+		$(DIST_DIR)/tokyo/config_hook.json \
+		$(DIST_DIR)/tokyo/segatools.ini \
+		$(DIST_DIR)/tokyo/start.bat \
+    	$(BUILD_DIR_ZIP)/tokyo
+	$(V)cp pki/billing.pub \
+		pki/ca.crt \
+    	$(BUILD_DIR_ZIP)/tokyo/DEVICE
+	$(V)strip $(BUILD_DIR_ZIP)/tokyo/*.{exe,dll}
+	$(V)cd $(BUILD_DIR_ZIP)/tokyo ; zip -r ../tokyo.zip *
+
 $(BUILD_DIR_ZIP)/doc.zip: \
 		$(DOC_DIR)/config \
 		$(DOC_DIR)/chunihook.md \
@@ -225,6 +241,7 @@ $(BUILD_DIR_ZIP)/segatools.zip: \
 		$(BUILD_DIR_ZIP)/mu3.zip \
 		$(BUILD_DIR_ZIP)/mai2.zip \
 		$(BUILD_DIR_ZIP)/cm.zip \
+		$(BUILD_DIR_ZIP)/tokyo.zip \
 		$(BUILD_DIR_ZIP)/fgo.zip \
 		CHANGELOG.md \
 		README.md \
