@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "platform/dipsw.h"
+#include "platform/system.h"
 #include "platform/vfs.h"
 
 #include "util/dprintf.h"
@@ -30,12 +30,12 @@ typedef struct
     char padding[4];
     uint8_t dip_switches;
     char data[DATA_SIZE];
-} DipSwitchBlock;
+} DipSwBlock;
 
 typedef struct
 {
     CreditBlock credit_block;
-    DipSwitchBlock dip_switch_block;
+    DipSwBlock dip_switch_block;
     char *data;
 } SystemInfo;
 
@@ -43,13 +43,13 @@ typedef struct
 
 static SystemInfo system_info;
 
-static struct dipsw_config dipsw_config;
+static struct system_config system_config;
 static struct vfs_config vfs_config;
 
-static void dipsw_read_sysfile(const wchar_t *sys_file);
-static void dipsw_save_sysfile(const wchar_t *sys_file);
+static void system_read_sysfile(const wchar_t *sys_file);
+static void system_save_sysfile(const wchar_t *sys_file);
 
-HRESULT dipsw_init(const struct dipsw_config *cfg, const struct vfs_config *vfs_cfg)
+HRESULT system_init(const struct system_config *cfg, const struct vfs_config *vfs_cfg)
 {
     HRESULT hr;
     wchar_t sys_file_path[MAX_PATH];
@@ -62,28 +62,28 @@ HRESULT dipsw_init(const struct dipsw_config *cfg, const struct vfs_config *vfs_
         return S_FALSE;
     }
 
-    memcpy(&dipsw_config, cfg, sizeof(*cfg));
+    memcpy(&system_config, cfg, sizeof(*cfg));
 
     sys_file_path[0] = L'\0';
     // concatenate vfs_config.amfs with L"sysfile.dat"
     wcsncpy(sys_file_path, vfs_cfg->amfs, MAX_PATH);
     wcsncat(sys_file_path, L"\\sysfile.dat", MAX_PATH);
 
-    dipsw_read_sysfile(sys_file_path);
+    system_read_sysfile(sys_file_path);
 
-    // now write the dipsw_config.dipsw to the dip_switch_block
-    dipsw_save_sysfile(sys_file_path);
+    // now write the system_config.system to the dip_switch_block
+    system_save_sysfile(sys_file_path);
 
     return S_OK;
 }
 
-static void dipsw_read_sysfile(const wchar_t *sys_file)
+static void system_read_sysfile(const wchar_t *sys_file)
 {
     FILE *f = _wfopen(sys_file, L"r");
 
     if (f == NULL)
     {
-        dprintf("DipSw: First run detected, DipSw settings can only be applied AFTER the first run\n");
+        dprintf("System: First run detected, system settings can only be applied AFTER the first run\n");
         return;
     }
 
@@ -93,7 +93,7 @@ static void dipsw_read_sysfile(const wchar_t *sys_file)
 
     if (file_size != 0x6000)
     {
-        dprintf("DipSw: Invalid sysfile.dat file size\n");
+        dprintf("System: Invalid sysfile.dat file size\n");
         fclose(f);
 
         return;
@@ -108,10 +108,10 @@ static void dipsw_read_sysfile(const wchar_t *sys_file)
     memcpy(&system_info.dip_switch_block, system_info.data + 0x2800, BLOCK_SIZE);
 }
 
-static void dipsw_save_sysfile(const wchar_t *sys_file)
+static void system_save_sysfile(const wchar_t *sys_file)
 {
     char block[BLOCK_SIZE];
-    uint8_t dipsw = 0;
+    uint8_t system = 0;
     uint8_t freeplay = 0;
 
     // open the sysfile.dat for writing in bytes mode
@@ -122,28 +122,28 @@ static void dipsw_save_sysfile(const wchar_t *sys_file)
         return;
     }
 
-    // write the dipsw_config.dipsw to the dip_switch_block
+    // write the system_config.system to the dip_switch_block
     for (int i = 0; i < 8; i++)
     {
-        if (dipsw_config.dipsw[i])
+        if (system_config.dipsw[i])
         {
-            // print which dipsw is enabled
-            dprintf("DipSw: DipSw%d=1 set\n", i + 1);
-            dipsw |= (1 << i);
+            // print which system is enabled
+            dprintf("System: DipSw%d=1 set\n", i + 1);
+            system |= (1 << i);
         }
     }
 
-    if (dipsw_config.freeplay)
+    if (system_config.freeplay)
     {
         // print that freeplay is enabled
-        dprintf("DipSw: Freeplay enabled\n");
+        dprintf("System: Freeplay enabled\n");
         freeplay = 1;
     }
 
     // set the new credit block
     system_info.credit_block.freeplay = freeplay;
     // set the new dip_switch_block
-    system_info.dip_switch_block.dip_switches = dipsw;
+    system_info.dip_switch_block.dip_switches = system;
 
     // calculate the new checksum, skip the old crc32 value
     // which is at the beginning of the block, thats's why the +4
@@ -167,7 +167,7 @@ static void dipsw_save_sysfile(const wchar_t *sys_file)
 
     // print the dip_switch_block in hex
     /*
-    dprintf("DipSw Block: ");
+    dprintf("System Block: ");
     for (size_t i = 0; i < BLOCK_SIZE; i++)
     {
         dprintf("%02X ", ((uint8_t *)&system_info.dip_switch_block)[i]);

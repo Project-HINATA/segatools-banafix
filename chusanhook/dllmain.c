@@ -123,7 +123,7 @@ static DWORD CALLBACK chusan_pre_startup(void)
         goto fail;
     }
 
-    bool *dipsw = &chusan_hook_cfg.platform.dipsw.dipsw[0];
+    bool *dipsw = &chusan_hook_cfg.platform.system.dipsw[0];
     bool is_cvt = dipsw[2];
 
     for (int i = 0; i < 3; i++) {

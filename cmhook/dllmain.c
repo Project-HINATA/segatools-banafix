@@ -58,7 +58,7 @@ static DWORD CALLBACK cm_pre_startup(void)
 
     /* Hook external DLL APIs */
 
-    printer_hook_init(&cm_hook_cfg.printer, 4, cm_hook_mod);
+    printer_hook_init(&cm_hook_cfg.printer, 0, cm_hook_mod);
 
     /* Initialize emulation hooks */
 

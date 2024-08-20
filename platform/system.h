@@ -7,10 +7,10 @@
 
 #include "platform/vfs.h"
 
-struct dipsw_config {
+struct system_config {
     bool enable;
     bool freeplay;
     bool dipsw[8];
 };
 
-HRESULT dipsw_init(const struct dipsw_config *cfg, const struct vfs_config *vfs_cfg);
+HRESULT system_init(const struct system_config *cfg, const struct vfs_config *vfs_cfg);

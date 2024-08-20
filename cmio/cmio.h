@@ -36,7 +36,7 @@ HRESULT cm_io_init(void);
 HRESULT cm_io_poll(void);
 
 /* Get the state of the cabinet's operator buttons as of the last poll. See
-   cm_IO_OPBTN enum above: this contains bit mask definitions for button
+   CM_IO_OPBTN enum above: this contains bit mask definitions for button
    states returned in *opbtn. All buttons are active-high.
 
    Minimum API version: 0x0100 */

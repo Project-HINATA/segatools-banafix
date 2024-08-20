@@ -52,16 +52,12 @@ HRESULT fgo_io_poll(void);
 void fgo_io_get_opbtns(uint8_t *opbtn);
 
 /* Get the state of the cabinet's gameplay buttons as of the last poll. See
-   FGO_IO_GAMEBTN enum above for bit mask definitions. Inputs are split into
-   a left hand side set of inputs and a right hand side set of inputs: the bit
-   mappings are the same in both cases.
-
-   All buttons are active-high, even though some buttons' electrical signals
-   on a real cabinet are active-low.
+   FGO_IO_GAMEBTN enum above: this contains bit mask definitions for button
+   states returned in *gamebtn. All buttons are active-high.
 
    Minimum API version: 0x0100 */
 
-void fgo_io_get_gamebtns(uint8_t *btn);
+void fgo_io_get_gamebtns(uint8_t *gamebtn);
 
 /* Get the position of the cabinet stick as of the last poll. The center
    position should be equal to or close to 32767.

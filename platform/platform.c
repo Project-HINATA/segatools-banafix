@@ -13,7 +13,7 @@
 #include "platform/pcbid.h"
 #include "platform/platform.h"
 #include "platform/vfs.h"
-#include "platform/dipsw.h"
+#include "platform/system.h"
 
 HRESULT platform_hook_init(
         const struct platform_config *cfg,
@@ -82,7 +82,7 @@ HRESULT platform_hook_init(
         return hr;
     }
 
-    hr = dipsw_init(&cfg->dipsw, &cfg->vfs);
+    hr = system_init(&cfg->system, &cfg->vfs);
 
     if (FAILED(hr)) {
         return hr;
