@@ -2446,7 +2446,7 @@ int chcusb_writeLaminate(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) 
     wchar_t dumpPath[MAX_PATH];
     swprintf_s(
         dumpPath, MAX_PATH,
-        L"%s\\C3XX_%04d%02d%02d_%02d%02d%02d_writeLaminate.bmp",
+        L"%s\\C3XX_%04d%02d%02d_%02d%02d%02d_laminate.bmp",
         printer_out_path, t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
 
     // WriteDataToBitmapFile(dumpPath, 8, WIDTH, HEIGHT, data, HOLO_SIZE, NULL, 0, rotate180);
@@ -2465,7 +2465,7 @@ int chcusb_writeHolo(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) {
     wchar_t dumpPath[MAX_PATH];
     swprintf_s(
         dumpPath, MAX_PATH,
-        L"%s\\C3XX_%04d%02d%02d_%02d%02d%02d_writeHolo.bmp",
+        L"%s\\C3XX_%04d%02d%02d_%02d%02d%02d_holo.bmp",
         printer_out_path, t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
 
     WriteDataToBitmapFile(dumpPath, 8, WIDTH, HEIGHT, data, HOLO_SIZE, NULL, 0, rotate180);
