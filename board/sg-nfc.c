@@ -60,6 +60,11 @@ static HRESULT sg_nfc_cmd_felica_encap(
         const struct sg_nfc_req_felica_encap *req,
         struct sg_nfc_res_felica_encap *res);
 
+static HRESULT sg_nfc_cmd_send_hex_data(
+        struct sg_nfc *nfc,
+        const struct sg_req_header *req,
+        struct sg_res_header *res);
+
 static HRESULT sg_nfc_cmd_dummy(
         struct sg_nfc *nfc,
         const struct sg_req_header *req,
@@ -185,12 +190,15 @@ static HRESULT sg_nfc_dispatch(
                 &res->felica_encap);
 
     case SG_NFC_CMD_MIFARE_AUTHENTICATE:
+    case SG_NFC_CMD_SEND_HEX_DATA:
+        return sg_nfc_cmd_send_hex_data(nfc, &req->simple, &res->simple);
+
     case SG_NFC_CMD_MIFARE_SELECT_TAG:
     case SG_NFC_CMD_MIFARE_SET_KEY_AIME:
     case SG_NFC_CMD_MIFARE_SET_KEY_BANA:
     case SG_NFC_CMD_RADIO_ON:
     case SG_NFC_CMD_RADIO_OFF:
-    case SG_NFC_CMD_SEND_HEX_DATA: // TODO: implement?
+    case SG_NFC_CMD_TO_UPDATE_MODE:
         return sg_nfc_cmd_dummy(nfc, &req->simple, &res->simple);
 
     default:
@@ -438,6 +446,22 @@ static HRESULT sg_nfc_cmd_felica_encap(
     dprintf("FELICA INBOUND:\n");
     dump_iobuf(&f_res);
 #endif
+
+    return S_OK;
+}
+
+static HRESULT sg_nfc_cmd_send_hex_data(
+        struct sg_nfc *nfc,
+        const struct sg_req_header *req,
+        struct sg_res_header *res)
+{
+    sg_res_init(res, req, 0);
+
+    /* Firmware checksum length? */
+    if (req->payload_len == 0x2b) {
+         /* The firmware is identical flag? */
+        res->status = 0x20;
+    }
 
     return S_OK;
 }

@@ -5,19 +5,21 @@
 #pragma pack(push, 1)
 
 enum {
-    SG_NFC_CMD_GET_FW_VERSION       = 0x30,
-    SG_NFC_CMD_GET_HW_VERSION       = 0x32,
-    SG_NFC_CMD_RADIO_ON             = 0x40,
-    SG_NFC_CMD_RADIO_OFF            = 0x41,
-    SG_NFC_CMD_POLL                 = 0x42,
-    SG_NFC_CMD_MIFARE_SELECT_TAG    = 0x43,
-    SG_NFC_CMD_MIFARE_SET_KEY_BANA  = 0x50,
-    SG_NFC_CMD_MIFARE_READ_BLOCK    = 0x52,
-    SG_NFC_CMD_MIFARE_SET_KEY_AIME  = 0x54,
-    SG_NFC_CMD_MIFARE_AUTHENTICATE  = 0x55, /* guess based on time sent */
-    SG_NFC_CMD_SEND_HEX_DATA        = 0x61,
-    SG_NFC_CMD_RESET                = 0x62,
-    SG_NFC_CMD_FELICA_ENCAP         = 0x71,
+    SG_NFC_CMD_GET_FW_VERSION        = 0x30,
+    SG_NFC_CMD_GET_HW_VERSION        = 0x32,
+    SG_NFC_CMD_RADIO_ON              = 0x40,
+    SG_NFC_CMD_RADIO_OFF             = 0x41,
+    SG_NFC_CMD_POLL                  = 0x42,
+    SG_NFC_CMD_MIFARE_SELECT_TAG     = 0x43,
+    SG_NFC_CMD_MIFARE_SET_KEY_A      = 0x50,
+    SG_NFC_CMD_MIFARE_AUTHENTICATE_A = 0x51,
+    SG_NFC_CMD_MIFARE_READ_BLOCK     = 0x52,
+    SG_NFC_CMD_MIFARE_SET_KEY_B      = 0x54,
+    SG_NFC_CMD_MIFARE_AUTHENTICATE_B = 0x55,
+    SG_NFC_CMD_TO_UPDATE_MODE        = 0x60,
+    SG_NFC_CMD_SEND_HEX_DATA         = 0x61,
+    SG_NFC_CMD_RESET                 = 0x62,
+    SG_NFC_CMD_FELICA_ENCAP          = 0x71,
 };
 
 struct sg_nfc_res_get_fw_version {
@@ -32,7 +34,7 @@ struct sg_nfc_res_get_hw_version {
 
 struct sg_nfc_req_mifare_set_key {
     struct sg_req_header req;
-    uint8_t key_a[6];
+    uint8_t key[6];
 };
 
 struct sg_nfc_req_mifare_50 {
