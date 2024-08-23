@@ -79,7 +79,7 @@ static DWORD CALLBACK mai2_pre_startup(void)
         goto fail;
     }
 
-    hr = vfd_hook_init(&mai2_hook_cfg.vfd, 2);
+    hr = vfd_hook_init(&mai2_hook_cfg.vfd);
 
     if (FAILED(hr)) {
         goto fail;

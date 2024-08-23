@@ -90,4 +90,6 @@ void vfd_config_load(struct vfd_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"vfd", L"enable", 1, filename);
+    cfg->port = GetPrivateProfileIntW(L"vfd", L"portNo", 1, filename);
+    cfg->utf_conversion = GetPrivateProfileIntW(L"vfd", L"utfConversion", 0, filename);
 }

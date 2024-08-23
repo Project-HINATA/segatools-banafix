@@ -84,7 +84,7 @@ static DWORD CALLBACK cm_pre_startup(void)
         goto fail;
     }
 
-    hr = vfd_hook_init(&cm_hook_cfg.vfd, 2);
+    hr = vfd_hook_init(&cm_hook_cfg.vfd);
 
     if (FAILED(hr)) {
         goto fail;
