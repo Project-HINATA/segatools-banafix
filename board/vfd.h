@@ -9,5 +9,5 @@ struct vfd_config {
 };
 
 
-HRESULT vfd_hook_init(struct vfd_config *cfg);
+HRESULT vfd_hook_init(struct vfd_config *cfg, int default_port);
 

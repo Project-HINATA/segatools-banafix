@@ -146,7 +146,7 @@ static DWORD CALLBACK chusan_pre_startup(void)
     unsigned int first_port = is_cvt ? 2 : 20;
 
     if (!is_cvt) {
-        hr = vfd_hook_init(&chusan_hook_cfg.vfd);
+        hr = vfd_hook_init(&chusan_hook_cfg.vfd, 2);
 
         if (FAILED(hr)) {
             goto fail;

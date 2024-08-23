@@ -84,7 +84,7 @@ static DWORD CALLBACK fgo_pre_startup(void)
         goto fail;
     }
 
-    hr = vfd_hook_init(&fgo_hook_cfg.vfd);
+    hr = vfd_hook_init(&fgo_hook_cfg.vfd, 1);
 
     if (FAILED(hr)) {
         goto fail;

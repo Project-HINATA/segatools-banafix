@@ -77,7 +77,7 @@ static DWORD CALLBACK mercury_pre_startup(void)
         goto fail;
     }
 
-    hr = vfd_hook_init(&mercury_hook_cfg.vfd);
+    hr = vfd_hook_init(&mercury_hook_cfg.vfd, 2);
 
     if (FAILED(hr)) {
         goto fail;

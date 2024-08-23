@@ -93,7 +93,7 @@ static DWORD CALLBACK mu3_pre_startup(void)
         goto fail;
     }
 
-    hr = vfd_hook_init(&mu3_hook_cfg.vfd);
+    hr = vfd_hook_init(&mu3_hook_cfg.vfd, 2);
 
     if (FAILED(hr)) {
         goto fail;
