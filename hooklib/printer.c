@@ -11,6 +11,7 @@
 
 #include "hooklib/printer.h"
 
+#include <assert.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -60,44 +61,44 @@ static uint8_t STATUS = 0;
 
 /* C3XXFWDLusb API hooks */
 
-int fwdlusb_open(uint16_t *rResult);
-void fwdlusb_close();
-int fwdlusb_listupPrinter(uint8_t *rIdArray);
-int fwdlusb_listupPrinterSN(uint64_t *rSerialArray);
-int fwdlusb_selectPrinter(uint8_t printerId, uint16_t *rResult);
-int fwdlusb_selectPrinterSN(uint64_t printerSN, uint16_t *rResult);
-int fwdlusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen);
-int fwdlusb_status(uint16_t *rResult);
-int fwdlusb_statusAll(uint8_t *idArray, uint16_t *rResultArray);
-int fwdlusb_resetPrinter(uint16_t *rResult);
-int fwdlusb_updateFirmware(uint8_t update, LPCSTR filename, uint16_t *rResult);
-int fwdlusb_getFirmwareInfo(uint8_t update, LPCSTR filename, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult);
-int fwdlusb_MakeThread(uint16_t maxCount);
-int fwdlusb_ReleaseThread(uint16_t *rResult);
-int fwdlusb_AttachThreadCount(uint16_t *rCount, uint16_t *rMaxCount);
-int fwdlusb_getErrorLog(uint16_t index, uint8_t *rData, uint16_t *rResult);
+__stdcall int fwdlusb_open(uint16_t *rResult);
+__stdcall void fwdlusb_close();
+__stdcall int fwdlusb_listupPrinter(uint8_t *rIdArray);
+__stdcall int fwdlusb_listupPrinterSN(uint64_t *rSerialArray);
+__stdcall int fwdlusb_selectPrinter(uint8_t printerId, uint16_t *rResult);
+__stdcall int fwdlusb_selectPrinterSN(uint64_t printerSN, uint16_t *rResult);
+__stdcall int fwdlusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen);
+__stdcall int fwdlusb_status(uint16_t *rResult);
+__stdcall int fwdlusb_statusAll(uint8_t *idArray, uint16_t *rResultArray);
+__stdcall int fwdlusb_resetPrinter(uint16_t *rResult);
+__stdcall int fwdlusb_updateFirmware(uint8_t update, LPCSTR filename, uint16_t *rResult);
+__stdcall int fwdlusb_getFirmwareInfo(uint8_t update, LPCSTR filename, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult);
+__stdcall int fwdlusb_MakeThread(uint16_t maxCount);
+__stdcall int fwdlusb_ReleaseThread(uint16_t *rResult);
+__stdcall int fwdlusb_AttachThreadCount(uint16_t *rCount, uint16_t *rMaxCount);
+__stdcall int fwdlusb_getErrorLog(uint16_t index, uint8_t *rData, uint16_t *rResult);
 
 /* C3XXusb API hooks */
 
-int chcusb_MakeThread(uint16_t maxCount);
-int chcusb_open(uint16_t *rResult);
-void chcusb_close();
-int chcusb_ReleaseThread(uint16_t *rResult);
-int chcusb_listupPrinter(uint8_t *rIdArray);
-int chcusb_listupPrinterSN(uint64_t *rSerialArray);
-int chcusb_selectPrinter(uint8_t printerId, uint16_t *rResult);
-int chcusb_selectPrinterSN(uint64_t printerSN, uint16_t *rResult);
-int chcusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen);
-int chcusb_imageformat(
+__stdcall int chcusb_MakeThread(uint16_t maxCount);
+__stdcall int chcusb_open(uint16_t *rResult);
+__stdcall void chcusb_close();
+__stdcall int chcusb_ReleaseThread(uint16_t *rResult);
+__stdcall int chcusb_listupPrinter(uint8_t *rIdArray);
+__stdcall int chcusb_listupPrinterSN(uint64_t *rSerialArray);
+__stdcall int chcusb_selectPrinter(uint8_t printerId, uint16_t *rResult);
+__stdcall int chcusb_selectPrinterSN(uint64_t printerSN, uint16_t *rResult);
+__stdcall int chcusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen);
+__stdcall int chcusb_imageformat(
     uint16_t format,
     uint16_t ncomp,
     uint16_t depth,
     uint16_t width,
     uint16_t height,
     uint16_t *rResult);
-int chcusb_setmtf(int32_t *mtf);
-int chcusb_makeGamma(uint16_t k, uint8_t *intoneR, uint8_t *intoneG, uint8_t *intoneB);
-int chcusb_setIcctable(
+__thiscall int chcusb_setmtf(int32_t *mtf);
+__stdcall int chcusb_makeGamma(uint16_t k, uint8_t *intoneR, uint8_t *intoneG, uint8_t *intoneB);
+__stdcall int chcusb_setIcctable(
     LPCSTR icc1,
     LPCSTR icc2,
     uint16_t intents,
@@ -108,40 +109,42 @@ int chcusb_setIcctable(
     uint8_t *outtoneG,
     uint8_t *outtoneB,
     uint16_t *rResult);
-int chcusb_copies(uint16_t copies, uint16_t *rResult);
-int chcusb_status(uint16_t *rResult);
-int chcusb_statusAll(uint8_t *idArray, uint16_t *rResultArray);
-int chcusb_startpage(uint16_t postCardState, uint16_t *pageId, uint16_t *rResult);
-int chcusb_endpage(uint16_t *rResult);
-int chcusb_write(uint8_t *data, uint32_t *writeSize, uint16_t *rResult);
-int chcusb_writeLaminate(uint8_t *data, uint32_t *writeSize, uint16_t *rResult);
-int chcusb_writeHolo(uint8_t *data, uint32_t *writeSize, uint16_t *rResult);
-int chcusb_setPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult);
-int chcusb_getGamma(LPCSTR filename, uint8_t *r, uint8_t *g, uint8_t *b, uint16_t *rResult);
-int chcusb_getMtf(LPCSTR filename, int32_t *mtf, uint16_t *rResult);
-int chcusb_cancelCopies(uint16_t pageId, uint16_t *rResult);
-int chcusb_setPrinterToneCurve(uint16_t type, uint16_t number, uint16_t *data, uint16_t *rResult);
-int chcusb_getPrinterToneCurve(uint16_t type, uint16_t number, uint16_t *data, uint16_t *rResult);
-int chcusb_blinkLED(uint16_t *rResult);
-int chcusb_resetPrinter(uint16_t *rResult);
-int chcusb_AttachThreadCount(uint16_t *rCount, uint16_t *rMaxCount);
-int chcusb_getPrintIDStatus(uint16_t pageId, uint8_t *rBuffer, uint16_t *rResult);
-int chcusb_setPrintStandby(uint16_t position, uint16_t *rResult);
-int chcusb_testCardFeed(uint16_t mode, uint16_t times, uint16_t *rResult);
-int chcusb_exitCard(uint16_t *rResult);
-int chcusb_getCardRfidTID(uint8_t *rCardTID, uint16_t *rResult);
-int chcusb_commCardRfidReader(uint8_t *sendData, uint8_t *rRecvData, uint32_t sendSize, uint32_t *rRecvSize, uint16_t *rResult);
-int chcusb_updateCardRfidReader(uint8_t *data, uint32_t size, uint16_t *rResult);
-int chcusb_getErrorLog(uint16_t index, uint8_t *rData, uint16_t *rResult);
-int chcusb_getErrorStatus(uint16_t *rBuffer);
-int chcusb_setCutList(uint8_t *rData, uint16_t *rResult);
-int chcusb_setLaminatePattern(uint16_t index, uint8_t *rData, uint16_t *rResult);
-int chcusb_color_adjustment(LPCSTR filename, int32_t a2, int32_t a3, int16_t a4, int16_t a5, int64_t a6, int64_t a7, uint16_t *rResult);
-int chcusb_color_adjustmentEx(int32_t a1, int32_t a2, int32_t a3, int16_t a4, int16_t a5, int64_t a6, int64_t a7, uint16_t *rResult);
-int chcusb_getEEPROM(uint8_t index, uint8_t *rData, uint16_t *rResult);
-int chcusb_setParameter(uint8_t a1, uint32_t a2, uint16_t *rResult);
-int chcusb_getParameter(uint8_t a1, uint8_t *a2, uint16_t *rResult);
-int chcusb_universal_command(int32_t a1, uint8_t a2, int32_t a3, uint8_t *a4, uint16_t *rResult);
+__stdcall int chcusb_copies(uint16_t copies, uint16_t *rResult);
+__stdcall int chcusb_status(uint16_t *rResult);
+__stdcall int chcusb_statusAll(uint8_t *idArray, uint16_t *rResultArray);
+__stdcall int chcusb_startpage(uint16_t postCardState, uint16_t *pageId, uint16_t *rResult);
+__stdcall int chcusb_startpage_300(uint16_t postCardState, uint16_t *rResult);
+__stdcall int chcusb_endpage(uint16_t *rResult);
+__stdcall int chcusb_write(uint8_t *data, uint32_t *writeSize, uint16_t *rResult);
+__stdcall int chcusb_writeLaminate(uint8_t *data, uint32_t *writeSize, uint16_t *rResult);
+__stdcall int chcusb_writeHolo(uint8_t *data, uint32_t *writeSize, uint16_t *rResult);
+__stdcall int chcusb_setPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult);
+__stdcall int chcusb_getGamma(LPCSTR filename, uint8_t *r, uint8_t *g, uint8_t *b, uint16_t *rResult);
+__stdcall int chcusb_getMtf(LPCSTR filename, int32_t *mtf, uint16_t *rResult);
+__stdcall int chcusb_cancelCopies(uint16_t pageId, uint16_t *rResult);
+__stdcall int chcusb_setPrinterToneCurve(uint16_t type, uint16_t number, uint16_t *data, uint16_t *rResult);
+__stdcall int chcusb_getPrinterToneCurve(uint16_t type, uint16_t number, uint16_t *data, uint16_t *rResult);
+__stdcall int chcusb_blinkLED(uint16_t *rResult);
+__stdcall int chcusb_resetPrinter(uint16_t *rResult);
+__stdcall int chcusb_AttachThreadCount(uint16_t *rCount, uint16_t *rMaxCount);
+__stdcall int chcusb_getPrintIDStatus(uint16_t pageId, uint8_t *rBuffer, uint16_t *rResult);
+__stdcall int chcusb_setPrintStandby(uint16_t position, uint16_t *rResult);
+__stdcall int chcusb_setPrintStandby_300(uint16_t *rResult);
+__stdcall int chcusb_testCardFeed(uint16_t mode, uint16_t times, uint16_t *rResult);
+__stdcall int chcusb_exitCard(uint16_t *rResult);
+__stdcall int chcusb_getCardRfidTID(uint8_t *rCardTID, uint16_t *rResult);
+__stdcall int chcusb_commCardRfidReader(uint8_t *sendData, uint8_t *rRecvData, uint32_t sendSize, uint32_t *rRecvSize, uint16_t *rResult);
+__stdcall int chcusb_updateCardRfidReader(uint8_t *data, uint32_t size, uint16_t *rResult);
+__stdcall int chcusb_getErrorLog(uint16_t index, uint8_t *rData, uint16_t *rResult);
+__stdcall int chcusb_getErrorStatus(uint16_t *rBuffer);
+__stdcall int chcusb_setCutList(uint8_t *rData, uint16_t *rResult);
+__stdcall int chcusb_setLaminatePattern(uint16_t index, uint8_t *rData, uint16_t *rResult);
+__stdcall int chcusb_color_adjustment(LPCSTR filename, int32_t a2, int32_t a3, int16_t a4, int16_t a5, int64_t a6, int64_t a7, uint16_t *rResult);
+__stdcall int chcusb_color_adjustmentEx(int32_t a1, int32_t a2, int32_t a3, int16_t a4, int16_t a5, int64_t a6, int64_t a7, uint16_t *rResult);
+__stdcall int chcusb_getEEPROM(uint8_t index, uint8_t *rData, uint16_t *rResult);
+__stdcall int chcusb_setParameter(uint8_t a1, uint32_t a2, uint16_t *rResult);
+__stdcall int chcusb_getParameter(uint8_t a1, uint8_t *a2, uint16_t *rResult);
+__stdcall int chcusb_universal_command(int32_t a1, uint8_t a2, int32_t a3, uint8_t *a4, uint16_t *rResult);
 
 /* PrintDLL API hooks */
 
@@ -491,7 +494,7 @@ static const struct hook_symbol C300usb_hooks[] = {
     }, {
         .name       = "chcusb_startpage",
         .ordinal    = 0x0011,
-        .patch      = chcusb_startpage,
+        .patch      = chcusb_startpage_300,
         .link       = NULL
     }, {
         .name       = "chcusb_endpage",
@@ -561,7 +564,7 @@ static const struct hook_symbol C300usb_hooks[] = {
     }, {
         .name       = "chcusb_setPrintStandby",
         .ordinal    = 0x001f,
-        .patch      = chcusb_setPrintStandby,
+        .patch      = chcusb_setPrintStandby_300,
         .link       = NULL
     }, {
         .name       = "chcusb_testCardFeed",
@@ -1619,7 +1622,7 @@ static HRESULT deck_frame_encode_byte(struct iobuf *dest, uint8_t byte) {
 
 // C3XXFWDLusb stubs
 
-int fwdlusb_open(uint16_t *rResult) {
+__stdcall int fwdlusb_open(uint16_t *rResult) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     *rResult = 0;
     return 1;
@@ -1627,33 +1630,33 @@ int fwdlusb_open(uint16_t *rResult) {
 
 void fwdlusb_close() {}
 
-int fwdlusb_listupPrinter(uint8_t *rIdArray) {
+__stdcall int fwdlusb_listupPrinter(uint8_t *rIdArray) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     memset(rIdArray, 0xFF, 0x80);
     rIdArray[0] = idNumber;
     return 1;
 }
 
-int fwdlusb_listupPrinterSN(uint64_t *rSerialArray) {
+__stdcall int fwdlusb_listupPrinterSN(uint64_t *rSerialArray) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     memset(rSerialArray, 0xFF, 0x400);
     rSerialArray[0] = serialNo;
     return 1;
 }
 
-int fwdlusb_selectPrinter(uint8_t printerId, uint16_t *rResult) {
+__stdcall int fwdlusb_selectPrinter(uint8_t printerId, uint16_t *rResult) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int fwdlusb_selectPrinterSN(uint64_t printerSN, uint16_t *rResult) {
+__stdcall int fwdlusb_selectPrinterSN(uint64_t printerSN, uint16_t *rResult) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int fwdlusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen) {
+__stdcall int fwdlusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     switch (tagNumber) {
         case 0:  // getPaperInfo
@@ -1734,13 +1737,13 @@ int fwdlusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen)
     return 1;
 }
 
-int fwdlusb_status(uint16_t *rResult) {
+__stdcall int fwdlusb_status(uint16_t *rResult) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int fwdlusb_statusAll(uint8_t *idArray, uint16_t *rResultArray) {
+__stdcall int fwdlusb_statusAll(uint8_t *idArray, uint16_t *rResultArray) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     for (int i = 0; *(uint8_t *)(idArray + i) != 255 && i < 128; ++i) {
         *(uint16_t *)(rResultArray + 2 * i) = 0;
@@ -1749,13 +1752,13 @@ int fwdlusb_statusAll(uint8_t *idArray, uint16_t *rResultArray) {
     return 1;
 }
 
-int fwdlusb_resetPrinter(uint16_t *rResult) {
+__stdcall int fwdlusb_resetPrinter(uint16_t *rResult) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int fwdlusb_getFirmwareVersion(uint8_t *buffer, int size) {
+__stdcall int fwdlusb_getFirmwareVersion(uint8_t *buffer, int size) {
     int8_t a;
     uint32_t b = 0;
     for (int32_t i = 0; i < size; ++i) {
@@ -1776,7 +1779,7 @@ int fwdlusb_getFirmwareVersion(uint8_t *buffer, int size) {
     return b;
 }
 
-int fwdlusb_updateFirmware_main(uint8_t update, LPCSTR filename, uint16_t *rResult) {
+__stdcall int fwdlusb_updateFirmware_main(uint8_t update, LPCSTR filename, uint16_t *rResult) {
     DWORD result;
     HANDLE fwFile = NULL;
     DWORD bytesWritten = 0;
@@ -1825,7 +1828,7 @@ int fwdlusb_updateFirmware_main(uint8_t update, LPCSTR filename, uint16_t *rResu
     return result;
 }
 
-int fwdlusb_updateFirmware_dsp(uint8_t update, LPCSTR filename, uint16_t *rResult) {
+__stdcall int fwdlusb_updateFirmware_dsp(uint8_t update, LPCSTR filename, uint16_t *rResult) {
     DWORD result;
     HANDLE fwFile = NULL;
     DWORD bytesWritten = 0;
@@ -1874,7 +1877,7 @@ int fwdlusb_updateFirmware_dsp(uint8_t update, LPCSTR filename, uint16_t *rResul
     return result;
 }
 
-int fwdlusb_updateFirmware_param(uint8_t update, LPCSTR filename, uint16_t *rResult) {
+__stdcall int fwdlusb_updateFirmware_param(uint8_t update, LPCSTR filename, uint16_t *rResult) {
     DWORD result;
     HANDLE fwFile = NULL;
     DWORD bytesWritten = 0;
@@ -1923,7 +1926,7 @@ int fwdlusb_updateFirmware_param(uint8_t update, LPCSTR filename, uint16_t *rRes
     return result;
 }
 
-int fwdlusb_updateFirmware(uint8_t update, LPCSTR filename, uint16_t *rResult) {
+__stdcall int fwdlusb_updateFirmware(uint8_t update, LPCSTR filename, uint16_t *rResult) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     if (update == 1) {
         return fwdlusb_updateFirmware_main(update, filename, rResult);
@@ -1937,7 +1940,7 @@ int fwdlusb_updateFirmware(uint8_t update, LPCSTR filename, uint16_t *rResult) {
     }
 }
 
-int fwdlusb_getFirmwareInfo_main(LPCSTR filename, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult) {
+__stdcall int fwdlusb_getFirmwareInfo_main(LPCSTR filename, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult) {
     DWORD result;
 
     if (filename) {
@@ -1973,7 +1976,7 @@ int fwdlusb_getFirmwareInfo_main(LPCSTR filename, uint8_t *rBuffer, uint32_t *rL
     return result;
 }
 
-int fwdlusb_getFirmwareInfo_dsp(LPCSTR filename, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult) {
+__stdcall int fwdlusb_getFirmwareInfo_dsp(LPCSTR filename, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult) {
     DWORD result;
 
     if (filename) {
@@ -2009,7 +2012,7 @@ int fwdlusb_getFirmwareInfo_dsp(LPCSTR filename, uint8_t *rBuffer, uint32_t *rLe
     return result;
 }
 
-int fwdlusb_getFirmwareInfo_param(LPCSTR filename, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult) {
+__stdcall int fwdlusb_getFirmwareInfo_param(LPCSTR filename, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult) {
     DWORD result;
 
     if (filename) {
@@ -2045,7 +2048,7 @@ int fwdlusb_getFirmwareInfo_param(LPCSTR filename, uint8_t *rBuffer, uint32_t *r
     return result;
 }
 
-int fwdlusb_getFirmwareInfo(uint8_t update, LPCSTR filename, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult) {
+__stdcall int fwdlusb_getFirmwareInfo(uint8_t update, LPCSTR filename, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult) {
     dprintf("Printer: C3XXFWDLusb: %s(update: %d, filename: %s)\n", __func__, update, filename);
     if (!rBuffer) {
         *rLen = 38;
@@ -2064,25 +2067,25 @@ int fwdlusb_getFirmwareInfo(uint8_t update, LPCSTR filename, uint8_t *rBuffer, u
     }
 }
 
-int fwdlusb_MakeThread(uint16_t maxCount) {
+__stdcall int fwdlusb_MakeThread(uint16_t maxCount) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     return 1;
 }
 
-int fwdlusb_ReleaseThread(uint16_t *rResult) {
+__stdcall int fwdlusb_ReleaseThread(uint16_t *rResult) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int fwdlusb_AttachThreadCount(uint16_t *rCount, uint16_t *rMaxCount) {
+__stdcall int fwdlusb_AttachThreadCount(uint16_t *rCount, uint16_t *rMaxCount) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     *rCount = 0;
     *rMaxCount = 1;
     return 1;
 }
 
-int fwdlusb_getErrorLog(uint16_t index, uint8_t *rData, uint16_t *rResult) {
+__stdcall int fwdlusb_getErrorLog(uint16_t index, uint8_t *rData, uint16_t *rResult) {
     dprintf("Printer: C3XXFWDLusb: %s\n", __func__);
     *rResult = 0;
     return 1;
@@ -2090,12 +2093,12 @@ int fwdlusb_getErrorLog(uint16_t index, uint8_t *rData, uint16_t *rResult) {
 
 // C3XXusb stubs
 
-int chcusb_MakeThread(uint16_t maxCount) {
+__stdcall int chcusb_MakeThread(uint16_t maxCount) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     return 1;
 }
 
-int chcusb_open(uint16_t *rResult) {
+__stdcall int chcusb_open(uint16_t *rResult) {
     // Seed random for card id generation
     srand(time(NULL));
     generate_rfid();
@@ -2109,38 +2112,38 @@ void chcusb_close() {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 }
 
-int chcusb_ReleaseThread(uint16_t *rResult) {
+__stdcall int chcusb_ReleaseThread(uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     return 1;
 }
 
-int chcusb_listupPrinter(uint8_t *rIdArray) {
+__stdcall int chcusb_listupPrinter(uint8_t *rIdArray) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     memset(rIdArray, 0xFF, 0x80);
     rIdArray[0] = idNumber;
     return 1;
 }
 
-int chcusb_listupPrinterSN(uint64_t *rSerialArray) {
+__stdcall int chcusb_listupPrinterSN(uint64_t *rSerialArray) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     memset(rSerialArray, 0xFF, 0x400);
     rSerialArray[0] = serialNo;
     return 1;
 }
 
-int chcusb_selectPrinter(uint8_t printerId, uint16_t *rResult) {
+__stdcall int chcusb_selectPrinter(uint8_t printerId, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_selectPrinterSN(uint64_t printerSN, uint16_t *rResult) {
+__stdcall int chcusb_selectPrinterSN(uint64_t printerSN, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen) {
+__stdcall int chcusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen) {
     // dprintf("Printer: C3XXusb: %s\n", __func__);
 
     switch (tagNumber) {
@@ -2239,6 +2242,8 @@ int chcusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen) 
             *rLen = 1;
             if (awaitingCardExit)
                 *rBuffer = 0xF0;
+            else if (STATUS == 1)
+                *rBuffer = 1;
             else
                 *rBuffer = 0;
             break;
@@ -2294,7 +2299,7 @@ int chcusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen) 
     return 1;
 }
 
-int chcusb_imageformat(
+__stdcall int chcusb_imageformat(
     uint16_t format,
     uint16_t ncomp,
     uint16_t depth,
@@ -2310,14 +2315,14 @@ int chcusb_imageformat(
     return 1;
 }
 
-int chcusb_setmtf(int32_t *mtf) {
+__thiscall int chcusb_setmtf(int32_t *mtf) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
     memcpy(MTF, mtf, sizeof(MTF));
     return 1;
 }
 
-int chcusb_makeGamma(uint16_t k, uint8_t *intoneR, uint8_t *intoneG, uint8_t *intoneB) {
+__stdcall int chcusb_makeGamma(uint16_t k, uint8_t *intoneR, uint8_t *intoneG, uint8_t *intoneB) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
     uint8_t tone;
@@ -2348,7 +2353,7 @@ int chcusb_makeGamma(uint16_t k, uint8_t *intoneR, uint8_t *intoneG, uint8_t *in
     return 1;
 }
 
-int chcusb_setIcctable(
+__stdcall int chcusb_setIcctable(
     LPCSTR icc1,
     LPCSTR icc2,
     uint16_t intents,
@@ -2361,32 +2366,34 @@ int chcusb_setIcctable(
     uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
-    for (int i = 0; i < 256; ++i) {
-        intoneR[i] = i;
-        intoneG[i] = i;
-        intoneB[i] = i;
-        outtoneR[i] = i;
-        outtoneG[i] = i;
-        outtoneB[i] = i;
+    if (intoneR != NULL && intoneG != NULL && intoneB != NULL && outtoneR != NULL && outtoneG != NULL && outtoneB != NULL) {
+        for (int i = 0; i < 256; ++i) {
+            intoneR[i] = i;
+            intoneG[i] = i;
+            intoneB[i] = i;
+            outtoneR[i] = i;
+            outtoneG[i] = i;
+            outtoneB[i] = i;
+        }
     }
 
     *rResult = 0;
     return 1;
 }
 
-int chcusb_copies(uint16_t copies, uint16_t *rResult) {
+__stdcall int chcusb_copies(uint16_t copies, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_status(uint16_t *rResult) {
+__stdcall int chcusb_status(uint16_t *rResult) {
     // dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_statusAll(uint8_t *idArray, uint16_t *rResultArray) {
+__stdcall int chcusb_statusAll(uint8_t *idArray, uint16_t *rResultArray) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
     for (int i = 0; *(uint8_t *)(idArray + i) != 255 && i < 128; ++i) {
@@ -2396,7 +2403,7 @@ int chcusb_statusAll(uint8_t *idArray, uint16_t *rResultArray) {
     return 1;
 }
 
-int chcusb_startpage(uint16_t postCardState, uint16_t *pageId, uint16_t *rResult) {
+__stdcall int chcusb_startpage(uint16_t postCardState, uint16_t *pageId, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
     STATUS = 2;
@@ -2406,7 +2413,16 @@ int chcusb_startpage(uint16_t postCardState, uint16_t *pageId, uint16_t *rResult
     return 1;
 }
 
-int chcusb_endpage(uint16_t *rResult) {
+__stdcall int chcusb_startpage_300(uint16_t postCardState, uint16_t *rResult) {
+    dprintf("Printer: C300usb: %s\n", __func__);
+
+    STATUS = 2;
+
+    *rResult = 0;
+    return 1;
+}
+
+__stdcall int chcusb_endpage(uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
     awaitingCardExit = true;
@@ -2415,7 +2431,7 @@ int chcusb_endpage(uint16_t *rResult) {
     return 1;
 }
 
-int chcusb_write(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) {
+__stdcall int chcusb_write(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) {
     SYSTEMTIME t;
     GetLocalTime(&t);
 
@@ -2439,7 +2455,7 @@ int chcusb_write(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) {
     return 1;
 }
 
-int chcusb_writeLaminate(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) {
+__stdcall int chcusb_writeLaminate(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) {
     SYSTEMTIME t;
     GetLocalTime(&t);
 
@@ -2458,7 +2474,7 @@ int chcusb_writeLaminate(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) 
     return 1;
 }
 
-int chcusb_writeHolo(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) {
+__stdcall int chcusb_writeHolo(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) {
     SYSTEMTIME t;
     GetLocalTime(&t);
 
@@ -2477,7 +2493,7 @@ int chcusb_writeHolo(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) {
     return 1;
 }
 
-int chcusb_setPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult) {
+__stdcall int chcusb_setPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
     switch (tagNumber) {
@@ -2495,7 +2511,7 @@ int chcusb_setPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen, 
     return 1;
 }
 
-int chcusb_getGamma(LPCSTR filename, uint8_t *r, uint8_t *g, uint8_t *b, uint16_t *rResult) {
+__stdcall int chcusb_getGamma(LPCSTR filename, uint8_t *r, uint8_t *g, uint8_t *b, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
     for (int i = 0; i < 256; ++i) {
@@ -2508,7 +2524,7 @@ int chcusb_getGamma(LPCSTR filename, uint8_t *r, uint8_t *g, uint8_t *b, uint16_
     return 1;
 }
 
-int chcusb_getMtf(LPCSTR filename, int32_t *mtf, uint16_t *rResult) {
+__stdcall int chcusb_getMtf(LPCSTR filename, int32_t *mtf, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
     HANDLE hFile = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -2545,13 +2561,13 @@ int chcusb_getMtf(LPCSTR filename, int32_t *mtf, uint16_t *rResult) {
     return 1;
 }
 
-int chcusb_cancelCopies(uint16_t pageId, uint16_t *rResult) {
+__stdcall int chcusb_cancelCopies(uint16_t pageId, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_setPrinterToneCurve(uint16_t type, uint16_t number, uint16_t *data, uint16_t *rResult) {
+__stdcall int chcusb_setPrinterToneCurve(uint16_t type, uint16_t number, uint16_t *data, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     if ((type > 0 && type < 3) && (number > 0 && number < 3)) {
         CURVE[type][number] = *data;
@@ -2560,7 +2576,7 @@ int chcusb_setPrinterToneCurve(uint16_t type, uint16_t number, uint16_t *data, u
     return 1;
 }
 
-int chcusb_getPrinterToneCurve(uint16_t type, uint16_t number, uint16_t *data, uint16_t *rResult) {
+__stdcall int chcusb_getPrinterToneCurve(uint16_t type, uint16_t number, uint16_t *data, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     if ((type > 0 && type < 3) && (number > 0 && number < 3)) {
         *data = CURVE[type][number];
@@ -2569,26 +2585,26 @@ int chcusb_getPrinterToneCurve(uint16_t type, uint16_t number, uint16_t *data, u
     return 1;
 }
 
-int chcusb_blinkLED(uint16_t *rResult) {
+__stdcall int chcusb_blinkLED(uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_resetPrinter(uint16_t *rResult) {
+__stdcall int chcusb_resetPrinter(uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_AttachThreadCount(uint16_t *rCount, uint16_t *rMaxCount) {
+__stdcall int chcusb_AttachThreadCount(uint16_t *rCount, uint16_t *rMaxCount) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rCount = 0;
     *rMaxCount = 1;
     return 1;
 }
 
-int chcusb_getPrintIDStatus(uint16_t pageId, uint8_t *rBuffer, uint16_t *rResult) {
+__stdcall int chcusb_getPrintIDStatus(uint16_t pageId, uint8_t *rBuffer, uint16_t *rResult) {
     // dprintf("Printer: C3XXusb: %s\n", __func__);
     memset(rBuffer, 0, 8);
 
@@ -2606,7 +2622,7 @@ int chcusb_getPrintIDStatus(uint16_t pageId, uint8_t *rBuffer, uint16_t *rResult
     return 1;
 }
 
-int chcusb_setPrintStandby(uint16_t position, uint16_t *rResult) {
+__stdcall int chcusb_setPrintStandby(uint16_t position, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
     if (STATUS == 0)
@@ -2622,13 +2638,29 @@ int chcusb_setPrintStandby(uint16_t position, uint16_t *rResult) {
     return 1;
 }
 
-int chcusb_testCardFeed(uint16_t mode, uint16_t times, uint16_t *rResult) {
+__stdcall int chcusb_setPrintStandby_300(uint16_t *rResult) {
+    dprintf("Printer: C300usb: %s\n", __func__);
+
+    *rResult = 0;
+    if (awaitingCardExit){ // 300 does not use exitCard, so reset this for getPrinterInfo.
+        awaitingCardExit = false;
+        STATUS = 1;
+    }
+    if (STATUS == 0)
+    {
+        STATUS = 1;
+    }
+
+    return 1;
+}
+
+__stdcall int chcusb_testCardFeed(uint16_t mode, uint16_t times, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_exitCard(uint16_t *rResult) {
+__stdcall int chcusb_exitCard(uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
     awaitingCardExit = false;
@@ -2638,7 +2670,7 @@ int chcusb_exitCard(uint16_t *rResult) {
     return 1;
 }
 
-int chcusb_getCardRfidTID(uint8_t *rCardTID, uint16_t *rResult) {
+__stdcall int chcusb_getCardRfidTID(uint8_t *rCardTID, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
 
     memcpy(rCardTID, cardRFID, sizeof(cardRFID));
@@ -2646,7 +2678,7 @@ int chcusb_getCardRfidTID(uint8_t *rCardTID, uint16_t *rResult) {
     return 1;
 }
 
-int chcusb_commCardRfidReader(uint8_t *sendData, uint8_t *rRecvData, uint32_t sendSize, uint32_t *rRecvSize, uint16_t *rResult) {
+__stdcall int chcusb_commCardRfidReader(uint8_t *sendData, uint8_t *rRecvData, uint32_t sendSize, uint32_t *rRecvSize, uint16_t *rResult) {
     uint8_t off;
 
     dprintf("Printer: C3XXusb: %s\n", __func__);
@@ -2709,67 +2741,67 @@ int chcusb_commCardRfidReader(uint8_t *sendData, uint8_t *rRecvData, uint32_t se
     return 1;
 }
 
-int chcusb_updateCardRfidReader(uint8_t *data, uint32_t size, uint16_t *rResult) {
+__stdcall int chcusb_updateCardRfidReader(uint8_t *data, uint32_t size, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_getErrorLog(uint16_t index, uint8_t *rData, uint16_t *rResult) {
+__stdcall int chcusb_getErrorLog(uint16_t index, uint8_t *rData, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_getErrorStatus(uint16_t *rBuffer) {
+__stdcall int chcusb_getErrorStatus(uint16_t *rBuffer) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     memset(rBuffer, 0, 0x80);
     return 1;
 }
 
-int chcusb_setCutList(uint8_t *rData, uint16_t *rResult) {
+__stdcall int chcusb_setCutList(uint8_t *rData, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_setLaminatePattern(uint16_t index, uint8_t *rData, uint16_t *rResult) {
+__stdcall int chcusb_setLaminatePattern(uint16_t index, uint8_t *rData, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_color_adjustment(LPCSTR filename, int32_t a2, int32_t a3, int16_t a4, int16_t a5, int64_t a6, int64_t a7, uint16_t *rResult) {
+__stdcall int chcusb_color_adjustment(LPCSTR filename, int32_t a2, int32_t a3, int16_t a4, int16_t a5, int64_t a6, int64_t a7, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_color_adjustmentEx(int32_t a1, int32_t a2, int32_t a3, int16_t a4, int16_t a5, int64_t a6, int64_t a7, uint16_t *rResult) {
+__stdcall int chcusb_color_adjustmentEx(int32_t a1, int32_t a2, int32_t a3, int16_t a4, int16_t a5, int64_t a6, int64_t a7, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_getEEPROM(uint8_t index, uint8_t *rData, uint16_t *rResult) {
+__stdcall int chcusb_getEEPROM(uint8_t index, uint8_t *rData, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_setParameter(uint8_t a1, uint32_t a2, uint16_t *rResult) {
+__stdcall int chcusb_setParameter(uint8_t a1, uint32_t a2, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_getParameter(uint8_t a1, uint8_t *a2, uint16_t *rResult) {
+__stdcall int chcusb_getParameter(uint8_t a1, uint8_t *a2, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
 }
 
-int chcusb_universal_command(int32_t a1, uint8_t a2, int32_t a3, uint8_t *a4, uint16_t *rResult) {
+__stdcall int chcusb_universal_command(int32_t a1, uint8_t a2, int32_t a3, uint8_t *a4, uint16_t *rResult) {
     dprintf("Printer: C3XXusb: %s\n", __func__);
     *rResult = 0;
     return 1;
@@ -3281,4 +3313,9 @@ DWORD WriteArrayToFile(LPCSTR lpOutputFilePath, LPVOID lpDataTemp, DWORD nDataSi
     return dwBytesWritten;
 
 #endif
+}
+
+void printer_set_dimensions(int width, int height){
+    WIDTH = width;
+    HEIGHT = height;
 }
