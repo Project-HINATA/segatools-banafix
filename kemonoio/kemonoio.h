@@ -57,10 +57,25 @@ void kemono_io_jvs_read_coin_counter(uint16_t *out);
 
    All subsequent calls may originate from arbitrary threads and some may
    overlap with each other. Ensuring synchronization inside your IO DLL is
-   your responsibility. */
+   your responsibility.
+
+   Minimum API version: 0x0100 */
 HRESULT kemono_io_led_init(void);
 
 /* Update the RGB LEDs.
 
-   Exact layout is TBD. */
+    The left side LED bar are indices 0 to 32.
+    The right side LED bar are indices 33 to 65.
+
+    Minimum API version: 0x0100 */
 void kemono_io_led_set_colors(uint8_t board, uint8_t *rgb);
+
+/* Update the button LEDs.
+
+    Button R: Bit 15
+    Button G: Bit 1
+    Button B: Bit 13
+    Start Button: Bit 11
+
+    Minimum API version: 0x0100 */
+void kemono_io_jvs_write_gpio(uint32_t state);

@@ -25,10 +25,12 @@ static void kemono_jvs_read_coin_counter(
         void *ctx,
         uint8_t slot_no,
         uint16_t *out);
+static void kemono_jvs_write_gpio(void *ctx, uint32_t state);
 
 static const struct io3_ops kemono_jvs_io3_ops = {
     .read_switches      = kemono_jvs_read_switches,
     .read_coin_counter  = kemono_jvs_read_coin_counter,
+    .write_gpio         = kemono_jvs_write_gpio
 };
 
 static struct io3 kemono_jvs_io3;
@@ -130,4 +132,8 @@ static void kemono_jvs_read_coin_counter(
     }
 
     kemono_dll.jvs_read_coin_counter(out);
+}
+
+static void kemono_jvs_write_gpio(void *ctx, uint32_t state){
+    kemono_dll.jvs_write_gpio(state);
 }

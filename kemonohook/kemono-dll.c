@@ -28,6 +28,10 @@ const struct dll_bind_sym kemono_dll_syms[] = {
         {
                 .sym = "kemono_io_led_set_colors",
                 .off = offsetof(struct kemono_dll, led_set_leds),
+        },
+        {
+                .sym = "kemono_io_jvs_write_gpio",
+                .off = offsetof(struct kemono_dll, jvs_write_gpio),
         }
 };
 

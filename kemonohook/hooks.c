@@ -21,6 +21,12 @@ static const struct hook_symbol kemono_kernel32_syms[] = {
 };
 
 void kemono_extra_hooks_init(){
+    HMODULE serialportapi = LoadLibraryA("Parade_Data/Plugins/SerialPortAPI.dll"); // HACK??
+    if (serialportapi != NULL){
+        iohook_apply_hooks(serialportapi);
+        serial_hook_apply_hooks(serialportapi);
+        dprintf("Kemono: Successfully pre-loaded SerialPortAPI\n");
+    }
 }
 
 void kemono_extra_hooks_load(HMODULE mod, const wchar_t* target_module) {

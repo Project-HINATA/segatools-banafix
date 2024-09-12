@@ -16,6 +16,8 @@ struct kemono_dll {
     HRESULT (*led_init)(void);
 
     void (*led_set_leds)(uint8_t board, uint8_t *rgb);
+
+    void (*jvs_write_gpio)(uint32_t state);
 };
 
 struct kemono_dll_config {

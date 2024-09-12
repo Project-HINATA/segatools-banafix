@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <stdint.h>
 #include <assert.h>
+#include <util/dprintf.h>
 
 #include "kemonoio/kemonoio.h"
 #include "kemonoio/config.h"
@@ -100,5 +101,9 @@ HRESULT kemono_io_led_init(void) {
 }
 
 void kemono_io_led_set_colors(uint8_t board, uint8_t *rgb) {
+
+}
+
+void kemono_io_jvs_write_gpio(uint32_t state){
 
 }
