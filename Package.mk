@@ -264,6 +264,7 @@ $(BUILD_DIR_ZIP)/segatools.zip: \
 		$(BUILD_DIR_ZIP)/cm.zip \
 		$(BUILD_DIR_ZIP)/tokyo.zip \
 		$(BUILD_DIR_ZIP)/fgo.zip \
+		$(BUILD_DIR_ZIP)/kemono.zip \
 		CHANGELOG.md \
 		README.md \
 
