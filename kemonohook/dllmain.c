@@ -40,8 +40,24 @@ static DWORD CALLBACK kemono_pre_startup(void) {
 
     dvd_hook_init(&kemono_hook_cfg.dvd, kemono_hook_mod);
     serial_hook_init();
+
+    // 2.02 does not call printer update functions
+    uint16_t ret;
+    fwdlusb_updateFirmware_main(1, "UnityApp\\Parade_Data\\StreamingAssets\\Printer\\E0223100-014E-C300-MAINAPP.BIN", &ret);
+    if (ret != 0){
+        goto fail;
+    }
+    fwdlusb_updateFirmware_dsp(2, "UnityApp\\Parade_Data\\StreamingAssets\\Printer\\E0223200-0101-C300-DSPAPP.BIN", &ret);
+    if (ret != 0){
+        goto fail;
+    }
+    fwdlusb_updateFirmware_param(3, "UnityApp\\Parade_Data\\StreamingAssets\\Printer\\D0460700-0101-C300-PARAM.BIN", &ret);
+    if (ret != 0){
+        goto fail;
+    }
+
     printer_hook_init(&kemono_hook_cfg.printer, 0, kemono_hook_mod);
-    printer_set_dimensions(720, 1028);
+    printer_set_dimensions(720, 1028); // printer doesn't call setimageformat
 
     /* Initialize emulation hooks */
 

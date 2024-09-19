@@ -1667,6 +1667,7 @@ int WINAPI fwdlusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t
             if (*rLen != 0x99) *rLen = 0x99;
             if (rBuffer) {
                 memset(rBuffer, 0, *rLen);
+                rBuffer[0] = 4; // firmware count
                 // bootFirmware
                 int i = 1;
                 memcpy(rBuffer + i, mainFirmware, sizeof(mainFirmware));
@@ -2157,6 +2158,7 @@ int WINAPI chcusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t 
             if (*rLen != 0x99) *rLen = 0x99;
             if (rBuffer) {
                 memset(rBuffer, 0, *rLen);
+                rBuffer[0] = 4; // firmware count
                 // bootFirmware
                 int i = 1;
                 memcpy(rBuffer + i, mainFirmware, sizeof(mainFirmware));
