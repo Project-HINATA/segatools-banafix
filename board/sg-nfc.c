@@ -190,6 +190,7 @@ static HRESULT sg_nfc_dispatch(
                 &res->felica_encap);
 
     case SG_NFC_CMD_MIFARE_AUTHENTICATE_A:
+    case SG_NFC_CMD_MIFARE_AUTHENTICATE_B:
     case SG_NFC_CMD_SEND_HEX_DATA:
         return sg_nfc_cmd_send_hex_data(nfc, &req->simple, &res->simple);
 
