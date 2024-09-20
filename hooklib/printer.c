@@ -89,13 +89,14 @@ int WINAPI chcusb_listupPrinterSN(uint64_t *rSerialArray);
 int WINAPI chcusb_selectPrinter(uint8_t printerId, uint16_t *rResult);
 int WINAPI chcusb_selectPrinterSN(uint64_t printerSN, uint16_t *rResult);
 int WINAPI chcusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t *rLen);
-int WINAPI chcusb_imageformat(
-    uint16_t format,
-    uint16_t ncomp,
-    uint16_t depth,
-    uint16_t width,
-    uint16_t height,
-    uint16_t *rResult);
+int WINAPI chcusb_imageformat(uint16_t format, uint16_t ncomp, uint16_t depth, uint16_t width, uint16_t height, uint8_t * image, uint16_t* rResult);
+int WINAPI chcusb_imageformat_330(
+        uint16_t format,
+        uint16_t ncomp,
+        uint16_t depth,
+        uint16_t width,
+        uint16_t height,
+        uint16_t *rResult);
 int __thiscall chcusb_setmtf(int32_t *mtf);
 int WINAPI chcusb_makeGamma(uint16_t k, uint8_t *intoneR, uint8_t *intoneG, uint8_t *intoneB);
 int WINAPI chcusb_setIcctable(
@@ -2302,6 +2303,17 @@ int WINAPI chcusb_getPrinterInfo(uint16_t tagNumber, uint8_t *rBuffer, uint32_t 
 }
 
 int WINAPI chcusb_imageformat(
+        uint16_t format,
+        uint16_t ncomp,
+        uint16_t depth,
+        uint16_t width,
+        uint16_t height,
+        uint8_t *image,
+        uint16_t *rResult) {
+    return chcusb_imageformat_330(format, ncomp, depth, width, height, rResult);
+}
+
+int WINAPI chcusb_imageformat_330(
     uint16_t format,
     uint16_t ncomp,
     uint16_t depth,
@@ -2994,7 +3006,7 @@ int CHCUSB_getPrinterToneCurve(const void *handle, uint16_t type, uint16_t numbe
 
 int CHCUSB_imageformat(const void *handle, uint16_t format, uint16_t ncomp, uint16_t depth, uint16_t width, uint16_t height, uint8_t *inputImage, uint16_t *rResult)
 {
-    return chcusb_imageformat(format, ncomp, depth, width, height, rResult);
+    return chcusb_imageformat(format, ncomp, depth, width, height, inputImage, rResult);
 }
 
 int CHCUSB_init(LPCSTR dllpath)
