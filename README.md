@@ -30,6 +30,8 @@ Loaders and hardware emulators for SEGA games that run on the Nu and ALLS platfo
   * SEGA World Drivers Championship 2019
 * WACCA
   * starting from WACCA
+* Kemono Friends
+  * Kemono Friends 3: Planet Tours
 
 ## End-users
 

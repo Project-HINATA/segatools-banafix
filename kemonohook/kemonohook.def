@@ -1,4 +1,4 @@
-LIBRARY fgohook
+LIBRARY kemonohook
 
 EXPORTS
     aime_io_get_api_version
@@ -11,14 +11,13 @@ EXPORTS
     amDllVideoGetVBiosVersion @4
     amDllVideoOpen @1
     amDllVideoSetResolution @3
-    fgo_io_get_api_version
-    fgo_io_get_gamebtns
-    fgo_io_get_analogs
-    fgo_io_get_opbtns
-    fgo_io_init
-    fgo_io_poll
-    fgo_io_led_init
-    fgo_io_led_set_colors
+    kemono_io_get_api_version
+    kemono_io_jvs_read_coin_counter
+    kemono_io_init
+    kemono_io_poll
+    kemono_io_led_init
+    kemono_io_led_set_colors
+    kemono_io_jvs_write_gpio
     fwdlusb_open
     fwdlusb_close
     fwdlusb_listupPrinter
@@ -44,7 +43,7 @@ EXPORTS
     chcusb_selectPrinter
     chcusb_selectPrinterSN
     chcusb_getPrinterInfo
-    chcusb_imageformat=chcusb_imageformat_330
+    chcusb_imageformat
     chcusb_setmtf
     chcusb_makeGamma
     chcusb_setIcctable
