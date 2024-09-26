@@ -34,6 +34,7 @@ static DWORD CALLBACK kemono_pre_startup(void) {
 
     /* Load config */
 
+    kemono_hook_cfg.aime.dll.path64 = true;
     kemono_hook_config_load(&kemono_hook_cfg, L".\\segatools.ini");
 
     /* Hook Win32 APIs */
