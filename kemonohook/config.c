@@ -12,19 +12,44 @@
 
 #include "platform/config.h"
 
+// Check windows
+#if _WIN32 || _WIN64
+    #if _WIN64
+        #define ENV64BIT
+    #else
+        #define ENV32BIT
+    #endif
+#endif
+
+// Check GCC
+#if __GNUC__
+    #if __x86_64__ || __ppc64__
+        #define ENV64BIT
+    #else
+        #define ENV32BIT
+    #endif
+#endif
+
 void kemono_dll_config_load(
         struct kemono_dll_config *cfg,
         const wchar_t *filename) {
     assert(cfg != NULL);
     assert(filename != NULL);
 
-    GetPrivateProfileStringW(
-            L"kemonoio",
-            L"path",
-            L"",
-            cfg->path,
-            _countof(cfg->path),
-            filename);
+    #if defined(ENV32BIT)
+        // Always empty, due to amdaemon being 64 bit in 32 bit mode
+        memset(cfg->path, 0, sizeof(cfg->path));
+    #elif defined(ENV64BIT)
+        GetPrivateProfileStringW(
+                L"kemonoio",
+                L"path",
+                L"",
+                cfg->path,
+                _countof(cfg->path),
+                filename);
+    #else
+        #error "Unknown environment"
+    #endif
 }
 
 void led15093_config_load(struct led15093_config *cfg, const wchar_t *filename)
