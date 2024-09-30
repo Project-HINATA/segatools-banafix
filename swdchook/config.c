@@ -30,7 +30,7 @@ void led15070_config_load(struct led15070_config *cfg, const wchar_t *filename)
     GetPrivateProfileStringW(
             L"led15070",
             L"boardNumber",
-            L"15070-02",
+            L"15070-04",
             tmpstr,
             _countof(tmpstr),
             filename);
@@ -66,6 +66,14 @@ void swdc_dll_config_load(
             filename);
 }
 
+void zinput_config_load(struct zinput_config *cfg, const wchar_t *filename)
+{
+    assert(cfg != NULL);
+    assert(filename != NULL);
+
+    cfg->enable = GetPrivateProfileIntW(L"zinput", L"enable", 1, filename);
+}
+
 void swdc_hook_config_load(
         struct swdc_hook_config *cfg,
         const wchar_t *filename)
@@ -79,14 +87,7 @@ void swdc_hook_config_load(
     zinput_config_load(&cfg->zinput, filename);
     dvd_config_load(&cfg->dvd, filename);
     io4_config_load(&cfg->io4, filename);
-    vfd_config_load(&cfg->vfd, filename);
+    ffb_config_load(&cfg->ffb, filename);
     led15070_config_load(&cfg->led15070, filename);
-}
-
-void zinput_config_load(struct zinput_config *cfg, const wchar_t *filename)
-{
-    assert(cfg != NULL);
-    assert(filename != NULL);
-
-    cfg->enable = GetPrivateProfileIntW(L"zinput", L"enable", 1, filename);
+    vfd_config_load(&cfg->vfd, filename);
 }

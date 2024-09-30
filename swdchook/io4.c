@@ -177,6 +177,8 @@ static HRESULT swdc_io4_poll(void *ctx, struct io4_state *state) {
 
 static HRESULT swdc_io4_write_gpio(uint8_t* payload, size_t len) 
 {
+    assert(swdc_dll.led_set_leds != NULL);
+
     // Just fast fail if there aren't enough bytes in the payload
     if (len < 3) 
         return S_OK;
