@@ -5,7 +5,9 @@
 
      USB:   837-15257 "Type 4" I/O Board
     COM1:   838-15069 MOTOR DRIVE BD RS232/422 Board
-    COM2:   837-15070-02 IC BD LED Controller Board
+    COM2:   837-15070-02 IC BD LED Controller Board (DIPSW2 OFF)
+            OR
+            837-15070-04 IC BD LED Controller Board (DIPSW2 ON)
     COM3:   837-15286 "Gen 2" Aime Reader (DIPSW2 OFF)
             OR
             837-15396 "Gen 3" Aime Reader (DIPSW2 ON)

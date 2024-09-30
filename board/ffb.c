@@ -138,6 +138,7 @@ static HRESULT ffb_req_dispatch(const union ffb_req_any *req)
         return ffb_req_rumble(req->bytes);
     case FFB_CMD_DAMPER:
         return ffb_req_damper(req->bytes);
+
     /* There are some test mode specfic commands which doesn't seem to be used in
        game at all. The same is true for the initialization phase. */
 
@@ -206,7 +207,7 @@ static HRESULT ffb_req_rumble(const uint8_t *bytes)
         max_period = period;
     }
 
-    // dprintf("FFB: Rumble Period: %d (Min %d, Max %d), Strength: %d (Max: %d)\n", period, min_period, max_period, force, max_rumble);
+    // dprintf("FFB: Rumble Period: %d (Max %d), Strength: %d (Max: %d)\n", period, max_period, force, max_rumble);
     if (ffb_ops->rumble != NULL) {
         ffb_ops->rumble(force, period);
     }
