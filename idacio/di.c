@@ -79,7 +79,6 @@ static uint8_t idac_di_gear[6];
 static bool idac_di_use_pedals;
 static bool idac_di_reverse_brake_axis;
 static bool idac_di_reverse_accel_axis;
-static uint16_t idac_di_center_spring_strength;
 
 HRESULT idac_di_init(
         const struct idac_di_config *cfg,

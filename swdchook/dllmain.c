@@ -31,6 +31,7 @@
 #include "swdchook/config.h"
 #include "swdchook/swdc-dll.h"
 #include "swdchook/io4.h"
+#include "swdchook/ffb.h"
 
 #include "platform/platform.h"
 
@@ -86,6 +87,19 @@ static DWORD CALLBACK swdc_pre_startup(void)
     }
 
     hr = swdc_io4_hook_init(&swdc_hook_cfg.io4);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
+    hr = swdc_ffb_hook_init(&swdc_hook_cfg.ffb, 1);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+   
+    hr = led15070_hook_init(&swdc_hook_cfg.led15070, swdc_dll.led_init, 
+        swdc_dll.led_set_fet_output, NULL, swdc_dll.led_gs_update, 2, 1);
 
     if (FAILED(hr)) {
         goto fail;

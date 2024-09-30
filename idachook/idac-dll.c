@@ -51,7 +51,7 @@ const struct dll_bind_sym idac_dll_syms[] = {
     }, {
         .sym = "idac_io_ffb_damper",
         .off = offsetof(struct idac_dll, ffb_damper),
-    },
+    }
 };
 
 struct idac_dll idac_dll;
