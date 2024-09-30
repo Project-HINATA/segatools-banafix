@@ -28,6 +28,7 @@
 #include "idachook/config.h"
 #include "idachook/idac-dll.h"
 #include "idachook/io4.h"
+#include "idachook/ffb.h"
 #include "idachook/zinput.h"
 
 #include "platform/platform.h"
@@ -79,6 +80,12 @@ static DWORD CALLBACK idac_pre_startup(void)
     }
 
     hr = idac_io4_hook_init(&idac_hook_cfg.io4);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
+    hr = idac_ffb_hook_init(&idac_hook_cfg.ffb, 1);
 
     if (FAILED(hr)) {
         goto fail;
