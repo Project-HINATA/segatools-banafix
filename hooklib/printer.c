@@ -83,7 +83,7 @@ int WINAPI fwdlusb_getErrorLog(uint16_t index, uint8_t *rData, uint16_t *rResult
 
 int WINAPI chcusb_MakeThread(uint16_t maxCount);
 int WINAPI chcusb_open(uint16_t *rResult);
-__stdcall void chcusb_close();
+void WINAPI chcusb_close();
 int WINAPI chcusb_ReleaseThread(uint16_t *rResult);
 int WINAPI chcusb_listupPrinter(uint8_t *rIdArray);
 int WINAPI chcusb_listupPrinterSN(uint64_t *rSerialArray);
