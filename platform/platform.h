@@ -14,6 +14,7 @@
 #include "platform/pcbid.h"
 #include "platform/vfs.h"
 #include "platform/system.h"
+#include "platform/opensslpatch.h"
 
 struct platform_config {
     struct amvideo_config amvideo;
