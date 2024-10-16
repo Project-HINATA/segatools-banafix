@@ -29,7 +29,7 @@ HRESULT platform_hook_init(
     assert(platform_id != NULL);
     assert(redir_mod != NULL);
 
-    ChecknPatch();
+    openssl_patch_apply();
 
     hr = amvideo_hook_init(&cfg->amvideo, redir_mod);
 
