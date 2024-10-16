@@ -4,7 +4,7 @@
 #include "util/dprintf.h"
 #include "platform/opensslpatch.h"
 
-static char* GetCpuName() {
+static char* get_cpu_name() {
     FILE* fp;
     char buffer[128];
     char* cpu_info = NULL;
@@ -30,7 +30,7 @@ static char* GetCpuName() {
     return cpu_info;
 }
 
-static int CheckCpu(char* cpuname) {
+static int check_cpu(char* cpuname) {
     if (strstr(cpuname, "Core 2 Duo") || strstr(cpuname, "Core 2 Quad") ||
         (strstr(cpuname, "Pentium") && !strstr(cpuname, "G")) || strstr(cpuname, "Celeron")) {
         return 0;
@@ -59,14 +59,14 @@ static int CheckCpu(char* cpuname) {
     return 0;
 }
 
-static void OpenSSLPatch(void) {
+static void openssl_patch(void) {
     const char* variablename = "OPENSSL_ia32cap";
     const char* variablevalue = "~0x20000000";  
 
     HKEY hKey;
     if (RegOpenKeyExA(HKEY_CURRENT_USER, "Environment", 0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS) {
         if (RegSetValueExA(hKey, variablename, 0, REG_SZ, (const BYTE*)variablevalue, strlen(variablevalue) + 1) == ERROR_SUCCESS) {
-            dprintf("OpenSSL Patch: Applied successfully : Set the user environment variable %s to %s\n", variablename, variablevalue);
+            dprintf("OpenSSL Patch: Applied successfully, set the user environment variable %s to %s\n", variablename, variablevalue);
         } else {
             dprintf("OpenSSL Patch: Error: Failed to set the user environment variable.\n");
         }
@@ -80,14 +80,14 @@ static void OpenSSLPatch(void) {
 }
 
 int openssl_patch_apply(void) {  
-    char* cpuname = GetCpuName();
+    char* cpuname = get_cpu_name();
     if (cpuname == NULL) {
         dprintf("OpenSSL Patch: Error: Unable to detect CPU.\n");
         return 1;  
     }
 
-    if (CheckCpu(cpuname)) {
-        OpenSSLPatch();
+    if (check_cpu(cpuname)) {
+        openssl_patch();
     } 
     free(cpuname);  
     return 0;  
