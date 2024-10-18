@@ -360,15 +360,13 @@ void epay_config_load(struct epay_config *cfg, const wchar_t *filename)
 
 void openssl_patch_config_load(struct openssl_patch_config *cfg, const wchar_t *filename)
 {
-    // Ensure the config structure and filename are valid
     assert(cfg != NULL);
     assert(filename != NULL);
 
-    // Read the "enable" key from the "[openssl]" section of the configuration file
     cfg->enable = GetPrivateProfileIntW(
-        L"openssl",  // Section name
-        L"enable",   // Key name
-        1,           // Default value if the key is not found (disabled by default)
-        filename     // INI file name
+        L"openssl",  
+        L"enable",   
+        1,           
+        filename     
     );
 }
