@@ -29,6 +29,7 @@ struct platform_config {
     struct nusec_config nusec;
     struct vfs_config vfs;
     struct system_config system;
+    struct openssl_patch_config openssl;
 };
 
 HRESULT platform_hook_init(

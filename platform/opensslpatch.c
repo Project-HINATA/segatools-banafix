@@ -79,16 +79,25 @@ static void openssl_patch(void) {
     }
 }
 
-int openssl_patch_apply(void) {  
+HRESULT openssl_patch_apply(const struct openssl_patch_config *cfg) {  
+    HRESULT hr;
+
+    assert(cfg != NULL);
+
+    if (!cfg->enable) {
+        return S_FALSE;
+    }
+
     char* cpuname = get_cpu_name();
     if (cpuname == NULL) {
         dprintf("OpenSSL Patch: Error: Unable to detect CPU.\n");
-        return 1;  
+        return S_FALSE;
     }
 
     if (check_cpu(cpuname)) {
         openssl_patch();
     } 
+    
     free(cpuname);  
-    return 0;  
+    return S_OK;
 }
