@@ -1,59 +1,26 @@
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
+#include <intrin.h>  
 #include "util/dprintf.h"
 #include "platform/opensslpatch.h"
 
-static char* get_cpu_name() {
-    FILE* fp;
-    char buffer[128];
-    char* cpu_info = NULL;
+int check_cpu() {
+    int cpui[4] = {0};
 
-    fp = _popen("wmic cpu get Name", "r");
+    __cpuid(cpui, 0);
+    int nIds_ = cpui[0];
 
-    if (fp == NULL) {
-        return NULL;
-    }
+    char vendor[0x20] = {0};
+    *((int*)vendor) = cpui[1];
+    *((int*)(vendor + 4)) = cpui[3];
+    *((int*)(vendor + 8)) = cpui[2];
 
-    fgets(buffer, sizeof(buffer), fp);
+    int isIntel = (strcmp(vendor, "GenuineIntel") == 0);
 
-    if (fgets(buffer, sizeof(buffer), fp) != NULL) {
-        cpu_info = (char*)malloc(strlen(buffer) + 1);  
-        strcpy(cpu_info, buffer);  
-    }
-    _pclose(fp);
-
-    if (cpu_info != NULL) {
-        cpu_info[strcspn(cpu_info, "\r\n")] = 0;
-    }
-
-    return cpu_info;
-}
-
-static int check_cpu(char* cpuname) {
-    if (strstr(cpuname, "Core 2 Duo") || strstr(cpuname, "Core 2 Quad") ||
-        (strstr(cpuname, "Pentium") && !strstr(cpuname, "G")) || strstr(cpuname, "Celeron")) {
-        return 0;
-    }
-
-    if (strstr(cpuname, "Intel")) {
-        char* part = strtok(cpuname, " ");
-        while (part != NULL) {
-            if (part[0] == 'i' && strlen(part) >= 4) {
-                int gen = atoi(part + 1);  
-                if (gen >= 10) {
-                    dprintf("OpenSSL Patch: Intel Gen 10+ CPU Detected: %s\n", cpuname);
-                    return 1;
-                }
-            } else if (part[0] == 'G' && strlen(part) >= 4) {
-                int pentium = atoi(part + 1);
-                if (pentium / 1000 >= 6) {
-                    dprintf("OpenSSL Patch: Intel Gen 10+ CPU Detected: %s\n", cpuname);
-                    return 1;
-                }
-            }
-            part = strtok(NULL, " ");
-        }
+    if (isIntel && nIds_ >= 7) {
+        __cpuidex(cpui, 7, 0);
+        return (cpui[1] & (1 << 29)) != 0; 
     }
 
     return 0;
@@ -88,16 +55,9 @@ HRESULT openssl_patch_apply(const struct openssl_patch_config *cfg) {
         return S_FALSE;
     }
 
-    char* cpuname = get_cpu_name();
-    if (cpuname == NULL) {
-        dprintf("OpenSSL Patch: Error: Unable to detect CPU.\n");
-        return S_FALSE;
+    if (check_cpu()) {
+        openssl_patch();
     }
 
-    if (check_cpu(cpuname)) {
-        openssl_patch();
-    } 
-    
-    free(cpuname);  
     return S_OK;
 }
