@@ -26,23 +26,36 @@ int check_cpu() {
     return 0;
 }
 
+//Set User's Environment variable via registry
+// static void openssl_patch(void) {
+//     const char* variablename = "OPENSSL_ia32cap";
+//     const char* variablevalue = "~0x20000000";  
+
+//     HKEY hKey;
+//     if (RegOpenKeyExA(HKEY_CURRENT_USER, "Environment", 0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS) {
+//         if (RegSetValueExA(hKey, variablename, 0, REG_SZ, (const BYTE*)variablevalue, strlen(variablevalue) + 1) == ERROR_SUCCESS) {
+//             dprintf("OpenSSL Patch: Applied successfully, set the user environment variable %s to %s\n", variablename, variablevalue);
+//         } else {
+//             dprintf("OpenSSL Patch: Error: Failed to set the user environment variable.\n");
+//         }
+
+//         RegCloseKey(hKey);
+
+//         SendMessageTimeoutA(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM)"Environment", SMTO_ABORTIFHUNG, 5000, NULL);
+//     } else {
+//         dprintf("OpenSSL Patch: Error: Failed to open the user environment registry key.\n");
+//     }
+// }
+
+//Set environment variable for current process
 static void openssl_patch(void) {
-    const char* variablename = "OPENSSL_ia32cap";
-    const char* variablevalue = "~0x20000000";  
+    const wchar_t* variablename = L"OPENSSL_ia32cap";
+    const wchar_t* variablevalue = L"~0x20000000";
 
-    HKEY hKey;
-    if (RegOpenKeyExA(HKEY_CURRENT_USER, "Environment", 0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS) {
-        if (RegSetValueExA(hKey, variablename, 0, REG_SZ, (const BYTE*)variablevalue, strlen(variablevalue) + 1) == ERROR_SUCCESS) {
-            dprintf("OpenSSL Patch: Applied successfully, set the user environment variable %s to %s\n", variablename, variablevalue);
-        } else {
-            dprintf("OpenSSL Patch: Error: Failed to set the user environment variable.\n");
-        }
-
-        RegCloseKey(hKey);
-
-        SendMessageTimeoutA(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM)"Environment", SMTO_ABORTIFHUNG, 5000, NULL);
+    if (SetEnvironmentVariableW(variablename, variablevalue)) {
+        dprintf("OpenSSL Patch: Applied successfully, set the environment variable %ls to %ls\n", variablename, variablevalue);
     } else {
-        dprintf("OpenSSL Patch: Error: Failed to open the user environment registry key.\n");
+        dprintf("OpenSSL Patch: Error: Failed to set the environment variable.\n");
     }
 }
 
