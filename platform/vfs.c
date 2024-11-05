@@ -107,6 +107,20 @@ HRESULT vfs_hook_init(const struct vfs_config *config, const char* game_id)
 
     if (config->option[0] == L'\0') {
         dprintf("Vfs: WARNING: OPTION path not specified in INI file\n");
+    } else if (!PathFileExistsW(config->option)) {
+        dprintf("Vfs: FATAL: OPTION path does not exist\n");
+        dprintf("            Configured: \"%ls\"\n", config->option);
+        GetFullPathNameW(config->option, _countof(temp), temp, NULL);
+        dprintf("            Expanded:   \"%ls\"\n", temp);
+
+        return E_FAIL;
+    } else if (!(GetFileAttributesW(config->option) & FILE_ATTRIBUTE_DIRECTORY)) {
+        dprintf("Vfs: FATAL: OPTION path doesn't point to a directory\n");
+        dprintf("            Configured: \"%ls\"\n", config->option);
+        GetFullPathNameW(config->option, _countof(temp), temp, NULL);
+        dprintf("            Expanded:   \"%ls\"\n", temp);
+
+        return E_FAIL;
     }
 
     home_ok = GetEnvironmentVariableW(
@@ -516,7 +530,7 @@ static __thiscall wchar_t* hook_System_getAppRootPath()
     wcscpy_s(path, MAX_PATH, vfs_config.appdata);
     wcscat_s(path, MAX_PATH, game);
     wcscat_s(path, MAX_PATH, L"\\");
-    
+
     return path;
 }
 
