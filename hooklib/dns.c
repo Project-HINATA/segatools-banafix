@@ -670,7 +670,7 @@ DWORD WINAPI hook_send(SOCKET s, const char* buf, int len, int flags) {
                 char *host_value_end = strstr(host_value_start, "\r\n");
                 if (host_value_end != NULL) {
                     int value_len = host_value_end - host_value_start;
-                    char host_value[value_len + 1];
+                    char* host_value = (char*)malloc(value_len + 1);
                     strncpy(host_value, host_value_start, value_len);
                     host_value[value_len] = '\0';
 
@@ -685,6 +685,7 @@ DWORD WINAPI hook_send(SOCKET s, const char* buf, int len, int flags) {
                             break;
                         }
                     }
+                    free(host_value);
                 }
                 len = (int)strlen(new_buf);
             }
