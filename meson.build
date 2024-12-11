@@ -34,6 +34,7 @@ if cc.get_id() != 'msvc'
         '-static-libgcc',
         # '-ggdb',  # Add debug information
         '-lcrypt32', # Bcrypt needed for prashook
+        '-lws2_32', # WSAHtons / WSANtohs needed for porthook
         # '-Wl,-s',  # Strip debug symbols
         language: 'c',
     )

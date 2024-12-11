@@ -203,6 +203,24 @@ Default: `0`
 
 Replace the HOST field in HTTP request headers with the settings above. This may help bypass network restrictions in some regions.
 
+### `startupPort`
+
+Default: `0` (i.e. no operation will perform)
+
+Overrides the port of connections to the `startup` server. The current implementation affects every TCP connection to the port 80.
+
+### `billingPort`
+
+Default: `0` (i.e. no operation will perform)
+
+Overrides the port of connections to the `billing` server. The current implementation affects every TCP connection to the port 8443.
+
+### `aimedbPort`
+
+Default: `0` (i.e. no operation will perform)
+
+Overrides the port of connections to the `aimedb` server. The current implementation affects every TCP connection to the port 22345.
+
 ## `[ds]`
 
 Controls emulation of the "DS (Dallas Semiconductor) EEPROM" chip on the AMEX
