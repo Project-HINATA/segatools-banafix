@@ -36,6 +36,7 @@
 #include "platform/platform.h"
 
 #include "util/dprintf.h"
+#include "util/env.h"
 
 static HMODULE idac_hook_mod;
 static process_entry_t idac_startup;
@@ -49,7 +50,7 @@ static DWORD CALLBACK idac_pre_startup(void)
 
     /* Config load */
 
-    idac_hook_config_load(&idac_hook_cfg, L".\\segatools.ini");
+    idac_hook_config_load(&idac_hook_cfg, get_config_path());
 
     /* Hook Win32 APIs */
 
@@ -109,7 +110,7 @@ static DWORD CALLBACK idac_pre_startup(void)
 
     /* Initialize debug helpers */
 
-    spike_hook_init(L".\\segatools.ini");
+    spike_hook_init(get_config_path());
 
     dprintf("---  End  idac_pre_startup ---\n");
 

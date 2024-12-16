@@ -8,6 +8,7 @@
 #include "fgoio/fgoio.h"
 #include "fgoio/config.h"
 #include "util/dprintf.h"
+#include "util/env.h"
 
 static uint8_t fgo_opbtn;
 static uint8_t fgo_gamebtn;
@@ -23,7 +24,7 @@ uint16_t fgo_io_get_api_version(void)
 
 HRESULT fgo_io_init(void)
 {
-    fgo_io_config_load(&fgo_io_cfg, L".\\segatools.ini");
+    fgo_io_config_load(&fgo_io_cfg, get_config_path());
 
     return S_OK;
 }

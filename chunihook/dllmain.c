@@ -36,6 +36,7 @@
 #include "platform/platform.h"
 
 #include "util/dprintf.h"
+#include "util/env.h"
 
 static HMODULE chuni_hook_mod;
 static process_entry_t chuni_startup;
@@ -71,7 +72,7 @@ static DWORD CALLBACK chuni_pre_startup(void)
 
     /* Config load */
 
-    chuni_hook_config_load(&chuni_hook_cfg, L".\\segatools.ini");
+    chuni_hook_config_load(&chuni_hook_cfg, get_config_path());
 
     /* Hook Win32 APIs */
 
@@ -129,7 +130,7 @@ static DWORD CALLBACK chuni_pre_startup(void)
 
     /* Initialize debug helpers */
 
-    spike_hook_init(L".\\segatools.ini");
+    spike_hook_init(get_config_path());
 
     dprintf("---  End  chuni_pre_startup ---\n");
 

@@ -12,6 +12,7 @@
 
 #include "util/dprintf.h"
 #include "util/str.h"
+#include "util/env.h"
 
 static struct swdc_io_config swdc_io_cfg;
 static const struct swdc_io_backend *swdc_io_backend;
@@ -38,7 +39,7 @@ HRESULT swdc_io_init(void)
         return hr;
     }
 
-    swdc_io_config_load(&swdc_io_cfg, L".\\segatools.ini");
+    swdc_io_config_load(&swdc_io_cfg, get_config_path());
 
     if (wstr_ieq(swdc_io_cfg.mode, L"dinput")) {
         hr = swdc_di_init(&swdc_io_cfg.di, inst, &swdc_io_backend);

@@ -7,6 +7,7 @@
 
 #include "divaio/divaio.h"
 #include "divaio/config.h"
+#include "util/env.h"
 
 static unsigned int __stdcall diva_io_slider_thread_proc(void *ctx);
 
@@ -23,7 +24,7 @@ uint16_t diva_io_get_api_version(void)
 
 HRESULT diva_io_jvs_init(void)
 {
-    diva_io_config_load(&diva_io_cfg, L".\\segatools.ini");
+    diva_io_config_load(&diva_io_cfg, get_config_path());
 
     return S_OK;
 }

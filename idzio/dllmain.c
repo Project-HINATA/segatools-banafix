@@ -12,6 +12,7 @@
 
 #include "util/dprintf.h"
 #include "util/str.h"
+#include "util/env.h"
 
 static struct idz_io_config idz_io_cfg;
 static const struct idz_io_backend *idz_io_backend;
@@ -39,7 +40,7 @@ HRESULT idz_io_jvs_init(void)
         return hr;
     }
 
-    idz_io_config_load(&idz_io_cfg, L".\\segatools.ini");
+    idz_io_config_load(&idz_io_cfg, get_config_path());
 
     if (wstr_ieq(idz_io_cfg.mode, L"dinput")) {
         hr = idz_di_init(&idz_io_cfg.di, inst, &idz_io_backend);

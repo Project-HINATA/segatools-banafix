@@ -10,6 +10,7 @@
 #include "chuniio/ledoutput.h"
 
 #include "util/dprintf.h"
+#include "util/env.h"
 
 static unsigned int __stdcall chuni_io_slider_thread_proc(void *ctx);
 
@@ -27,7 +28,7 @@ uint16_t chuni_io_get_api_version(void)
 
 HRESULT chuni_io_jvs_init(void)
 {
-    chuni_io_config_load(&chuni_io_cfg, L".\\segatools.ini");
+    chuni_io_config_load(&chuni_io_cfg, get_config_path());
     
     led_init_mutex = CreateMutex(
         NULL,              // default security attributes

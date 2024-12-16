@@ -5,6 +5,7 @@
 
 #include "mai2io/mai2io.h"
 #include "mai2io/config.h"
+#include "util/env.h"
 
 static uint8_t mai2_opbtn;
 static uint16_t mai2_player1_btn;
@@ -19,7 +20,7 @@ uint16_t mai2_io_get_api_version(void)
 
 HRESULT mai2_io_init(void)
 {
-    mai2_io_config_load(&mai2_io_cfg, L".\\segatools.ini");
+    mai2_io_config_load(&mai2_io_cfg, get_config_path());
 
     return S_OK;
 }

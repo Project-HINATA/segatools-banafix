@@ -39,6 +39,7 @@
 #include "unityhook/hook.h"
 
 #include "util/dprintf.h"
+#include "util/env.h"
 
 static HMODULE mai2_hook_mod;
 static process_entry_t mai2_startup;
@@ -54,7 +55,7 @@ static DWORD CALLBACK mai2_pre_startup(void)
 
     /* Load config */
 
-    mai2_hook_config_load(&mai2_hook_cfg, L".\\segatools.ini");
+    mai2_hook_config_load(&mai2_hook_cfg, get_config_path());
 
     /* Hook Win32 APIs */
 
@@ -106,7 +107,7 @@ static DWORD CALLBACK mai2_pre_startup(void)
 
     /* Initialize debug helpers */
 
-    spike_hook_init(L".\\segatools.ini");
+    spike_hook_init(get_config_path());
 
     dprintf("---  End  mai2_pre_startup ---\n");
 

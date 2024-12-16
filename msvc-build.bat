@@ -31,7 +31,7 @@ if /I "%1"=="build" (
     set VSVARSALL=!VSVARSALL!
     set MESON=!MESON!
 
-    call :build
+    call :build %2
 
     echo.
     echo Build done!
@@ -42,9 +42,12 @@ if /I "%1"=="zip" (
     exit /b
 )
 
-echo %~nx0 [action]
+echo %~nx0 [action] [switch]
 echo     build: Build the for both x86 and x64
+echo        /PROJECTONLY: Only create projects
+echo.
 echo     zip: Make zip file
+echo.
 exit /b
 
 rem This should works for Visual Studio 2017+
@@ -85,6 +88,7 @@ rem This should works for Visual Studio 2017+
 )
 
 :detect-meson (
+    set MESON=""
     for /f "tokens=* usebackq" %%i in (`where meson`) do set MESON="%%i"
     if not exist %MESON% (
         exit /b 1
@@ -98,28 +102,32 @@ rem This should works for Visual Studio 2017+
         call %VSVARSALL% x64
 
         if exist %BUILD_DIR_64% (
-            %MESON% setup %BUILD_DIR_64% --backend vs --buildtype release --reconfigure
+            %MESON% setup %BUILD_DIR_64% --buildtype release --reconfigure
         ) else (
             %MESON% setup %BUILD_DIR_64% --backend vs --buildtype release
         )
 
-        pushd %BUILD_DIR_64%
-        msbuild /m /p:Configuration=release /p:Platform=x64 segatools.sln
-        popd
+        if /I not "%1"=="/PROJECTONLY" (
+            pushd %BUILD_DIR_64%
+            msbuild /m /p:Configuration=release /p:Platform=x64 segatools.sln
+            popd
+        )
     )
 
     :build_x86 (
         call %VSVARSALL% x86
 
         if exist %BUILD_DIR_32% (
-            %MESON% setup %BUILD_DIR_32% --backend vs --buildtype release --reconfigure
+            %MESON% setup %BUILD_DIR_32% --buildtype release --reconfigure
         ) else (
             %MESON% setup %BUILD_DIR_32% --backend vs --buildtype release
         )
 
-        pushd %BUILD_DIR_32%
-        msbuild /m /p:Configuration=release /p:Platform=Win32 segatools.sln
-        popd
+        if /I not "%1"=="/PROJECTONLY" (
+            pushd %BUILD_DIR_32%
+            msbuild /m /p:Configuration=release /p:Platform=Win32 segatools.sln
+            popd
+        )
     )
 
     :end (

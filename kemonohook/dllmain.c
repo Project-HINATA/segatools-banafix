@@ -22,6 +22,7 @@
 #include "unityhook/hook.h"
 
 #include "util/dprintf.h"
+#include "util/env.h"
 
 static HMODULE kemono_hook_mod;
 static process_entry_t kemono_startup;
@@ -35,7 +36,7 @@ static DWORD CALLBACK kemono_pre_startup(void) {
     /* Load config */
 
     kemono_hook_cfg.aime.dll.path64 = true;
-    kemono_hook_config_load(&kemono_hook_cfg, L".\\segatools.ini");
+    kemono_hook_config_load(&kemono_hook_cfg, get_config_path());
 
     /* Hook Win32 APIs */
 
@@ -107,7 +108,7 @@ static DWORD CALLBACK kemono_pre_startup(void) {
 
     /* Initialize debug helpers */
 
-    spike_hook_init(L".\\segatools.ini");
+    spike_hook_init(get_config_path());
 
     dprintf("---  End  kemono_pre_startup ---\n");
 
