@@ -36,7 +36,6 @@ static int is_env_variable_set(const char* variablename, const char* expectedval
     return 0;
 }
 
-//Set User's Environment variable via registry
 static void openssl_patch(void) {
     const char* variablename = "OPENSSL_ia32cap";
     const char* variablevalue = "~0x20000000";
@@ -63,18 +62,6 @@ static void openssl_patch(void) {
         dprintf("OpenSSL Patch: Error: Failed to open the user environment registry key.\n");
     }
 }
-
-//Set environment variable for current process
-// static void openssl_patch(void) {
-//     const wchar_t* variablename = L"OPENSSL_ia32cap";
-//     const wchar_t* variablevalue = L"~0x20000000";
-
-//     if (SetEnvironmentVariableW(variablename, variablevalue)) {
-//         dprintf("OpenSSL Patch: Applied successfully, set the environment variable %ls to %ls\n", variablename, variablevalue);
-//     } else {
-//         dprintf("OpenSSL Patch: Error: Failed to set the environment variable.\n");
-//     }
-// }
 
 HRESULT openssl_patch_apply(const struct openssl_patch_config *cfg) {  
     HRESULT hr;
