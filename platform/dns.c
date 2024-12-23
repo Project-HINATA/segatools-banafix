@@ -20,6 +20,10 @@ HRESULT dns_platform_hook_init(const struct dns_config *cfg)
         http_hook_init();
     }
 
+    if(cfg->startupPort || cfg->billingPort || cfg->aimedbPort){
+        port_hook_init(cfg->startupPort, cfg->billingPort, cfg->aimedbPort);
+    }
+
     hr = dns_hook_push(L"tenporouter.loc", cfg->router);
 
     if (FAILED(hr)) {
@@ -112,40 +116,40 @@ HRESULT dns_platform_hook_init(const struct dns_config *cfg)
     if (FAILED(hr)) {
         return hr;
     }
-    
+
     // WAHLAP PowerOn
     hr = dns_hook_push(L"at.sys-all.cn", cfg->startup);
 
     if (FAILED(hr)) {
         return hr;
     }
-    
+
     hr = dns_hook_push(L"at.sys-allnet.cn", cfg->startup);
 
     if (FAILED(hr)) {
         return hr;
     }
-    
+
     // WAHLAP WeChat AimeDB Server
     hr = dns_hook_push(L"ai.sys-all.cn", cfg->aimedb);
 
     if (FAILED(hr)) {
         return hr;
     }
-    
+
     hr = dns_hook_push(L"ai.sys-allnet.cn", cfg->aimedb);
 
     if (FAILED(hr)) {
         return hr;
     }
-    
+
     // WAHLAP Billing
     hr = dns_hook_push(L"bl.sys-all.cn", cfg->billing);
 
     if (FAILED(hr)) {
         return hr;
     }
-    
+
     hr = dns_hook_push(L"bl.sys-allnet.cn", cfg->billing);
 
     if (FAILED(hr)) {

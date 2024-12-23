@@ -123,6 +123,10 @@ void dns_config_load(struct dns_config *cfg, const wchar_t *filename)
             filename);
 
     cfg->replaceHost = GetPrivateProfileIntW(L"dns", L"replaceHost", 0, filename);
+
+    cfg->startupPort = GetPrivateProfileIntW(L"dns", L"startupPort", 0, filename);
+    cfg->billingPort = GetPrivateProfileIntW(L"dns", L"billingPort", 0, filename);
+    cfg->aimedbPort = GetPrivateProfileIntW(L"dns", L"aimedbPort", 0, filename);
 }
 
 void hwmon_config_load(struct hwmon_config *cfg, const wchar_t *filename)
