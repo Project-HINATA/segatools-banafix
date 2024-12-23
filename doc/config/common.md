@@ -42,6 +42,12 @@ Default: `1`
 Enable Aime card reader assembly emulation. Disable to use a real SEGA Aime
 reader (COM port number varies by game).
 
+### `portNo`
+
+Default: (game specific)
+
+Sets the COM port to use for the aime card reader assembly.
+
 ### `highBaud`
 
 Default: `1`

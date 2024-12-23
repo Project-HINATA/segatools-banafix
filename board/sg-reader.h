@@ -9,12 +9,13 @@
 struct aime_config {
     struct aime_dll_config dll;
     bool enable;
+    unsigned int port_no;
     bool high_baudrate;
     unsigned int gen;
 };
 
 HRESULT sg_reader_hook_init(
         const struct aime_config *cfg,
-        unsigned int port_no,
+        unsigned int default_port_no,
         unsigned int gen,
         HINSTANCE self);
