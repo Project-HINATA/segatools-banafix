@@ -14,6 +14,7 @@
 #include "platform/platform.h"
 #include "platform/vfs.h"
 #include "platform/system.h"
+#include "platform/opensslpatch.h"
 
 HRESULT platform_hook_init(
         const struct platform_config *cfg,
@@ -27,6 +28,12 @@ HRESULT platform_hook_init(
     assert(game_id != NULL);
     assert(platform_id != NULL);
     assert(redir_mod != NULL);
+
+    hr = openssl_patch_apply(&cfg->openssl);
+
+    if (FAILED(hr)) {
+        return hr;
+    }
 
     hr = amvideo_hook_init(&cfg->amvideo, redir_mod);
 
