@@ -1,7 +1,10 @@
 #include <windows.h>
+
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <intrin.h>  
+
 #include "util/dprintf.h"
 #include "platform/opensslpatch.h"
 

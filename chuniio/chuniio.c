@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "chuniio/chuniio.h"
 #include "chuniio/config.h"
@@ -93,7 +94,7 @@ void chuni_io_jvs_poll(uint8_t *opbtn, uint8_t *beams)
     } else {
         // Use actual AIR
         for (i = 0; i < 6; i++) {
-            if(GetAsyncKeyState(chuni_io_cfg.vk_ir[i]) & 0x8000) {
+            if (GetAsyncKeyState(chuni_io_cfg.vk_ir[i]) & 0x8000) {
                 *beams |= (1 << i);
             } else {
                 *beams &= ~(1 << i);

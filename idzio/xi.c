@@ -212,7 +212,7 @@ static void idz_xi_jvs_read_analogs(struct idz_io_analog_state *out)
     left = calculate_norm_steering(left, idz_xi_left_stick_deadzone, idz_xi_linear_steering);
     right = calculate_norm_steering(right, idz_xi_right_stick_deadzone, idz_xi_linear_steering);
 
-    if(idz_xi_single_stick_steering) {
+    if (idz_xi_single_stick_steering) {
         out->wheel = left;
     } else {
         out->wheel = (left + right) / 2;

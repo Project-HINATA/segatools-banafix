@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "hook/hr.h"
@@ -317,7 +318,7 @@ HRESULT dns_hook_push(const wchar_t *from_src, const wchar_t *to_src)
         goto end;
     }
 
-    if(to_src != NULL) {
+    if (to_src != NULL) {
         to = _wcsdup(to_src);
 
         if (to == NULL) {
@@ -397,7 +398,7 @@ static DNS_STATUS WINAPI hook_DnsQuery_A(
         pos = &dns_hook_entries[i];
 
         if (match_domain(wstr, pos->from)) {
-            if(pos->to == NULL) {
+            if (pos->to == NULL) {
                 LeaveCriticalSection(&dns_hook_lock);
                 hr = HRESULT_FROM_WIN32(DNS_ERROR_RCODE_NAME_ERROR);
 
@@ -461,7 +462,7 @@ static DNS_STATUS WINAPI hook_DnsQuery_W(
         pos = &dns_hook_entries[i];
 
         if (match_domain(pszName, pos->from)) {
-            if(pos->to == NULL) {
+            if (pos->to == NULL) {
                 LeaveCriticalSection(&dns_hook_lock);
                 return HRESULT_FROM_WIN32(DNS_ERROR_RCODE_NAME_ERROR);
             }
@@ -505,7 +506,7 @@ static DNS_STATUS WINAPI hook_DnsQueryEx(
         pos = &dns_hook_entries[i];
 
         if (match_domain(pRequest->QueryName, pos->from)) {
-            if(pos->to == NULL) {
+            if (pos->to == NULL) {
                 LeaveCriticalSection(&dns_hook_lock);
                 return HRESULT_FROM_WIN32(DNS_ERROR_RCODE_NAME_ERROR);
             }
@@ -572,7 +573,7 @@ static int WSAAPI hook_getaddrinfo(
         pos = &dns_hook_entries[i];
 
         if (match_domain(wstr, pos->from)) {
-            if(pos->to == NULL) {
+            if (pos->to == NULL) {
                 LeaveCriticalSection(&dns_hook_lock);
                 result = EAI_NONAME;
 
@@ -626,7 +627,7 @@ static HINTERNET WINAPI hook_WinHttpConnect(
         pos = &dns_hook_entries[i];
 
         if (match_domain(pwszServerName, pos->from)) {
-            if(pos->to == NULL) {
+            if (pos->to == NULL) {
                 LeaveCriticalSection(&dns_hook_lock);
                 return NULL;
             }
@@ -661,7 +662,7 @@ static bool WINAPI hook_WinHttpCrackUrl(
             wchar_t* toAddr = pos->to;
             wchar_t titleBuffer[255];
 
-            if(wcscmp(toAddr, L"title") == 0) {
+            if (wcscmp(toAddr, L"title") == 0) {
                 size_t wstr_c;
                 mbstowcs_s(&wstr_c, titleBuffer, 255, received_title_url, strlen(received_title_url));
                 toAddr = titleBuffer;

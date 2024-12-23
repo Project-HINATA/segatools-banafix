@@ -3,6 +3,7 @@
 
 #include <limits.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "mu3io/mu3io.h"
 #include "mu3io/config.h"

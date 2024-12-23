@@ -2,6 +2,7 @@
 
 #include <limits.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <process.h>
 
 #include "mercuryio/mercuryio.h"

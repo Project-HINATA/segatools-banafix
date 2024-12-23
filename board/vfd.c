@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "board/config.h"
 #include "board/vfd.h"

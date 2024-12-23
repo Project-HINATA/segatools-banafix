@@ -19,6 +19,8 @@
 
 #include <windows.h>
 
+#include <stdlib.h>
+
 #include "board/io4.h"
 #include "board/sg-reader.h"
 #include "board/vfd.h"

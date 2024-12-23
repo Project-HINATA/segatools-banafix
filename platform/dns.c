@@ -16,11 +16,11 @@ HRESULT dns_platform_hook_init(const struct dns_config *cfg)
         return S_FALSE;
     }
 
-    if(cfg->replaceHost){
+    if (cfg->replaceHost){
         http_hook_init();
     }
 
-    if(cfg->startupPort || cfg->billingPort || cfg->aimedbPort){
+    if (cfg->startupPort || cfg->billingPort || cfg->aimedbPort){
         port_hook_init(cfg->startupPort, cfg->billingPort, cfg->aimedbPort);
     }
 

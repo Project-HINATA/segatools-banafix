@@ -16,8 +16,10 @@
 
 #include <windows.h>
 #include <setupapi.h>
-#include <stdint.h>
+
 #include <assert.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 #include "fgohook/ftdi.h"

@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <stddef.h>
 
 #include "hooklib/config.h"

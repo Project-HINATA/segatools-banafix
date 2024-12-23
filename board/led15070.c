@@ -13,6 +13,7 @@
 #include <process.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -242,7 +243,7 @@ static HRESULT led15070_handle_irp_locked(int board, struct irp *irp)
         dump_iobuf(&boarduart->written);
 #endif
 
-        req_iobuf.bytes = (byte*)&req;
+        req_iobuf.bytes = (uint8_t*)&req;
         req_iobuf.nbytes = sizeof(req.hdr) + sizeof(req.cmd) + sizeof(req.payload);
         req_iobuf.pos = 0;
 

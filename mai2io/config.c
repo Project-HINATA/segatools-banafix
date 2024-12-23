@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "mai2io/config.h"
 
