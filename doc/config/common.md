@@ -565,3 +565,16 @@ Default: Empty string
 Configure the location of the "Option" data mount point. This mount point is
 optional (hence the name, probably) and contains directories which contain
 minor over-the-air content updates.
+
+## `[openssl]`
+
+Enable or disable the application of the OpenSSL patch for Intel Gen 10 or newer CPUs.
+
+### `enable`
+
+Default: `1`
+
+Enable the patch automatically sets the OPENSSL_ia32cap variable in the user's environment
+table if the CPU meets the requirements. This setting must be enabled on PCs with 
+Intel Gen 10 or newer CPUs to ensure the game runs properly, but it's ok to leave enabled 
+on other CPUs since the patch will not run if the CPU requirements are not met.
