@@ -33,6 +33,7 @@
 #include "platform/platform.h"
 
 #include "util/dprintf.h"
+#include "util/env.h"
 
 static HMODULE diva_hook_mod;
 static process_entry_t diva_startup;
@@ -58,7 +59,7 @@ static DWORD CALLBACK diva_pre_startup(void)
 
     /* Config load */
 
-    diva_hook_config_load(&diva_hook_cfg, L".\\segatools.ini");
+    diva_hook_config_load(&diva_hook_cfg, get_config_path());
 
     /* Hook Win32 APIs */
 
@@ -105,7 +106,7 @@ static DWORD CALLBACK diva_pre_startup(void)
 
     /* Initialize debug helpers */
 
-    spike_hook_init(L".\\segatools.ini");
+    spike_hook_init(get_config_path());
 
     dprintf("---  End  diva_pre_startup ---\n");
 

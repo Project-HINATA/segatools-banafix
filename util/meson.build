@@ -24,5 +24,7 @@ util_lib = static_library(
         'lib.h',
         'str.c',
         'str.h',
+        'env.c',
+        'env.h',
     ],
 )

@@ -6,6 +6,17 @@ all games.
 Keyboard binding settings use
 [Virtual-Key Codes](https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes).
 
+## Config Path
+The default file path for config file is `./segatools.ini`.
+
+You can modify environment variable `SEGATOOLS_CONFIG_PATH` to another path.
+
+For example, You can have another `start.bat` with following code in it,
+Then you can copy `segatools.ini` to `another_config.ini` but with different dns host in it
+```bat
+set SEGATOOLS_CONFIG_PATH=.\another_config.ini
+```
+
 ## `[aimeio]`
 
 Controls the card reader driver.

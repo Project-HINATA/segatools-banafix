@@ -12,6 +12,7 @@
 
 #include "util/dprintf.h"
 #include "util/str.h"
+#include "util/env.h"
 
 static struct idac_io_config idac_io_cfg;
 static const struct idac_io_backend *idac_io_backend;
@@ -38,7 +39,7 @@ HRESULT idac_io_init(void)
         return hr;
     }
 
-    idac_io_config_load(&idac_io_cfg, L".\\segatools.ini");
+    idac_io_config_load(&idac_io_cfg, get_config_path());
 
     if (wstr_ieq(idac_io_cfg.mode, L"dinput")) {
         hr = idac_di_init(&idac_io_cfg.di, inst, &idac_io_backend);
