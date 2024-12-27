@@ -23,7 +23,6 @@
 #include "platform/platform.h"
 #include "platform/vfs.h"
 #include "platform/system.h"
-#include "platform/opensslpatch.h"
 
 void platform_config_load(struct platform_config *cfg, const wchar_t *filename)
 {
@@ -42,7 +41,6 @@ void platform_config_load(struct platform_config *cfg, const wchar_t *filename)
     nusec_config_load(&cfg->nusec, filename);
     vfs_config_load(&cfg->vfs, filename);
     system_config_load(&cfg->system, filename);
-    openssl_patch_config_load(&cfg->openssl, filename);
 }
 
 void amvideo_config_load(struct amvideo_config *cfg, const wchar_t *filename)
@@ -362,17 +360,4 @@ void epay_config_load(struct epay_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"epay", L"enable", 1, filename);
-}
-
-void openssl_patch_config_load(struct openssl_patch_config *cfg, const wchar_t *filename)
-{
-    assert(cfg != NULL);
-    assert(filename != NULL);
-
-    cfg->enable = GetPrivateProfileIntW(
-        L"openssl",  
-        L"enable",   
-        1,           
-        filename     
-    );
 }
