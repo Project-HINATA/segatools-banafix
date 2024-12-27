@@ -36,4 +36,3 @@ void nusec_config_load(struct nusec_config *cfg, const wchar_t *filename);
 void pcbid_config_load(struct pcbid_config *cfg, const wchar_t *filename);
 void vfs_config_load(struct vfs_config *cfg, const wchar_t *filename);
 void system_config_load(struct system_config *cfg, const wchar_t *filename);
-void openssl_patch_config_load(struct openssl_patch_config *cfg, const wchar_t *filename);
