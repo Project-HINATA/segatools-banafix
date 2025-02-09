@@ -1,4 +1,4 @@
 [wrap-git]
 directory = capnhook
-url = https://github.com/Hay1tsme/capnhook
-revision = 4633c51d58f7a3f714f4c0da43876376439848fe
+url = https://gitea.tendokyu.moe/TeamTofuShop/capnhook
+revision = dafd0aa336ab80ba87a82370a9dc95a3389ef5e5
