@@ -238,7 +238,7 @@ static HRESULT led15070_handle_irp_locked(int board, struct irp *irp)
     }
 
     for (;;) {
-#if 0
+#if defined(LOG_LED15070)
         dprintf("TX Buffer:\n");
         dump_iobuf(&boarduart->written);
 #endif
@@ -257,7 +257,7 @@ static HRESULT led15070_handle_irp_locked(int board, struct irp *irp)
             return hr;
         }
 
-#if 0
+#if defined(LOG_LED15070)
         dprintf("Deframe Buffer:\n");
         dump_iobuf(&req_iobuf);
 #endif
@@ -385,7 +385,9 @@ static HRESULT led15070_req_reset(int board, const struct led15070_req_any *req)
 
 static HRESULT led15070_req_set_input(int board, const struct led15070_req_any *req)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Set input (board %u)\n", board);
+#endif
 
     if (!led15070_per_board_vars[board].enable_response)
         return S_OK;
@@ -408,9 +410,10 @@ static HRESULT led15070_req_set_input(int board, const struct led15070_req_any *
 static HRESULT led15070_req_set_normal_12bit(int board, const struct led15070_req_any *req)
 {
     uint8_t idx = req->payload[0];
-
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Set LED - Normal 12bit (board %u, index %u)\n",
            board, idx);
+#endif
 
     // TODO: Data for this command. Seen with Carol
 
@@ -435,9 +438,10 @@ static HRESULT led15070_req_set_normal_12bit(int board, const struct led15070_re
 static HRESULT led15070_req_set_normal_8bit(int board, const struct led15070_req_any *req)
 {
     uint8_t idx = req->payload[0];
-
-    // dprintf("LED 15070: Set LED - Normal 8bit (board %u, index %u)\n",
-    //        board, idx);
+#if defined(LOG_LED15070)
+    dprintf("LED 15070: Set LED - Normal 8bit (board %u, index %u)\n",
+           board, idx);
+#endif
 
     led15070_per_board_vars[board].gs[idx][0] = req->payload[1]; // R
     led15070_per_board_vars[board].gs[idx][1] = req->payload[2]; // G
@@ -468,8 +472,10 @@ static HRESULT led15070_req_set_multi_flash_8bit(int board, const struct led1507
     uint8_t idx_skip = req->payload[2];
 
     // TODO: useful?
-    // dprintf("LED 15070: Set LED - Multi flash 8bit (board %u, start %u, end %u, skip %u)\n",
-    //        board, idx_start, idx_end, idx_skip);
+#if defined(LOG_LED15070)
+    dprintf("LED 15070: Set LED - Multi flash 8bit (board %u, start %u, end %u, skip %u)\n",
+           board, idx_start, idx_end, idx_skip);
+#endif
 
     if (idx_skip > 0 && idx_skip <= (idx_end - idx_start + 1)) {
         idx_start += idx_skip;
@@ -508,9 +514,10 @@ static HRESULT led15070_req_set_multi_fade_8bit(int board, const struct led15070
     uint8_t idx_start = req->payload[0];
     uint8_t idx_end = req->payload[1];
     uint8_t idx_skip = req->payload[2];
-
-    // dprintf("LED 15070: Set LED - Multi fade 8bit (board %u, start %u, end %u, skip %u)\n",
-    //        board, idx_start, idx_end, idx_skip);
+#if defined(LOG_LED15070)
+    dprintf("LED 15070: Set LED - Multi fade 8bit (board %u, start %u, end %u, skip %u)\n",
+           board, idx_start, idx_end, idx_skip);
+#endif
 
     if (idx_skip > 0 && idx_skip <= (idx_end - idx_start + 1)) {
         idx_start += idx_skip;
@@ -545,7 +552,9 @@ static HRESULT led15070_req_set_multi_fade_8bit(int board, const struct led15070
 
 static HRESULT led15070_req_set_palette_7_normal_led(int board, const struct led15070_req_any *req)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Set palette - 7 Normal LED (board %u)\n", board);
+#endif
 
     if (!led15070_per_board_vars[board].enable_response)
         return S_OK;
@@ -567,7 +576,9 @@ static HRESULT led15070_req_set_palette_7_normal_led(int board, const struct led
 
 static HRESULT led15070_req_set_palette_6_flash_led(int board, const struct led15070_req_any *req)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Set palette - 6 Flash LED (board %u)\n", board);
+#endif
 
     if (!led15070_per_board_vars[board].enable_response)
         return S_OK;
@@ -589,7 +600,9 @@ static HRESULT led15070_req_set_palette_6_flash_led(int board, const struct led1
 
 static HRESULT led15070_req_set_15dc_out(int board, const struct led15070_req_any *req)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Set 15DC out (board %u)\n", board);
+#endif
 
     if (!led15070_per_board_vars[board].enable_response)
         return S_OK;
@@ -611,7 +624,9 @@ static HRESULT led15070_req_set_15dc_out(int board, const struct led15070_req_an
 
 static HRESULT led15070_req_set_15gs_out(int board, const struct led15070_req_any *req)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Set 15GS out (board %u)\n", board);
+#endif
 
     if (!led15070_per_board_vars[board].enable_response)
         return S_OK;
@@ -633,7 +648,9 @@ static HRESULT led15070_req_set_15gs_out(int board, const struct led15070_req_an
 
 static HRESULT led15070_req_set_psc_max(int board, const struct led15070_req_any *req)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Set PSC max (board %u)\n", board);
+#endif
 
     if (!led15070_per_board_vars[board].enable_response)
         return S_OK;
@@ -655,7 +672,9 @@ static HRESULT led15070_req_set_psc_max(int board, const struct led15070_req_any
 
 static HRESULT led15070_req_set_fet_output(int board, const struct led15070_req_any *req)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Set FET output (board %u)\n", board);
+#endif
 
     led15070_per_board_vars[board].fet[0] = req->payload[0]; // R or FET0 intensity
     led15070_per_board_vars[board].fet[1] = req->payload[1]; // G or FET1 intensity
@@ -685,8 +704,9 @@ static HRESULT led15070_req_set_fet_output(int board, const struct led15070_req_
 static HRESULT led15070_req_set_gs_palette(int board, const struct led15070_req_any *req)
 {
     uint8_t idx = req->payload[0];
-
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Set GS palette (board %u, index %u)\n", board, idx);
+#endif
 
     led15070_per_board_vars[board].gs_palette[idx][0] = req->payload[1]; // R
     led15070_per_board_vars[board].gs_palette[idx][1] = req->payload[2]; // G
@@ -712,7 +732,9 @@ static HRESULT led15070_req_set_gs_palette(int board, const struct led15070_req_
 
 static HRESULT led15070_req_dc_update(int board, const struct led15070_req_any *req)
 {
-    // dprintf("LED 15070: DC update (board %u)\n", board);
+#if defined(LOG_LED15070)
+    dprintf("LED 15070: DC update (board %u)\n", board);
+#endif
 
     if (led_dc_update)
         led_dc_update((const uint8_t*)led15070_per_board_vars[board].dc);
@@ -737,7 +759,9 @@ static HRESULT led15070_req_dc_update(int board, const struct led15070_req_any *
 
 static HRESULT led15070_req_gs_update(int board, const struct led15070_req_any *req)
 {
-    // dprintf("LED 15070: GS update (board %u)\n", board);
+#if defined(LOG_LED15070)
+    dprintf("LED 15070: GS update (board %u)\n", board);
+#endif
 
     if (led_gs_update)
         led_gs_update((const uint8_t*)led15070_per_board_vars[board].gs);
@@ -762,7 +786,9 @@ static HRESULT led15070_req_gs_update(int board, const struct led15070_req_any *
 
 static HRESULT led15070_req_rotate(int board, const struct led15070_req_any *req)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Rotate (board %u)\n", board);
+#endif
 
     if (!led15070_per_board_vars[board].enable_response)
         return S_OK;
@@ -787,9 +813,10 @@ static HRESULT led15070_req_set_dc_data(int board, const struct led15070_req_any
     uint8_t idx_start = req->payload[0];
     uint8_t idx_end = req->payload[1];
     uint8_t idx_skip = req->payload[2];
-
-    // dprintf("LED 15070: Set DC data (board %u, start %u, end %u, skip %u)\n",
-    //        board, idx_start, idx_end, idx_skip);
+#if defined(LOG_LED15070)
+    dprintf("LED 15070: Set DC data (board %u, start %u, end %u, skip %u)\n",
+           board, idx_start, idx_end, idx_skip);
+#endif
 
     if (idx_skip > 0 && idx_skip <= (idx_end - idx_start + 1)) {
         idx_start += idx_skip;
@@ -829,9 +856,10 @@ static HRESULT led15070_req_eeprom_write(int board, const struct led15070_req_an
 
     uint8_t addr = req->payload[0];
     uint8_t data = req->payload[1];
-
+#if defined(LOG_LED15070)
     dprintf("LED 15070: EEPROM write (board %u, address %02x, data %02x)\n",
             board, addr, data);
+#endif
 
     if (addr > 0x07) {
         dprintf("LED 15070: Error -- Invalid EEPROM write address %02x\n",
@@ -919,8 +947,9 @@ static HRESULT led15070_req_eeprom_read(int board, const struct led15070_req_any
 
     uint8_t addr = req->payload[0];
     uint8_t data = 0;
-
+#if defined(LOG_LED15070)
     dprintf("LED 15070: EEPROM read (board %u, address %02x)\n", board, addr);
+#endif
 
     if (addr > 0x07) {
         dprintf("LED 15070: Error -- Invalid EEPROM read address %02x\n",
@@ -1002,7 +1031,9 @@ static HRESULT led15070_req_eeprom_read(int board, const struct led15070_req_any
 
 static HRESULT led15070_req_ack_on(int board, const struct led15070_req_any *req)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Acknowledge commands ON (board %u)\n", board);
+#endif
 
     led15070_per_board_vars[board].enable_response = true;
 
@@ -1023,7 +1054,9 @@ static HRESULT led15070_req_ack_on(int board, const struct led15070_req_any *req
 
 static HRESULT led15070_req_ack_off(int board, const struct led15070_req_any *req)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Acknowledge commands OFF (board %u)\n", board);
+#endif
 
     led15070_per_board_vars[board].enable_response = false;
 
@@ -1044,7 +1077,9 @@ static HRESULT led15070_req_ack_off(int board, const struct led15070_req_any *re
 
 static HRESULT led15070_req_board_info(int board)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Get board info (board %u)\n", board);
+#endif
 
     struct led15070_resp_board_info resp;
 
@@ -1067,7 +1102,9 @@ static HRESULT led15070_req_board_info(int board)
 
 static HRESULT led15070_req_board_status(int board)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Get board status (board %u)\n", board);
+#endif
 
     struct led15070_resp_any resp;
 
@@ -1091,7 +1128,9 @@ static HRESULT led15070_req_board_status(int board)
 
 static HRESULT led15070_req_fw_sum(int board)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Get firmware checksum (board %u)\n", board);
+#endif
 
     struct led15070_resp_any resp;
 
@@ -1113,7 +1152,9 @@ static HRESULT led15070_req_fw_sum(int board)
 
 static HRESULT led15070_req_protocol_ver(int board)
 {
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Get protocol version (board %u)\n", board);
+#endif
 
     struct led15070_resp_any resp;
 
@@ -1187,7 +1228,7 @@ static HRESULT led15070_eeprom_open(int board, wchar_t *path, HANDLE *handle)
     HRESULT hr;
     BOOL ok;
 
-#if 0
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Opening EEPROM file '%S' handle (board %u)\n", path, board);
 #endif
 
@@ -1233,7 +1274,7 @@ static HRESULT led15070_eeprom_close(int board, wchar_t *path, HANDLE *handle)
     HRESULT hr;
     BOOL ok;
 
-#if 0
+#if defined(LOG_LED15070)
     dprintf("LED 15070: Closing EEPROM file '%S' handle (board %u)\n", path, board);
 #endif
 
