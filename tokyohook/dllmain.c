@@ -66,8 +66,9 @@ static DWORD CALLBACK tokyo_pre_startup(void)
         goto fail;
     }
 
+    unsigned int led_port_no[2] = {1, 0};
     hr = led15093_hook_init(&tokyo_hook_cfg.led15093, 
-        tokyo_dll.led_init, tokyo_dll.led_set_leds, 1, 1, 1, 2);
+        tokyo_dll.led_init, tokyo_dll.led_set_leds, led_port_no);
 
     if (FAILED(hr)) {
         return hr;
