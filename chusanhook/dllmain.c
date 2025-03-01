@@ -86,11 +86,18 @@ static DWORD CALLBACK chusan_pre_startup(void) {
 
     /* Initialize emulation hooks */
 
-    hr = platform_hook_init(
-        &chusan_hook_cfg.platform,
-        "SDHD",
-        "ACA2",
-        chusan_hook_mod);
+    struct dipsw_config new_dipsw_config[8] = {
+        {L"Delivery Server", L"Server", L"Client"},
+        {L"Monitor Type", L"60FPS", L"120FPS"},
+        {L"Cabinet Type", L"CVT", L"SP"},
+    };
+
+    // Set the system dip switch configuration
+    memcpy(chusan_hook_cfg.platform.system.dipsw_config, new_dipsw_config,
+           sizeof(new_dipsw_config));
+
+    hr = platform_hook_init(&chusan_hook_cfg.platform, "SDHD", "ACA2",
+                            chusan_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;
@@ -114,27 +121,7 @@ static DWORD CALLBACK chusan_pre_startup(void) {
         goto fail;
     }
 
-    bool *dipsw = &chusan_hook_cfg.platform.system.dipsw[0];
-    bool is_cvt = dipsw[2];
-
-    for (int i = 0; i < 3; i++) {
-        switch (i) {
-        case 0:
-            dprintf("DipSw: NetInstall: %s\n", dipsw[0] ? "Server" : "Client");
-            break;
-
-        case 1:
-            dprintf("DipSw: Monitor Type: %dFPS\n", dipsw[1] ? 60 : 120);
-            break;
-
-        case 2:
-            dprintf("DipSw: Cab Type: %s\n", is_cvt ? "CVT" : "SP");
-
-            break;
-        }
-    }
-
-    unsigned int first_port = is_cvt ? 2 : 20;
+    bool is_cvt = chusan_hook_cfg.platform.system.dipsw[2];
 
     if (!is_cvt) {
         hr = vfd_hook_init(&chusan_hook_cfg.vfd, 2);

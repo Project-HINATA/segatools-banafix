@@ -66,6 +66,14 @@ static DWORD CALLBACK mai2_pre_startup(void)
 
     /* Initialize emulation hooks */
 
+    struct dipsw_config new_dipsw_config[8] = {
+        {L"Delivery Server", L"Server", L"Client"},
+    };
+
+    // Set the system dip switch configuration
+    memcpy(mai2_hook_cfg.platform.system.dipsw_config, new_dipsw_config,
+           sizeof(new_dipsw_config));
+
     hr = platform_hook_init(
         &mai2_hook_cfg.platform,
         "SDEZ",

@@ -60,6 +60,18 @@ static DWORD CALLBACK idac_pre_startup(void)
 
     /* Initialize emulation hooks */
 
+    struct dipsw_config new_dipsw_config[8] = {
+        {L"Delivery Server", L"Server", L"Client"},
+        {L"Cabinet Type", L"SWDC CVT", L"DZero CVT"},
+        {L"Single Seat", L"ON", L"OFF"},
+        {L"Seat Setting 1", L"ON", L"OFF"},
+        {L"Seat Setting 2", L"ON", L"OFF"},
+    };
+
+    // Set the system dip switch configuration
+    memcpy(idac_hook_cfg.platform.system.dipsw_config, new_dipsw_config,
+           sizeof(new_dipsw_config));
+
     hr = platform_hook_init(
             &idac_hook_cfg.platform,
             "SDGT",
