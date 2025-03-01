@@ -103,18 +103,29 @@ HRESULT led15070_hook_init(
         io_led_set_fet_output_t _led_set_fet_output,
         io_led_dc_update_t _led_dc_update,
         io_led_gs_update_t _led_gs_update,
-        unsigned int first_port,
-        unsigned int num_boards)
+        unsigned int port_no[2])
 {
+    unsigned int num_boards = 0;
+
     assert(cfg != NULL);
+    assert(_led_init != NULL);
 
     if (!cfg->enable) {
         return S_FALSE;
     }
 
-    if (cfg->port_no != 0) {
-        first_port = cfg->port_no;
+    for (int i = 0; i < led15070_nboards; i++)
+    {  
+        if (cfg->port_no[i] != 0) {
+            port_no[i] = cfg->port_no[i];
+        }
+
+        if (port_no[i] != 0) {
+            num_boards++;
+        }
     }
+
+    assert(num_boards != 0);
 
     led_init = _led_init;
     led_set_fet_output = _led_set_fet_output;
@@ -131,10 +142,7 @@ HRESULT led15070_hook_init(
 
         InitializeCriticalSection(&v->lock);
 
-        // TODO: IMPROVE!
-        first_port = i == 1 ? first_port + 2 : first_port;
-
-        uart_init(&v->boarduart, first_port);
+        uart_init(&v->boarduart, port_no[i]);
         v->boarduart.baud.BaudRate = 115200;
         v->boarduart.written.bytes = v->written_bytes;
         v->boarduart.written.nbytes = sizeof(v->written_bytes);
@@ -681,7 +689,7 @@ static HRESULT led15070_req_set_fet_output(int board, const struct led15070_req_
     led15070_per_board_vars[board].fet[2] = req->payload[2]; // B or FET2 intensity
 
     if (led_set_fet_output)
-        led_set_fet_output((const uint8_t*)led15070_per_board_vars[board].fet);
+        led_set_fet_output(board, (const uint8_t*)led15070_per_board_vars[board].fet);
 
     if (!led15070_per_board_vars[board].enable_response)
         return S_OK;
@@ -737,7 +745,7 @@ static HRESULT led15070_req_dc_update(int board, const struct led15070_req_any *
 #endif
 
     if (led_dc_update)
-        led_dc_update((const uint8_t*)led15070_per_board_vars[board].dc);
+        led_dc_update(board, (const uint8_t*)led15070_per_board_vars[board].dc);
 
     if (!led15070_per_board_vars[board].enable_response)
         return S_OK;
@@ -764,7 +772,7 @@ static HRESULT led15070_req_gs_update(int board, const struct led15070_req_any *
 #endif
 
     if (led_gs_update)
-        led_gs_update((const uint8_t*)led15070_per_board_vars[board].gs);
+        led_gs_update(board, (const uint8_t*)led15070_per_board_vars[board].gs);
 
     if (!led15070_per_board_vars[board].enable_response)
         return S_OK;

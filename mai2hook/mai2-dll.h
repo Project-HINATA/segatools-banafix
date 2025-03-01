@@ -14,9 +14,9 @@ struct mai2_dll {
     void (*touch_set_sens)(uint8_t *bytes);
     void (*touch_update)(bool player1, bool player2);
     HRESULT (*led_init)(void);
-    void (*led_set_fet_output)(const uint8_t *rgb);
-    void (*led_dc_update)(const uint8_t *rgb);
-    void (*led_gs_update)(const uint8_t *rgb);
+    void (*led_set_fet_output)(uint8_t board, const uint8_t *rgb);
+    void (*led_dc_update)(uint8_t board, const uint8_t *rgb);
+    void (*led_gs_update)(uint8_t board, const uint8_t *rgb);
 };
 
 struct mai2_dll_config {

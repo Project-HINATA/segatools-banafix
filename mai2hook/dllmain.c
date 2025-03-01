@@ -93,12 +93,13 @@ static DWORD CALLBACK mai2_pre_startup(void)
     }
 
     // LED board uses COM21 and COM23
+    unsigned int led_port_no[2] = {21, 23};
     hr = led15070_hook_init(&mai2_hook_cfg.led15070,
         mai2_dll.led_init,
         mai2_dll.led_set_fet_output,
         mai2_dll.led_dc_update,
         mai2_dll.led_gs_update,
-        21, 2);
+        led_port_no);
 
     if (FAILED(hr)) {
         goto fail;

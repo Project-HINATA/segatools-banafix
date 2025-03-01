@@ -94,8 +94,9 @@ static DWORD CALLBACK idac_pre_startup(void)
         goto fail;
     }
 
+    unsigned int led_port_no[2] = {2, 0};
     hr = led15070_hook_init(&idac_hook_cfg.led15070, idac_dll.led_init, 
-        idac_dll.led_set_fet_output, NULL, idac_dll.led_gs_update, 2, 1);
+        idac_dll.led_set_fet_output, NULL, idac_dll.led_gs_update, led_port_no);
 
     if (FAILED(hr)) {
         goto fail;

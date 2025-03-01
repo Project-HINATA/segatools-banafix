@@ -1,15 +1,10 @@
 #pragma once
-#include <assert.h>
+
+#include <windows.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <windows.h>
 
-#include "hooklib/fdshark.h"
-#include "hooklib/reg.h"
 #include "hooklib/uart.h"
-#include "mai2hook/mai2-dll.h"
-#include "util/dprintf.h"
-#include "util/dump.h"
 
 struct touch_config
 {

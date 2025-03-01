@@ -1,4 +1,15 @@
+#include <assert.h>
+#include <stdlib.h>
+
+#include "hooklib/fdshark.h"
+#include "hooklib/reg.h"
+
+#include "mai2hook/mai2-dll.h"
 #include "mai2hook/touch.h"
+
+#include "util/dprintf.h"
+#include "util/dump.h"
+
 
 static HRESULT read_reg_touch_1p(void *bytes, uint32_t *nbytes)
 {
@@ -83,7 +94,7 @@ HRESULT touch_hook_init(const struct touch_config *cfg)
 
     if (cfg->enable_2p)
     {
-        dprintf("Mai2 touch port 2P: Init.\n");
+        dprintf("Mai2 touch 2P: Init.\n");
 
         InitializeCriticalSection(&touch_2p_lock);
         uart_init(&touch_2p_uart, 4);

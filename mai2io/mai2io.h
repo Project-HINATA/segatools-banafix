@@ -156,6 +156,9 @@ HRESULT mai2_io_led_init(void);
 
 /* Update the FET outputs. rgb is a pointer to an array up to 3 bytes.
 
+   maimai DX uses two boards. Board 0 is for the player 1 side (left) and board 1 
+   is for the player 2 side (right).
+
    Set the brightness of the white light on the machine's outer shell.  
    The program will continuously send changed values to request the blinking effect.
 
@@ -167,13 +170,16 @@ HRESULT mai2_io_led_init(void);
 
    Minimum API version: 0x0101 */
 
-void mai2_io_led_set_fet_output(const uint8_t *rgb);
+void mai2_io_led_set_fet_output(uint8_t board, const uint8_t *rgb);
 
 /* The effect of this command is unknown, it is triggered after LED_15070_CMD_EEPROM_READ. */
 
-void mai2_io_led_dc_update(const uint8_t *rgb);
+void mai2_io_led_dc_update(uint8_t board, const uint8_t *rgb);
 
-/* Update the RGB LEDs. rgb is a pointer to an array up to 32 * 4 = 128 bytes. 
+/* Update the RGB LEDs. rgb is a pointer to an array up to 8 * 4 = 32 bytes.
+
+   maimai DX uses two boards. Board 0 is for the player 1 side (left) and board 1
+   is for the player 2 side (right).
 
    The LEDs are laid out as follows:
    [0-7]: 8 button LED
@@ -183,4 +189,4 @@ void mai2_io_led_dc_update(const uint8_t *rgb);
 
    Minimum API version: 0x0101 */
 
-void mai2_io_led_gs_update(const uint8_t *rgb);
+void mai2_io_led_gs_update(uint8_t board, const uint8_t *rgb);
