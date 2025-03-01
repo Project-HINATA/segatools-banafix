@@ -26,19 +26,24 @@
 #include <stdlib.h>
 #include <windows.h>
 
-#include "amex/amex.h"
 #include "board/sg-reader.h"
 #include "board/vfd.h"
+
 #include "chuniio/chuniio.h"
 #include "chusanhook/config.h"
 #include "chusanhook/io4.h"
 #include "chusanhook/slider.h"
+
 #include "gfxhook/d3d9.h"
 #include "gfxhook/gfx.h"
+
 #include "hook/process.h"
+
 #include "hooklib/serial.h"
 #include "hooklib/spike.h"
+
 #include "platform/platform.h"
+
 #include "util/dprintf.h"
 #include "util/env.h"
 
@@ -96,8 +101,11 @@ static DWORD CALLBACK chusan_pre_startup(void) {
     memcpy(chusan_hook_cfg.platform.system.dipsw_config, new_dipsw_config,
            sizeof(new_dipsw_config));
 
-    hr = platform_hook_init(&chusan_hook_cfg.platform, "SDHD", "ACA2",
-                            chusan_hook_mod);
+    hr = platform_hook_init(
+        &chusan_hook_cfg.platform,
+        "SDHD",
+        "ACA2",
+        chusan_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;

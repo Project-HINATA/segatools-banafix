@@ -70,6 +70,26 @@ static DWORD CALLBACK tokyo_pre_startup(void)
         goto fail;
     }
 
+    bool *dipsw = &tokyo_hook_cfg.platform.system.dipsw[0];
+    unsigned int cabinet_id = 0;
+
+    if (dipsw[0] == 1 && dipsw[1] == 0 && dipsw[2] == 0) {
+        cabinet_id = 1; // Server 1
+    } else if (dipsw[0] == 0 && dipsw[1] == 1 && dipsw[2] == 0) {
+        cabinet_id = 2; // Client 2
+    } else if (dipsw[0] == 0 && dipsw[1] == 0 && dipsw[2] == 1) {
+        cabinet_id = 3; // Client 3
+    } else if (dipsw[0] == 0 && dipsw[1] == 1 && dipsw[2] == 1) {
+        cabinet_id = 4; // Client 4
+    } else {
+        dprintf("Error: Invalid dip switch configuration!\n");
+    }
+
+    // Print the correct Cabinet ID if valid
+    if (cabinet_id > 0) {
+        dprintf("System: Cabinet ID %d\n", cabinet_id);
+    }
+
     hr = tokyo_dll_init(&tokyo_hook_cfg.dll, tokyo_hook_mod);
 
     if (FAILED(hr)) {

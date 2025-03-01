@@ -82,13 +82,21 @@ static DWORD CALLBACK idac_pre_startup(void)
         goto fail;
     }
 
+    bool *dipsw = &idac_hook_cfg.platform.system.dipsw[0];
+    bool is_swdc_cvt = dipsw[1];
+
+    if (!dipsw[2]) {
+        // the next two bit are the seat number most significant bit first
+        dprintf("System: Seat Number: %d\n", ((dipsw[4] << 1) | dipsw[3]) + 1);
+    }
+
     hr = idac_dll_init(&idac_hook_cfg.dll, idac_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;
     }
 
-    hr = sg_reader_hook_init(&idac_hook_cfg.aime, 3, 3, idac_hook_mod);
+    hr = sg_reader_hook_init(&idac_hook_cfg.aime, 3, is_swdc_cvt ? 3 : 2, idac_hook_mod);
 
     if (FAILED(hr)) {
         goto fail;
