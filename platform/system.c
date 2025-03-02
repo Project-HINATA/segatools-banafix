@@ -1,11 +1,10 @@
 #include "platform/system.h"
 
+#include <windows.h>
 #include <assert.h>
-#include <ntstatus.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h>
 
 #include "platform/vfs.h"
 #include "util/crc.h"
