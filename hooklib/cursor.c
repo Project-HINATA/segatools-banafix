@@ -14,6 +14,7 @@ static HCURSOR (*next_SetCursor)(HCURSOR hCursor);
 static BOOL my_SetCursorPos(int x, int y);
 static BOOL my_SetPhysicalCursorPos(int x, int y);
 static int my_ShowCursor(BOOL bShow);
+static int cursor_track = -1; // If no mouse is connected, this starts as -1
 
 static const struct hook_symbol cursor_syms[] = {
     {
@@ -45,7 +46,7 @@ void cursor_hook_init()
 
 static BOOL my_SetCursorPos(int x, int y)
 {
-    dprintf("my_SetCursorPos Hit! x %d y %d\n", x, y);
+    // dprintf("my_SetCursorPos Hit! x %d y %d\n", x, y);
     return true;
 }
 
@@ -58,7 +59,12 @@ static BOOL my_SetPhysicalCursorPos(int x, int y)
 static int my_ShowCursor(BOOL bShow)
 {
     dprintf("my_ShowCursor Hit!\n");
-    return 0;
+    if (bShow) {
+        cursor_track++;
+    } else {
+        cursor_track--;
+    }
+    return cursor_track;
 }
 
 static HCURSOR my_SetCursor(HCURSOR hCursor)
