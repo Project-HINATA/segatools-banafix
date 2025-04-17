@@ -9,9 +9,6 @@ board_lib = static_library(
         iccard_lib,
     ],
     sources : [
-        '3mpxsc-cmd.h',
-        '3mpxsc-frame.c',
-        '3mpxsc-frame.h',
         'aime-dll.c',
         'aime-dll.h',
         'config.c',
