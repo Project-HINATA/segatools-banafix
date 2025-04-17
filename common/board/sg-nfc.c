@@ -321,6 +321,7 @@ static HRESULT sg_nfc_poll_aime(
 
     mifare->type = 0x10;
     mifare->id_len = sizeof(mifare->uid);
+    // mifare->uid = _byteswap_ulong(0x8FBECBFF);
     mifare->uid = _byteswap_ulong(0x01020304);
 
     /* Initialize MIFARE IC emulator */
