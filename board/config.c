@@ -75,6 +75,15 @@ void aime_config_load(struct aime_config *cfg, const wchar_t *filename)
     cfg->port_no = GetPrivateProfileIntW(L"aime", L"portNo", 0, filename);
     cfg->high_baudrate = GetPrivateProfileIntW(L"aime", L"highBaud", 1, filename);
     cfg->gen = GetPrivateProfileIntW(L"aime", L"gen", 0, filename);
+    cfg->proxy_flag = GetPrivateProfileIntW(L"aime", L"proxyFlag", 2, filename);
+
+    GetPrivateProfileStringW(
+            L"aime",
+            L"authdataPath",
+            L"DEVICE\\authdata.bin",
+            cfg->authdata_path,
+            _countof(cfg->authdata_path),
+            filename);
 }
 
 void io4_config_load(struct io4_config *cfg, const wchar_t *filename)
