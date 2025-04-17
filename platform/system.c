@@ -106,13 +106,13 @@ static void system_read_sysfile(const wchar_t *sys_file) {
 
 static void system_save_sysfile(const wchar_t *sys_file) {
     char block[BLOCK_SIZE];
+    DWORD sysfile_bytes_written = 0;
     uint8_t system = 0;
     uint8_t freeplay = 0;
 
-    // open the sysfile.dat for writing in bytes mode
-    FILE *f = _wfopen(sys_file, L"rb+");
+    HANDLE h_sysfile = CreateFileW(sys_file, GENERIC_READ | GENERIC_WRITE, 0, NULL, 0, 0, NULL);
 
-    if (f == NULL) {
+    if (h_sysfile == INVALID_HANDLE_VALUE) {
         return;
     }
 
@@ -174,7 +174,10 @@ static void system_save_sysfile(const wchar_t *sys_file) {
     dprintf("\n");
     */
 
-    fwrite(system_info.data, 1, 0x6000, f);
+    WriteFile(h_sysfile, system_info.data, 0x6000, &sysfile_bytes_written, NULL);
+    CloseHandle(h_sysfile);
 
-    fclose(f);
+    if (sysfile_bytes_written != 0x6000) {
+        dprintf("System: Only 0x%04X bytes written out of 0x6000!\n", sysfile_bytes_written);
+    }
 }
