@@ -7,6 +7,7 @@
 #pragma pack(push,1)
 struct epay_config {
     bool enable;
+    bool hook;
 };
 
 /* The functions in these structs are how clients like amdaemon interface
@@ -62,3 +63,4 @@ struct thinca_main {
 
 #pragma pack(pop)
 HRESULT epay_hook_init(const struct epay_config *cfg);
+HRESULT epay_apply_registry_hooks();

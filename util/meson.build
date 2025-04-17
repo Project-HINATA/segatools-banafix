@@ -21,6 +21,8 @@ util_lib = static_library(
         'get_function_ordinal.h',
         'lib.c',
         'lib.h',
+        'slurp.c',
+        'slurp.h',
         'str.c',
         'str.h',
         'env.c',
