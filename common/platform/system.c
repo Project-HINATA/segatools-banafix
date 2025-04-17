@@ -178,6 +178,6 @@ static void system_save_sysfile(const wchar_t *sys_file) {
     CloseHandle(h_sysfile);
 
     if (sysfile_bytes_written != 0x6000) {
-        dprintf("System: Only 0x%04X bytes written out of 0x6000!\n", sysfile_bytes_written);
+        dprintf("System: Only 0x%04lX bytes written out of 0x6000!\n", sysfile_bytes_written);
     }
 }
