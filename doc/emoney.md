@@ -3,17 +3,41 @@ by Haruka Akechi
 
 ### SETTING UP
 
-1) Obtain the 64 byte long authentication card encryption key and the 32 byte long static authentication card ID. amdaemon.exe holds the secrets.
+1) Obtain the 64 byte long authentication card encryption key. `amdaemon.exe` holds the secrets.
 
-2) Get this java file, insert the ID and key, probably edit the passphrase and compile+run to generate authcard.bin: https://gist.github.com/akechi-haruka/a506184638e695a04eabe8cb53f62c36
+2) Inside the `emoney\` folder, install the python modules and launch the generator script:
 
-3) Place authcard.bin in your DEVICE folder.
+```shell
+python -m pip install -r requirements.txt
+python authcardgen.py --key <ENTER YOUR KEY HERE>
+```
 
-4) Check tfps-res-pro\env.json for your game. If it contains a "use_proxy: true" statement, add "proxy_flag=3" under [aime]
+```
+Usage: authcardgen.py [OPTIONS]
 
-5) Replace the two URLs in tfps-res-pro\resource.xml to your servers'. This is to ensure the Host header will match the certificate's.
+Options:
+  --cardid TEXT           Card ID (64 hex characters)
+  --key TEXT              Key (128 hex characters, required)  [required]
+  --store-card-id TEXT    Store Card ID (padded to 16 bytes)
+  --merchant-code TEXT    Merchant Code (padded to 20 bytes)
+  --store-branch-id TEXT  Store Branch ID (padded to 12 bytes)
+  --passphrase TEXT       Passphrase, used for the pfx password (padded to 16 bytes)
+  --output TEXT           Output filename
+  --help                  Show this message and exit.
+```
 
-6) Where amdaemon.exe is located, there should be a "ca.pem". Replace this file with either [this](https://curl.se/ca/cacert.pem) for the most common CA's (including Let's Encrypt), or whatever CA the server is using (your server will provide this).
+3) Place the generated `authcard.bin` in your `DEVICE\` folder.
+
+4) Check `tfps-res-pro\env.json` for your game. If it contains a `"use_proxy": true` statement, add to segatools.ini:
+
+```ini
+[aime]
+proxy_flag=3
+```
+
+5) Replace the two URLs in `tfps-res-pro\resource.xml` to your servers'. This is to ensure the Host header will match the certificate's.
+
+6) Where amdaemon.exe is located, there should be a `ca.pem`. Replace this file with either [this](https://curl.se/ca/cacert.pem) for the most common CA's (including Let's Encrypt), or whatever CA the server is using (your server will provide this).
 
 7) Run your game and enter the test menu, and navigate to E-Money Settings.
 
@@ -66,7 +90,7 @@ Now what is actually stored on such a card? This:
 +---------------+---------------+-----------------+------------+----------+
 ```
 
-Only two things really matter here. The Store Branch ID must be non-zero, otherwise amdaemon will reject it, and the passphrase, which is the PFX key password for the certificate returned in the network response (see below).
+Only two things really matter here. The Store Branch ID must be non-zero, otherwise amdaemon will reject it, and the passphrase, which is the PFX key password (passphrase during authcard creation) for the certificate returned in the network response (see below).
 
 Technically with the Store Card ID you could bind different auth cards to different users, but for home usage, it really doesn't matter.
 
