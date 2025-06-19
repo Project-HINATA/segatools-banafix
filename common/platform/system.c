@@ -110,7 +110,8 @@ static void system_save_sysfile(const wchar_t *sys_file) {
     uint8_t system = 0;
     uint8_t freeplay = 0;
 
-    HANDLE h_sysfile = CreateFileW(sys_file, GENERIC_READ | GENERIC_WRITE, 0, NULL, 0, 0, NULL);
+    // open the sysfile.dat for writing
+    HANDLE h_sysfile = CreateFileW(sys_file, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
     if (h_sysfile == INVALID_HANDLE_VALUE) {
         return;
@@ -164,20 +165,10 @@ static void system_save_sysfile(const wchar_t *sys_file) {
     memcpy(system_info.data + 0x2800, block, BLOCK_SIZE);
     memcpy(system_info.data + 0x5800, block, BLOCK_SIZE);
 
-    // print the dip_switch_block in hex
-    /*
-    dprintf("System Block: ");
-    for (size_t i = 0; i < BLOCK_SIZE; i++)
-    {
-        dprintf("%02X ", ((uint8_t *)&system_info.dip_switch_block)[i]);
-    }
-    dprintf("\n");
-    */
-
     WriteFile(h_sysfile, system_info.data, 0x6000, &sysfile_bytes_written, NULL);
     CloseHandle(h_sysfile);
 
     if (sysfile_bytes_written != 0x6000) {
-        dprintf("System: Only 0x%04X bytes written out of 0x6000!\n", sysfile_bytes_written);
+        dprintf("System: Only 0x%04lX bytes written out of 0x6000!\n", sysfile_bytes_written);
     }
 }

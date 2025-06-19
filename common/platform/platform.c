@@ -82,13 +82,13 @@ HRESULT platform_hook_init(
         return hr;
     }
 
-    hr = system_init(&cfg->system, &cfg->vfs);
+    hr = epay_hook_init(&cfg->epay);
 
     if (FAILED(hr)) {
         return hr;
     }
 
-    hr = epay_hook_init(&cfg->epay);
+    hr = system_init(&cfg->system, &cfg->vfs);
 
     if (FAILED(hr)) {
         return hr;
