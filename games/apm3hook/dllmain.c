@@ -1,5 +1,5 @@
 /*
-"ALL.Net P-ras multi Ver.3" (apm) hook
+    "ALL.Net P-ras MULTI Version 3" (apm3) hook
 
     Devices
 
@@ -17,17 +17,16 @@
 #include "io4.h"
 #include "mount.h"
 
-#include "amex/ds.h"
-
 #include "hook/process.h"
-#include "hooklib/serial.h"
 
+#include "hooklib/serial.h"
 #include "hooklib/spike.h"
 
 #include "platform/clock.h"
 #include "platform/config.h"
 #include "platform/nusec.h"
 #include "platform/security.h"
+
 #include "unityhook/hook.h"
 
 #include "util/dprintf.h"
@@ -43,7 +42,7 @@ void unity_hook_callback(HMODULE hmodule, const wchar_t* p) {
     serial_hook_apply_hooks(hmodule);
     security_hook_insert_hooks(hmodule);
     touch_hook_insert_hooks(hmodule);
-    //mount_hook_apply_hooks(&apm3_hook_cfg.mount, hmodule);
+    // mount_hook_apply_hooks(&apm3_hook_cfg.mount, hmodule);
 }
 
 void apm3_extra_hooks_init(void) {

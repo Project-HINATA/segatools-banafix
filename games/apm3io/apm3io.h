@@ -17,6 +17,7 @@ enum {
     APM3_IO_GAMEBTN_RIGHT = 0x08,
     APM3_IO_GAMEBTN_DOWN = 0x10,
     APM3_IO_GAMEBTN_LEFT = 0x20,
+    
     APM3_IO_GAMEBTN_B1 = 0x40,
     APM3_IO_GAMEBTN_B2 = 0x80,
     APM3_IO_GAMEBTN_B3 = 0x100,
@@ -66,7 +67,7 @@ void apm3_io_get_opbtns(uint8_t *opbtn);
 
    Minimum API version: 0x0100 */
 
-void apm3_io_get_gamebtns(uint32_t *gamebtn);
+void apm3_io_get_gamebtns(uint16_t *gamebtn);
 
 /* Initialize LED emulation. This function will be called before any
    other apm3_io_led_*() function calls.

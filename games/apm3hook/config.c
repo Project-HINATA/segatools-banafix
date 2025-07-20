@@ -19,7 +19,7 @@ void apm3_dll_config_load(
     assert(filename != NULL);
 
     GetPrivateProfileStringW(
-            L"apmio",
+            L"apm3io",
             L"path",
             L"",
             cfg->path,
