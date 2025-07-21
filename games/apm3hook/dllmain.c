@@ -17,6 +17,7 @@
 #include "io4.h"
 #include "mount.h"
 
+#include "hook/iohook.h"
 #include "hook/process.h"
 
 #include "hooklib/serial.h"
@@ -36,24 +37,24 @@ static HMODULE apm3_hook_mod;
 static process_entry_t apm3_startup;
 static struct apm3_hook_config apm3_hook_cfg;
 
+static const wchar_t *target_modules[] = {
+    L"apmled.dll",
+};
+
+static const size_t target_modules_len = _countof(target_modules);
+
 void unity_hook_callback(HMODULE hmodule, const wchar_t* p) {
     dprintf("Unity: Hook callback: %ls\n", p);
 
-    serial_hook_apply_hooks(hmodule);
+    for (size_t i = 0; i < target_modules_len; i++) {
+        if (_wcsicmp(p, target_modules[i]) == 0) {
+            serial_hook_apply_hooks(hmodule);
+            iohook_apply_hooks(hmodule);
+        }
+    }
     security_hook_insert_hooks(hmodule);
     touch_hook_insert_hooks(hmodule);
     // mount_hook_apply_hooks(&apm3_hook_cfg.mount, hmodule);
-}
-
-void apm3_extra_hooks_init(void) {
-    HMODULE module = LoadLibraryA("Apmv3System_Data/Plugins/x86_64/apmmount.dll"); // HACK??
-    if (module != NULL){
-        dprintf("APM: Successfully pre-loaded apmmount\n");
-    }
-    module = LoadLibraryA("Apmv3System_Data/Plugins/x86_64/apmled.dll"); // HACK??
-    if (module != NULL){
-        dprintf("APM: Successfully pre-loaded apmled\n");
-    }
 }
 
 static DWORD CALLBACK apm3_pre_startup(void)
@@ -65,9 +66,6 @@ static DWORD CALLBACK apm3_pre_startup(void)
     /* Load config */
 
     apm3_hook_config_load(&apm3_hook_cfg, get_config_path());
-
-    /* Pin stuff */
-    apm3_extra_hooks_init();
 
     /* Hook Win32 APIs */
 
