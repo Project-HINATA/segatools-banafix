@@ -33,24 +33,33 @@ static const struct hook_symbol openssl_hooks[] = {
     },
 };
 
-int check_intel_sha_extension() {
+static int check_intel_sha_extension() {
+    int n_ids;
+    int is_intel;
+    char vendor[0x20] = {0};
     int cpui[4] = {0};
 
+    /* OpenSSL 1.0.2 beta to 1.0.2k contain bugs that crash "AM Daemon" due to
+      bad SHA values on processors with the SHA extensions, such as Intel 10th 
+      gen CPUs or higher.
+
+      Credits: kagaminehaku */
+
     __cpuid(cpui, 0);
-    int nIds_ = cpui[0];
+    n_ids = cpui[0];
 
-    char vendor[0x20] = {0};
-    *((int*)vendor) = cpui[1];
-    *((int*)(vendor + 4)) = cpui[3];
-    *((int*)(vendor + 8)) = cpui[2];
+    *((int *) vendor) = cpui[1];
+    *((int *) (vendor + 4)) = cpui[3];
+    *((int *) (vendor + 8)) = cpui[2];
 
-    // Intel CPU
-    int isIntel = (strcmp(vendor, "GenuineIntel") == 0);
+    /* Check that the CPU vendor is Intel */
+    is_intel = (strcmp(vendor, "GenuineIntel") == 0);
 
-    if (isIntel && nIds_ >= 7) {
+    if (is_intel && n_ids >= 7) {
         __cpuidex(cpui, 7, 0);
-        // SHA extension
-        return (cpui[1] & (1 << 29)) != 0; 
+
+        /* SHA extensions supported */
+        return (cpui[1] & (1 << 29)) != 0;
     }
 
     return 0;
@@ -70,7 +79,7 @@ HRESULT openssl_hook_init(const struct openssl_config *cfg)
 
     if (cfg->override) {
         dprintf("OpenSSL: hook enabled.\n");
-    } else if (check_intel_sha_extension()) {
+    } else if (!check_intel_sha_extension()) {
         dprintf("OpenSSL: Intel CPU SHA extension detected, hook enabled.\n");
     } else {
         return S_FALSE;
@@ -91,7 +100,8 @@ HRESULT openssl_hook_init(const struct openssl_config *cfg)
 
 static char * __cdecl hook_getenv(const char *name)
 {
-    /* Intercept OpenSSL CPU-cap override */
+    /* Overrides OpenSSL's Intel CPU identification. This disables the OpenSSL
+       code check for SHA extensions. */
     if (name && strcmp(name, "OPENSSL_ia32cap") == 0) {
         static char override[] = "~0x20000000";
 
