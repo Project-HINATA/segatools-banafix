@@ -115,6 +115,41 @@ static BOOL WINAPI hook_MoveFileExA(
         const char *lpNewFileName,
         uint32_t dwFlags);
 
+static BOOL WINAPI hook_MoveFileExW(
+        const wchar_t *lpExistingFileName,
+        const wchar_t *lpNewFileName,
+        uint32_t dwFlags);
+
+        
+static BOOL WINAPI hook_CopyFileA(
+        const LPCSTR lpExistingFileName,
+        const LPCSTR lpNewFileName,
+        BOOL   bFailIfExists
+);
+
+static BOOL WINAPI hook_CopyFileW(
+        const LPCWSTR  lpExistingFileName,
+        const LPCWSTR  lpNewFileName,
+        BOOL   bFailIfExists
+);
+
+static BOOL WINAPI hook_CopyFileExA(
+        LPCSTR             lpExistingFileName,
+        LPCSTR             lpNewFileName,
+        LPPROGRESS_ROUTINE lpProgressRoutine,
+        LPVOID             lpData,
+        LPBOOL             pbCancel,
+        DWORD              dwCopyFlags
+);
+
+static BOOL WINAPI hook_CopyFileExW(
+        LPCWSTR            lpExistingFileName,
+        LPCWSTR            lpNewFileName,
+        LPPROGRESS_ROUTINE lpProgressRoutine,
+        LPVOID             lpData,
+        LPBOOL             pbCancel,
+        DWORD              dwCopyFlags
+);
 
 static BOOL WINAPI hook_ReplaceFileA(
         const char *lpReplacedFileName,
@@ -266,6 +301,41 @@ static BOOL (WINAPI *next_MoveFileExA)(
         const char *lpNewFileName,
         uint32_t dwFlags);
 
+static BOOL (WINAPI *next_MoveFileExW)(
+        const wchar_t *lpExistingFileName,
+        const wchar_t *lpNewFileName,
+        uint32_t dwFlags);
+
+static BOOL (WINAPI *next_CopyFileA)(
+        const LPCSTR lpExistingFileName,
+        const LPCSTR lpNewFileName,
+        BOOL   bFailIfExists
+);
+
+static BOOL (WINAPI *next_CopyFileW)(
+        const LPCWSTR  lpExistingFileName,
+        const LPCWSTR  lpNewFileName,
+        BOOL   bFailIfExists
+);
+
+static BOOL (WINAPI *next_CopyFileExA)(
+        LPCSTR             lpExistingFileName,
+        LPCSTR             lpNewFileName,
+        LPPROGRESS_ROUTINE lpProgressRoutine,
+        LPVOID             lpData,
+        LPBOOL             pbCancel,
+        DWORD              dwCopyFlags
+);
+
+static BOOL (WINAPI *next_CopyFileExW)(
+        LPCWSTR            lpExistingFileName,
+        LPCWSTR            lpNewFileName,
+        LPPROGRESS_ROUTINE lpProgressRoutine,
+        LPVOID             lpData,
+        LPBOOL             pbCancel,
+        DWORD              dwCopyFlags
+);
+
 static BOOL (WINAPI *next_ReplaceFileA)(
         const char *lpReplacedFileName,
         const char *lpReplacementFileName,
@@ -406,6 +476,26 @@ static const struct hook_symbol path_hook_syms[] = {
         .name   = "MoveFileExA",
         .patch  = hook_MoveFileExA,
         .link   = (void **) &next_MoveFileExA,
+    }, {
+        .name   = "MoveFileExW",
+        .patch  = hook_MoveFileExW,
+        .link   = (void **) &next_MoveFileExW,
+    }, {
+        .name   = "CopyFileA",
+        .patch  = hook_CopyFileA,
+        .link   = (void **) &next_CopyFileA,
+    }, {
+        .name   = "CopyFileW",
+        .patch  = hook_CopyFileW,
+        .link   = (void **) &next_CopyFileW,
+    }, {
+        .name   = "CopyFileExA",
+        .patch  = hook_CopyFileExW,
+        .link   = (void **) &next_CopyFileExA,
+    }, {
+        .name   = "CopyFileExW",
+        .patch  = hook_CopyFileW,
+        .link   = (void **) &next_CopyFileExW,
     }, {
         .name   = "ReplaceFileA",
         .patch  = hook_ReplaceFileA,
@@ -1193,6 +1283,191 @@ static BOOL WINAPI hook_MoveFileExA(
     return ok;
 }
 
+static BOOL WINAPI hook_MoveFileExW(
+        const wchar_t *lpExistingFileName,
+        const wchar_t *lpNewFileName,
+        uint32_t dwFlags)
+{
+    wchar_t *oldTrans;
+    wchar_t *newTrans;
+    BOOL ok;
+
+    ok = path_transform_w(&oldTrans, lpExistingFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = path_transform_w(&newTrans, lpNewFileName);
+
+    if (!ok) {
+        free(oldTrans);
+
+        return FALSE;
+    }
+
+    ok = next_MoveFileExW(
+        oldTrans ? oldTrans : lpExistingFileName,
+        newTrans ? newTrans : lpNewFileName,
+        dwFlags);
+
+    free(oldTrans);
+    free(newTrans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_CopyFileA(
+        const LPCSTR lpExistingFileName,
+        const LPCSTR lpNewFileName,
+        BOOL   bFailIfExists
+)
+{
+    char *oldTrans;
+    char *newTrans;
+    BOOL ok;
+
+    ok = path_transform_a(&oldTrans, lpExistingFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = path_transform_a(&newTrans, lpNewFileName);
+
+    if (!ok) {
+        free(oldTrans);
+
+        return FALSE;
+    }
+
+    ok = next_CopyFileA(
+        oldTrans ? oldTrans : lpExistingFileName,
+        newTrans ? newTrans : lpNewFileName,
+        bFailIfExists);
+
+    free(oldTrans);
+    free(newTrans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_CopyFileW(
+        const LPCWSTR  lpExistingFileName,
+        const LPCWSTR  lpNewFileName,
+        BOOL   bFailIfExists
+) {
+    wchar_t *oldTrans;
+    wchar_t *newTrans;
+    BOOL ok;
+
+    ok = path_transform_w(&oldTrans, lpExistingFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = path_transform_w(&newTrans, lpNewFileName);
+
+    if (!ok) {
+        free(oldTrans);
+
+        return FALSE;
+    }
+
+    ok = next_CopyFileW(
+        oldTrans ? oldTrans : lpExistingFileName,
+        newTrans ? newTrans : lpNewFileName,
+        bFailIfExists);
+
+    free(oldTrans);
+    free(newTrans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_CopyFileExA(
+        LPCSTR             lpExistingFileName,
+        LPCSTR             lpNewFileName,
+        LPPROGRESS_ROUTINE lpProgressRoutine,
+        LPVOID             lpData,
+        LPBOOL             pbCancel,
+        DWORD              dwCopyFlags
+)
+{
+    char *oldTrans;
+    char *newTrans;
+    BOOL ok;
+
+    ok = path_transform_a(&oldTrans, lpExistingFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = path_transform_a(&newTrans, lpNewFileName);
+
+    if (!ok) {
+        free(oldTrans);
+
+        return FALSE;
+    }
+
+    ok = next_CopyFileExA(
+        oldTrans ? oldTrans : lpExistingFileName,
+        newTrans ? newTrans : lpNewFileName,
+        lpProgressRoutine,
+        lpData,
+        pbCancel,
+        dwCopyFlags);
+
+    free(oldTrans);
+    free(newTrans);
+
+    return ok;
+}
+
+static BOOL WINAPI hook_CopyFileExW(
+        LPCWSTR            lpExistingFileName,
+        LPCWSTR            lpNewFileName,
+        LPPROGRESS_ROUTINE lpProgressRoutine,
+        LPVOID             lpData,
+        LPBOOL             pbCancel,
+        DWORD              dwCopyFlags
+)
+{
+    wchar_t *oldTrans;
+    wchar_t *newTrans;
+    BOOL ok;
+
+    ok = path_transform_w(&oldTrans, lpExistingFileName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    ok = path_transform_w(&newTrans, lpNewFileName);
+
+    if (!ok) {
+        free(oldTrans);
+
+        return FALSE;
+    }
+
+    ok = next_CopyFileExW(
+        oldTrans ? oldTrans : lpExistingFileName,
+        newTrans ? newTrans : lpNewFileName,
+        lpProgressRoutine,
+        lpData,
+        pbCancel,
+        dwCopyFlags);
+
+    free(oldTrans);
+    free(newTrans);
+
+    return ok;
+}
+
 static BOOL WINAPI hook_ReplaceFileA(
         const char *lpReplacedFileName,
         const char *lpReplacementFileName,
@@ -1286,6 +1561,8 @@ static BOOL WINAPI hook_DeleteFileA(const char *lpFileName)
 
     ok = next_DeleteFileA(trans ? trans: lpFileName);
 
+    free(trans);
+
     return ok;
 }
 
@@ -1302,6 +1579,8 @@ static BOOL WINAPI hook_DeleteFileW(const wchar_t *lpFileName)
 
     ok = next_DeleteFileW(trans ? trans: lpFileName);
 
+    free(trans);
+
     return ok;
 }
 
@@ -1314,6 +1593,7 @@ static DWORD WINAPI hook_GetPrivateProfileStringA(
         LPCSTR lpFileName
 ) {
     char *trans;
+    DWORD result;
     BOOL ok;
 
     ok = path_transform_a(&trans, lpFileName);
@@ -1322,7 +1602,17 @@ static DWORD WINAPI hook_GetPrivateProfileStringA(
         return FALSE;
     }
 
-    return next_GetPrivateProfileStringA(lpAppName, lpKeyName, lpDefault, lpReturnedString, nSize, trans ? trans: lpFileName);
+    result = next_GetPrivateProfileStringA(
+        lpAppName,
+        lpKeyName,
+        lpDefault,
+        lpReturnedString,
+        nSize,
+        trans ? trans: lpFileName);
+
+    free(trans);
+
+    return result;
 }
 
 static DWORD WINAPI hook_GetPrivateProfileStringW(
@@ -1334,6 +1624,7 @@ static DWORD WINAPI hook_GetPrivateProfileStringW(
         LPCWSTR lpFileName
 ) {
     wchar_t *trans;
+    DWORD result;
     BOOL ok;
 
     ok = path_transform_w(&trans, lpFileName);
@@ -1342,7 +1633,16 @@ static DWORD WINAPI hook_GetPrivateProfileStringW(
         return FALSE;
     }
 
-    return next_GetPrivateProfileStringW(lpAppName, lpKeyName, lpDefault, lpReturnedString, nSize, trans ? trans: lpFileName);
+    result = next_GetPrivateProfileStringW(
+        lpAppName,
+        lpKeyName,
+        lpDefault,
+        lpReturnedString,
+        nSize, trans ? trans: lpFileName);
+    
+        free(trans);
+
+    return result;
 }
 
 static DWORD WINAPI hook_GetPrivateProfileSectionW(
@@ -1352,6 +1652,7 @@ static DWORD WINAPI hook_GetPrivateProfileSectionW(
         LPCWSTR lpFileName
 ) {
     wchar_t *trans;
+    DWORD result;
     BOOL ok;
 
     ok = path_transform_w(&trans, lpFileName);
@@ -1360,7 +1661,15 @@ static DWORD WINAPI hook_GetPrivateProfileSectionW(
         return FALSE;
     }
 
-    return next_GetPrivateProfileSectionW(lpAppName, lpReturnedString, nSize, trans ? trans: lpFileName);
+    result = next_GetPrivateProfileSectionW(
+        lpAppName,
+        lpReturnedString,
+        nSize,
+        trans ? trans: lpFileName);
+    
+    free(trans);
+    
+    return result;
 }
 
 
@@ -1368,6 +1677,7 @@ static UINT WINAPI hook_GetDriveTypeA(
         LPCSTR lpRootPathName
 ) {
     char *trans;
+    UINT result;
     BOOL ok;
 
     ok = path_transform_a(&trans, lpRootPathName);
@@ -1376,7 +1686,11 @@ static UINT WINAPI hook_GetDriveTypeA(
         return FALSE;
     }
 
-    return next_GetDriveTypeA(trans ? trans : lpRootPathName);
+    result = next_GetDriveTypeA(trans ? trans : lpRootPathName);
+
+    free(trans);
+
+    return result;
 }
 
 
@@ -1384,6 +1698,7 @@ static UINT WINAPI hook_GetDriveTypeW(
         LPCWSTR lpRootPathName
 ) {
     wchar_t *trans;
+    UINT result;
     BOOL ok;
 
     ok = path_transform_w(&trans, lpRootPathName);
@@ -1392,5 +1707,9 @@ static UINT WINAPI hook_GetDriveTypeW(
         return FALSE;
     }
 
-    return next_GetDriveTypeW(trans ? trans : lpRootPathName);
+    result = next_GetDriveTypeW(trans ? trans : lpRootPathName);
+
+    free(trans);
+
+    return result;
 }
