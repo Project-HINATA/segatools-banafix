@@ -161,6 +161,14 @@ static DWORD WINAPI hook_GetPrivateProfileSectionW(
         LPCWSTR lpFileName
 );
 
+static UINT WINAPI hook_GetDriveTypeA(
+        LPCSTR lpRootPathName
+);
+
+static UINT WINAPI hook_GetDriveTypeW(
+        LPCWSTR lpRootPathName
+);
+
 /* Link pointers */
 
 static BOOL (WINAPI *next_CreateDirectoryA)(
@@ -303,6 +311,14 @@ static DWORD (WINAPI *next_GetPrivateProfileSectionW)(
         LPCWSTR lpFileName
 );
 
+static UINT (WINAPI *next_GetDriveTypeW)(
+        LPCWSTR lpRootPathName
+);
+
+static UINT (WINAPI *next_GetDriveTypeA)(
+        LPCSTR lpRootPathName
+);
+
 /* Hook table */
 
 static const struct hook_symbol path_hook_syms[] = {
@@ -418,6 +434,14 @@ static const struct hook_symbol path_hook_syms[] = {
         .name   = "GetPrivateProfileSectionW",
         .patch  = hook_GetPrivateProfileSectionW,
         .link   = (void **) &next_GetPrivateProfileSectionW,
+    }, {
+        .name   = "GetDriveTypeA",
+        .patch  = hook_GetDriveTypeA,
+        .link = (void **) &next_GetDriveTypeA,
+    }, {
+        .name   = "GetDriveTypeW",
+        .patch  = hook_GetDriveTypeW,
+        .link = (void **) &next_GetDriveTypeW,
     }
 };
 
@@ -1337,4 +1361,36 @@ static DWORD WINAPI hook_GetPrivateProfileSectionW(
     }
 
     return next_GetPrivateProfileSectionW(lpAppName, lpReturnedString, nSize, trans ? trans: lpFileName);
+}
+
+
+static UINT WINAPI hook_GetDriveTypeA(
+        LPCSTR lpRootPathName
+) {
+    char *trans;
+    BOOL ok;
+
+    ok = path_transform_a(&trans, lpRootPathName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    return next_GetDriveTypeA(trans ? trans : lpRootPathName);
+}
+
+
+static UINT WINAPI hook_GetDriveTypeW(
+        LPCWSTR lpRootPathName
+) {
+    wchar_t *trans;
+    BOOL ok;
+
+    ok = path_transform_w(&trans, lpRootPathName);
+
+    if (!ok) {
+        return FALSE;
+    }
+
+    return next_GetDriveTypeW(trans ? trans : lpRootPathName);
 }
