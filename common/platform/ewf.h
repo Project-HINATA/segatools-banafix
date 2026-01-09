@@ -3,7 +3,6 @@
 #include <windows.h>
 
 #include <stdbool.h>
-#include <stddef.h>
 
 #define EWF_MAX_VIRTUAL_FILES 255
 #define EWF_DEFAULT_FILE_BUFFER_SIZE 1024
