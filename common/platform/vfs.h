@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define MAX_REDIRECTIONS 64
+#define MAX_REDIRECTIONS 8
 
 struct vfs_config {
     bool enable;
