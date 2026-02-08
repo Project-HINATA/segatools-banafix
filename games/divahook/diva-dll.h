@@ -15,6 +15,9 @@ struct diva_dll {
     void (*slider_set_leds)(const uint8_t *rgb);
     HRESULT (*led_init)(void);
     void (*led_set_leds)(uint8_t board, const uint8_t *rgb);
+    HRESULT (*touch_init)(void);
+    void (*touch_start)(diva_io_touch_callback_t callback);
+    void (*touch_stop)(void);
 };
 
 struct diva_dll_config {

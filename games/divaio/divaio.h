@@ -28,6 +28,12 @@ enum {
 };
 
 enum {
+    DIVA_IO_TOUCH_DOWN     = 0x01,
+    DIVA_IO_TOUCH_STREAM   = 0x02,
+    DIVA_IO_TOUCH_LIFTOFF  = 0x04,
+};
+
+enum {
     /* These are the bitmasks to use when checking which
        lights are triggered on incoming IO3 GPIO writes. */
     DIVA_IO_LED_LEFT_PARTITION_RED    = 1 << 1, 
@@ -173,3 +179,54 @@ HRESULT diva_io_led_init(void);
    Minimum API version: 0x0101 */
 
 void diva_io_led_set_leds(uint8_t board, const uint8_t *rgb);
+
+/* Initialize touchscreen output. This function will be called before any
+   other diva_io_touch*() function calls. Errors returned from this function will
+   manifest as a disconnected touchscreen controller.
+
+   All subsequent calls may originate from arbitrary threads and some may
+   overlap with each other. Ensuring synchronization inside your IO DLL is
+   your responsibility.
+
+   Minimum API version: 0x0101 */
+
+HRESULT diva_io_touch_init();
+
+/* Callback function supplied to your IO DLL.
+   If the id parameter is higher than 1, and the Elo touchscreen controller
+   (DIVA_IO_TOUCH_CONTROLLER_ELO) is the current touchscreen type, the current
+   poll will be ignored, as the Elo controller can only recognize single-touch.
+   Be sure to only allow for single-touch if diva_io_touch_init() was called with
+   the type parameter set to this touchscreen type. */
+
+typedef void (*diva_io_touch_callback_t)(
+        const uint8_t status,
+        const uint16_t x,
+        const uint16_t y,
+        const uint8_t id);
+
+/* Start polling the touchscreen. Your DLL must start a polling thread and call
+   the supplied function periodically from that thread with new status,
+   coordinates, and ID.
+   The update interval is up to you, but if your input device doesn't have any
+   preferred interval then 1 kHz is a reasonable maximum frequency.
+
+   Minimum API version: 0x0101 */
+
+void diva_io_touch_start(diva_io_touch_callback_t callback);
+
+/* Stop polling the touchscreen. You must cease to invoke the input callback
+   before returning from this function.
+
+   This function will only be called for specific touchscreen types. As of API
+   version 0x0100, only the Elo touch controller (DIVA_IO_TOUCH_CONTROLLER_ELO)
+   will make use of this function, and only at startup, where the game requests
+   the controller to do a hard reset twice.
+
+   Following on from the above, the touchscreen polling loop *will* be
+   restarted after being stopped in the course of regular operation. Do not
+   permanently tear down your input driver in response to this function call.
+
+   Minimum API version: 0x0101 */
+
+void diva_io_touch_stop(void);

@@ -4,7 +4,7 @@
     Devices
 
       JVS:  837-14572 "Type 3" I/O Board
-     COM1:  3M Touch Systems 78-0011-2353-4 Touch Controller Board
+     COM1:  838-14772 (Elo Touchsystems 2701) Touch Controller Board
     COM10:  TN32MSEC003S "Gen 1" Aime Reader
     COM11:  837-15275 Touch Slider
 */
@@ -100,6 +100,12 @@ static DWORD CALLBACK diva_pre_startup(void)
     }
 
     hr = slider_hook_init(&diva_hook_cfg.slider);
+
+    if (FAILED(hr)) {
+        goto fail;
+    }
+
+    hr = elo_hook_init(&diva_hook_cfg.touch, 1);
 
     if (FAILED(hr)) {
         goto fail;
