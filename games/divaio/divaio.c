@@ -40,12 +40,16 @@ uint16_t diva_io_get_api_version(void)
 
 HRESULT diva_io_jvs_init(void)
 {
-    if (!diva_io_config_initted) {
+    HRESULT hr;
+
+    if(!diva_io_config_initted) {
         diva_io_config_load(&diva_io_cfg, get_config_path());
         diva_io_config_initted = true;
     }
 
-    return S_OK;
+    hr = diva_io_touch_config_apply(&diva_io_cfg);
+
+    return hr;
 }
 
 void diva_io_jvs_poll(uint8_t *opbtn_out, uint8_t *gamebtn_out)
@@ -189,16 +193,7 @@ void diva_io_led_set_leds(uint8_t board, const uint8_t *rgb)
 
 HRESULT diva_io_touch_init()
 {
-    HRESULT hr;
-
-    if(!diva_io_config_initted) {
-        diva_io_config_load(&diva_io_cfg, get_config_path());
-        diva_io_config_initted = true;
-    }
-
-    hr = diva_io_touch_config_apply(&diva_io_cfg);
-
-    return hr;
+    return S_OK;
 }
 
 static HRESULT diva_io_touch_config_apply(
@@ -206,7 +201,6 @@ static HRESULT diva_io_touch_config_apply(
     )
 {
     dprintf("Diva IO: Touch: --- Begin Configuration ---\n");
-    dprintf("Diva IO: Touch: Using Elo controller\n");
 
     if (wstr_ieq(cfg->touch_mode, L"mouse")) {
         dprintf("Diva IO: Touch: Mouse emulation\n");

@@ -30,6 +30,9 @@ static HRESULT elo_frame_accept(const struct iobuf *dest);
 /* Checksum offset to cancel out the lead byte */
 #define ELO_CHECKSUM_OFFSET 0xAA
 
+/* SmartSet frame length */
+#define ELO_FRAME_LENGTH 10
+
 static void elo_frame_sync(struct iobuf *src)
 {
     size_t i;
@@ -46,7 +49,7 @@ static HRESULT elo_frame_accept(const struct iobuf *dest)
     uint8_t calc_checksum;
     size_t i;
 
-    if (dest->pos < 10) {
+    if (dest->pos < ELO_FRAME_LENGTH) {
         return S_FALSE;
     }
 
@@ -93,7 +96,7 @@ HRESULT elo_frame_decode(struct iobuf *dest, struct iobuf *src)
 
         if (dest->pos >= dest->nbytes) {
             hr = HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
-        } else if (i == 0 && byte != 0x55) {
+        } else if (i == 0 && byte != ELO_FRAME_LEAD) {
             /* Invalid lead byte */
             hr = E_FAIL;
         } else {
@@ -135,7 +138,7 @@ HRESULT elo_frame_encode(
     src = ptr;
 
     /* Requires exactly 10 bytes */
-    if (dest->pos + 10 > dest->nbytes) {
+    if (dest->pos + ELO_FRAME_LENGTH > dest->nbytes) {
         return HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
     }
 
@@ -145,7 +148,7 @@ HRESULT elo_frame_encode(
     checksum = ELO_CHECKSUM_OFFSET;
 
     /* Write exactly 9 bytes (lead-in + 8 data bytes) */
-    for (i = 0; i < 9; i++) {
+    for (i = 0; i < ELO_FRAME_LENGTH-1; i++) {
         uint8_t b = (i < nbytes) ? src[i] : 0x00;
         dest->bytes[dest->pos++] = b;
         checksum += b;
