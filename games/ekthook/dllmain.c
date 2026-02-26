@@ -29,6 +29,12 @@
 #include "board/sg-reader.h"
 #include "board/led15093.h"
 
+#include "gfxhook/d3d9.h"
+#include "gfxhook/d3d11.h"
+#include "gfxhook/dxgi.h"
+#include "gfxhook/gfx.h"
+
+
 #include "hook/process.h"
 #include "hook/iohook.h"
 
@@ -103,6 +109,9 @@ static DWORD CALLBACK ekt_pre_startup(void)
     /* Hook Win32 APIs */
 
     dvd_hook_init(&ekt_hook_cfg.dvd, ekt_hook_mod);
+    gfx_hook_init(&ekt_hook_cfg.gfx);
+    gfx_d3d11_hook_init(&ekt_hook_cfg.gfx, ekt_hook_mod);
+    gfx_dxgi_hook_init(&ekt_hook_cfg.gfx, ekt_hook_mod);
     serial_hook_init();
 
     createprocess_push_hook_w(L"fsutil", L"", L"", true, true);

@@ -179,6 +179,7 @@ $(BUILD_DIR_ZIP)/mai2.zip:
 	$(V)cp $(BUILD_DIR_64)/subprojects/capnhook/inject/inject.exe \
 		$(BUILD_DIR_GAMES_64)/mai2hook/mai2hook.dll \
 		$(DIST_DIR)/mai2/segatools.ini \
+		$(DIST_DIR)/mai2/config_hook.json \
 		$(DIST_DIR)/mai2/launch.bat \
     	$(BUILD_DIR_ZIP)/mai2
 	$(V)cp pki/billing.pub \

@@ -3,6 +3,8 @@
 
 #include "board/config.h"
 
+#include "gfxhook/config.h"
+
 #include "ekthook/config.h"
 #include "ekthook/ekt-dll.h"
 
@@ -98,6 +100,7 @@ void ekt_hook_config_load(
     platform_config_load(&cfg->platform, filename);
     aime_config_load(&cfg->aime, filename);
     io4_config_load(&cfg->io4, filename);
+    gfx_config_load(&cfg->gfx, filename);
     dvd_config_load(&cfg->dvd, filename);
     led15093_config_load(&cfg->led15093, filename);
     y3_config_load(&cfg->y3, filename);
