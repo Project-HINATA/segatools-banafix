@@ -13,6 +13,7 @@
 struct sg_nfc_ops {
     HRESULT (*poll)(void *ctx);
     HRESULT (*get_aime_id)(void *ctx, uint8_t *luid, size_t nbytes);
+    HRESULT (*get_mifare_block)(void *ctx, uint8_t *block, size_t nbytes);
     HRESULT (*get_felica_id)(void *ctx, uint64_t *IDm);
     HRESULT (*get_mifare_uid)(void *ctx, uint8_t *uid, size_t nbytes);
     HRESULT (*mifare_select)(void *ctx, const uint8_t *uid, size_t nbytes);

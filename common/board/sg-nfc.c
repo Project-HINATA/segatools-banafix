@@ -50,6 +50,10 @@ static HRESULT sg_nfc_poll_aime(
         struct sg_nfc *nfc,
         struct sg_nfc_poll_mifare *mifare);
 
+static HRESULT sg_nfc_poll_mifare(
+        struct sg_nfc *nfc,
+        struct sg_nfc_poll_mifare *mifare);
+
 static HRESULT sg_nfc_poll_felica(
         struct sg_nfc *nfc,
         struct sg_nfc_poll_felica *felica);
@@ -354,6 +358,16 @@ static HRESULT sg_nfc_cmd_poll(
         return S_OK;
     }
 
+    hr = sg_nfc_poll_mifare(nfc, &mifare);
+
+    if (SUCCEEDED(hr) && hr != S_FALSE) {
+        sg_res_init(&res->res, req, 1 + sizeof(mifare));
+        memcpy(res->payload, &mifare, sizeof(mifare));
+        res->count = 1;
+
+        return S_OK;
+    }
+
     sg_res_init(&res->res, req, 1);
     res->count = 0;
 
@@ -411,6 +425,44 @@ static HRESULT sg_nfc_poll_aime(
     /* Initialize MIFARE IC emulator */
 
     hr = aime_card_populate(&nfc->mifare, luid, sizeof(luid));
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    return S_OK;
+}
+
+static HRESULT sg_nfc_poll_mifare(
+        struct sg_nfc *nfc,
+        struct sg_nfc_poll_mifare *mifare)
+{
+    uint8_t block[32];
+    HRESULT hr;
+
+    /* Call backend */
+
+    if (nfc->ops->get_mifare_block != NULL) {
+        hr = nfc->ops->get_mifare_block(nfc->ops_ctx, block, sizeof(block));
+    } else {
+        hr = S_FALSE;
+    }
+
+    if (FAILED(hr) || hr == S_FALSE) {
+        return hr;
+    }
+
+    sg_nfc_dprintf(nfc, "Mifare card is present\n");
+
+    /* Construct response (use an arbitrary UID) */
+
+    mifare->type = 0x10;
+    mifare->id_len = sizeof(mifare->uid);
+    mifare->uid = _byteswap_ulong(0x01020304);
+
+    /* Initialize MIFARE IC emulator */
+    memset(&nfc->mifare, 0, sizeof(nfc->mifare));
+    memcpy(&nfc->mifare.sectors[0].blocks[1], block, sizeof(block));
 
     if (FAILED(hr)) {
         return hr;

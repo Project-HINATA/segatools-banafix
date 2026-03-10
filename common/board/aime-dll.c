@@ -68,6 +68,13 @@ const struct dll_bind_sym aime_dll_syms[] = {
     },
 };
 
+const struct dll_bind_sym mifare_dll_syms[] = {
+    {
+        .sym = "aime_io_nfc_get_mifare_block",
+        .off = offsetof(struct aime_dll, nfc_get_mifare_block),
+    }
+};
+
 struct aime_dll aime_dll;
 
 // Copypasta DLL binding and diagnostic message boilerplate.
@@ -144,6 +151,18 @@ HRESULT aime_dll_init(const struct aime_dll_config *cfg, HINSTANCE self)
         } else {
             dprintf("Internal error: could not reflect \"%s\"\n", sym->sym);
         }
+    }
+
+    if (aime_dll.api_version < 0x0101) {
+        const struct dll_bind_sym *mifare_sym = mifare_dll_syms;
+        HRESULT hr1 = dll_bind(&aime_dll, src, &mifare_sym, _countof(mifare_dll_syms));
+
+        if (FAILED(hr1)) {
+            // Optional feature, ignore if not present
+            aime_dll.nfc_get_mifare_block = NULL;
+        }
+    } else {
+        aime_dll.nfc_get_mifare_block = NULL;
     }
 
     owned = NULL;

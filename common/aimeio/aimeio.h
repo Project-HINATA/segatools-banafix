@@ -54,6 +54,27 @@ HRESULT aime_io_nfc_get_aime_id(
         size_t luid_size);
 
 /*
+    尝试读取Mifare1型的Aime或Bana卡的块1和块2
+    用来解决不能刷Bana卡的问题, 因为块1中包含校验数据
+
+    - unit_no: Always 0 as of the current API version
+    - block: 指向将接收块数据的32字节缓冲区的指针
+    - block_size: *block 处的缓冲区大小, 总是32
+
+    Returns:
+
+    - S_OK 如果卡片存在并且被成功读取
+    - S_FALSE 如果不存在卡片 (*luid 将被忽略)
+    - Any HRESULT error if an error occured.
+
+    Minimum API version: 0x0101
+*/
+HRESULT aime_io_nfc_get_mifare_block(
+        uint8_t unit_no,
+        uint8_t *block,
+        size_t block_size);
+
+/*
     Attempt to read out a FeliCa card ID ("IDm"). The following are examples
     of FeliCa cards:
 

@@ -13,6 +13,10 @@ struct aime_dll {
             uint8_t unit_no,
             uint8_t *luid,
             size_t luid_size);
+    HRESULT (*nfc_get_mifare_block)(
+            uint8_t unit_no,
+            uint8_t *block,
+            size_t block_size);
     HRESULT (*nfc_get_felica_id)(uint8_t unit_no, uint64_t *IDm);
     HRESULT (*nfc_get_mifare_uid)(
             uint8_t unit_no,
