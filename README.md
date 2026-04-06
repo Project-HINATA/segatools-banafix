@@ -1,6 +1,6 @@
 # Segatools
 
-Version: `2026-02-26`
+Version: `2026-04-06`
 
 Loaders and hardware emulators for SEGA games that run on the Nu and ALLS platforms.
 
@@ -23,7 +23,7 @@ Loaders and hardware emulators for SEGA games that run on the Nu and ALLS platfo
   * up to Future Tone
 * Initial D
   * [Initial D Arcade Stage Zero](doc/idzhook.md)
-  * Initial D THE ARCADE
+  * Initial D THE ARCADE (up to Season 3)
 * Kemono Friends
   * Kemono Friends 3: Planet Tours
 * maimai DX
