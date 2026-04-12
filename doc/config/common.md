@@ -589,6 +589,14 @@ Default: `01:02:03:04:05:06`
 The MAC address of the virtualized Ethernet adapter. The exact value shouldn't
 ever matter.
 
+### `redirectBroadcast`
+
+Default: `1`
+
+Redirect UDP packets sent to the virtual keychip subnet's broadcast address to
+the address configured by `broadcast`. Disable this if you want to preserve the
+original subnet-local broadcast destination.
+
 ### `broadcast`
 
 Default: `255.255.255.255`

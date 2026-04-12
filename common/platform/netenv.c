@@ -165,6 +165,7 @@ static uint32_t netenv_ip_bcast;
 static uint32_t netenv_ip_iface;
 static uint32_t netenv_ip_router;
 static uint8_t netenv_mac_addr[6];
+static bool netenv_redirect_broadcast;
 static uint32_t netenv_last_logged_broadcast_src;
 static uint32_t netenv_last_logged_broadcast_dest;
 static bool netenv_broadcast_logged;
@@ -191,6 +192,7 @@ HRESULT netenv_hook_init(
     netenv_ip_iface = kc_cfg->subnet | cfg->addr_suffix;
     netenv_ip_router = kc_cfg->subnet | cfg->router_suffix;
     memcpy(netenv_mac_addr, cfg->mac_addr, sizeof(netenv_mac_addr));
+    netenv_redirect_broadcast = cfg->redirect_broadcast;
 
     netenv_hook_apply_hooks(NULL);
 
@@ -569,6 +571,10 @@ static int WINAPI hook_sendto(
     }
 
     const struct sockaddr_in* original_to = (struct sockaddr_in*)to;
+
+    if (!netenv_redirect_broadcast) {
+        return next_sendto(s, buf, len, flags, to, tolen);
+    }
 
     uint32_t bc_addr = _byteswap_ulong(netenv_ip_prefix | 0xFF);
 

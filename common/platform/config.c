@@ -182,6 +182,11 @@ void netenv_config_load(struct netenv_config *cfg, const wchar_t *filename)
     memset(cfg, 0, sizeof(*cfg));
 
     cfg->enable = GetPrivateProfileIntW(L"netenv", L"enable", 0, filename);
+    cfg->redirect_broadcast = GetPrivateProfileIntW(
+            L"netenv",
+            L"redirectBroadcast",
+            1,
+            filename);
 
     cfg->addr_suffix = GetPrivateProfileIntW(
             L"netenv",
