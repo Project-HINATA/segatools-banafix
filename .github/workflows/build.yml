@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   dist:
-    name: Build distribution
+    name: Build DLLs
     runs-on: ubuntu-latest
 
     steps:
@@ -32,20 +32,45 @@ jobs:
             git \
             make \
             meson \
-            ninja-build \
-            zip
+            ninja-build
 
-      - name: Build distribution package
+      - name: Build DLLs
+        run: make build
+
+      - name: Prepare DLL artifacts
         run: |
-          mkdir -p "$RUNNER_TEMP/mingw-bin"
-          ln -s "$(command -v x86_64-w64-mingw32-strip)" "$RUNNER_TEMP/mingw-bin/strip"
-          PATH="$RUNNER_TEMP/mingw-bin:$PATH" make dist
+          mkdir -p release-dlls
 
-      - name: Upload distribution artifacts
+          cp build/build32/games/chunihook/chunihook.dll release-dlls/chunihook.dll
+          cp build/build32/games/cxbhook/cxbhook.dll release-dlls/cxbhook.dll
+          cp build/build32/games/carolhook/carolhook.dll release-dlls/carolhook.dll
+
+          cp build/build64/games/divahook/divahook.dll release-dlls/divahook.dll
+          cp build/build64/games/idzhook/idzhook.dll release-dlls/idzhook.dll
+          cp build/build64/games/fgohook/fgohook.dll release-dlls/fgohook.dll
+          cp build/build64/games/idachook/idachook.dll release-dlls/idachook.dll
+          cp build/build64/games/swdchook/swdchook.dll release-dlls/swdchook.dll
+          cp build/build64/games/mercuryhook/mercuryhook.dll release-dlls/mercuryhook.dll
+          cp build/build64/games/mu3hook/mu3hook.dll release-dlls/mu3hook.dll
+          cp build/build64/games/mai2hook/mai2hook.dll release-dlls/mai2hook.dll
+          cp build/build64/games/cmhook/cmhook.dll release-dlls/cmhook.dll
+          cp build/build64/games/tokyohook/tokyohook.dll release-dlls/tokyohook.dll
+          cp build/build64/games/apm3hook/apm3hook.dll release-dlls/apm3hook.dll
+
+          cp build/build32/games/chusanhook/chusanhook.dll release-dlls/chusanhook_x86.dll
+          cp build/build64/games/chusanhook/chusanhook.dll release-dlls/chusanhook_x64.dll
+          cp build/build32/games/kemonohook/kemonohook.dll release-dlls/kemonohook_x86.dll
+          cp build/build64/games/kemonohook/kemonohook.dll release-dlls/kemonohook_x64.dll
+          cp build/build32/games/ekthook/ekthook.dll release-dlls/ekthook_x86.dll
+          cp build/build64/games/ekthook/ekthook.dll release-dlls/ekthook_x64.dll
+          cp build/build32/games/sekitohook/sekitohook.dll release-dlls/sekitohook_x86.dll
+          cp build/build64/games/sekitohook/sekitohook.dll release-dlls/sekitohook_x64.dll
+
+      - name: Upload DLL artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: segatools-dist
-          path: build/zip/*.zip
+          name: segatools-dlls
+          path: release-dlls/*.dll
           if-no-files-found: error
 
       - name: Create release
@@ -56,4 +81,4 @@ jobs:
           name: Build ${{ github.run_number }}.${{ github.run_attempt }}
           body: |
             Automated build for ${{ github.sha }}.
-          files: build/zip/*.zip
+          files: release-dlls/*.dll
