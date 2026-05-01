@@ -1,0 +1,59 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  dist:
+    name: Build distribution
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang \
+            binutils-mingw-w64-i686 \
+            binutils-mingw-w64-x86-64 \
+            gcc-mingw-w64-i686 \
+            gcc-mingw-w64-x86-64 \
+            git \
+            make \
+            meson \
+            ninja-build \
+            zip
+
+      - name: Build distribution package
+        run: |
+          mkdir -p "$RUNNER_TEMP/mingw-bin"
+          ln -s "$(command -v x86_64-w64-mingw32-strip)" "$RUNNER_TEMP/mingw-bin/strip"
+          PATH="$RUNNER_TEMP/mingw-bin:$PATH" make dist
+
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: segatools-dist
+          path: build/zip/*.zip
+          if-no-files-found: error
+
+      - name: Create release
+        if: github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}-${{ github.run_attempt }}
+          name: Build ${{ github.run_number }}.${{ github.run_attempt }}
+          body: |
+            Automated build for ${{ github.sha }}.
+          files: build/zip/*.zip
