@@ -60,6 +60,7 @@ static int32_t MTF[9];
 /* Printer status */
 
 static uint8_t STATUS = 0;
+static uint8_t printSide = 0;
 static ULONGLONG finishTime = 0;
 
 /* C3XXFWDLusb API hooks */
@@ -2375,6 +2376,7 @@ int WINAPI chcusb_endpage(uint16_t *rResult) {
         dprintf("Printer: Waiting for %dms...\n", printer_config.wait_time);
     }
     awaitingCardExit = true;
+    printSide = 0;
 
     *rResult = 0;
     return 1;
@@ -2388,8 +2390,8 @@ int WINAPI chcusb_write(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) {
     uint8_t metadata[44];
     swprintf_s(
         dumpPath, MAX_PATH,
-        L"%s\\C3XX_%04d%02d%02d_%02d%02d%02d.bmp",
-        printer_out_path, t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
+        L"%s\\C3XX_%04d%02d%02d_%02d%02d%02d_%d.bmp",
+        printer_out_path, t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond, printSide);
 
     memcpy(metadata, cardRFID, 12);
     memcpy(metadata + 12, cardDataBuffer, 32);
@@ -2398,6 +2400,8 @@ int WINAPI chcusb_write(uint8_t *data, uint32_t *writeSize, uint16_t *rResult) {
     // WriteArrayToFile(dumpPath, data, IMAGE_SIZE, FALSE);
     dprintf("Printer: C3XXusb: %s\n", __func__);
     dwprintf(L"Printer: File written: %s\n", dumpPath);
+
+    printSide++;
 
     *rResult = 0;
 
