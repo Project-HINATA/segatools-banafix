@@ -59,7 +59,7 @@ This is required for some games (e.g. Chunithm) but not others (e.g. WACCA).
 
 Default: `1`
 
-Changes the Aime card reader generation, this will also change the LED info 
+Changes the Aime card reader generation, this will also change the LED info
 provided for the game.
 
 - `1`: TN32MSEC003S H/W Ver3.0 / TN32MSEC003S F/W Ver1.2
@@ -198,7 +198,7 @@ resolves to one).
 
 Default: `title`
 
-Leave it as `title` to use the title server returned by ALL.Net. Rewrites 
+Leave it as `title` to use the title server returned by ALL.Net. Rewrites
 the title server hostname for certain games, such as crossbeats REV.
 
 ### `router`
@@ -485,9 +485,9 @@ integer `modelType` setting, but they are combined here for convenience.
 - `ACA`: ALLS UX/HX/MX
 
 `modelType` is one of the following:
-- `1`: Server (SV) 
-- `2`: Satalite (ST) 
-- `3`: Live (LV) 
+- `1`: Server (SV)
+- `2`: Satalite (ST)
+- `3`: Live (LV)
 - `4`: Terminal (TN)
 
 It's safe to assume that every game you'll be playing with these tools will be a Satalite.
@@ -513,7 +513,7 @@ Values are:
 
 Default: `DEVICE\\ca.crt`
 
-Set the billing certificate path. This has to match the one used for the 
+Set the billing certificate path. This has to match the one used for the
 SSL billing server. The DER certificate must fit in 1024 bytes so it must be
 small.
 
@@ -635,6 +635,28 @@ Default `DEVICE\sram.bin`
 
 Path to the storage file for SRAM emulation.
 
+### `[touch]`
+
+Configure WinTouch emulation for mouse input.
+
+#### `enable`
+
+Default: `1`
+
+Enable WinTouch touchscreen emulation for the mouse. Disable to use a native WinTouch-compatible touchscreen.
+
+#### `remap`
+
+Default: `1`
+
+Enable coordinate remapping. Disable this if you running in windowed mode and find the touch position shifted when moving the window.
+
+#### `cursor`
+
+Default: `1`
+
+Display a cursor to indicate touch position.
+
 ## `[vfs]`
 
 Configure Windows path redirection hooks.
@@ -748,7 +770,7 @@ The Windows directory is always excluded from virtualization.
 
 ## `[misc]`
 
-Configure miscellaneous hooks and features. 
+Configure miscellaneous hooks and features.
 
 ### `allowMasterKeyWrite`
 
