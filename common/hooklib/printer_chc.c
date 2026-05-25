@@ -150,7 +150,7 @@ int WINAPI chcusb_getEEPROM(uint8_t index, uint8_t *rData, uint16_t *rResult);
 int WINAPI chcusb_setParameter(uint8_t a1, uint32_t a2, uint16_t *rResult);
 int WINAPI chcusb_getParameter(uint8_t a1, uint8_t *a2, uint16_t *rResult);
 int WINAPI chcusb_universal_command(int32_t a1, uint8_t a2, int32_t a3, uint8_t *a4, uint16_t *rResult);
-int WINAPI chcusb_writeIred(uint8_t* a1, uint8_t* a2, uint16_t* rResult);
+int WINAPI chcusb_writeIred(uint8_t* data, uint32_t* len, uint16_t* rResult);
 
 /* PrintDLL API hooks */
 
@@ -3074,8 +3074,21 @@ void printer_set_dimensions(int width, int height){
     HEIGHT = height;
 }
 
-int WINAPI chcusb_writeIred(uint8_t* a1, uint8_t* a2, uint16_t* rResult) {
+int WINAPI chcusb_writeIred(uint8_t* data, uint32_t* len, uint16_t* rResult) {
+    dprintf("Printer: C3XXusb: %s(%d)\n", __func__, *len);
+
+    SYSTEMTIME t;
+    GetLocalTime(&t);
+
+    wchar_t dumpPath[MAX_PATH];
+    swprintf_s(
+        dumpPath, MAX_PATH,
+        L"%s\\C3XX_%04d%02d%02d_%02d%02d%02d_ir.bmp",
+        printer_out_path, t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
+
+    WriteDataToBitmapFile(dumpPath, 8, WIDTH, HEIGHT, data, HOLO_SIZE, NULL, 0, rotate180);
     dprintf("Printer: C3XXusb: %s\n", __func__);
+
     *rResult = 0;
     return 1;
 }
