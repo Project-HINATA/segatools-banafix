@@ -200,6 +200,14 @@ static UINT WINAPI hook_GetDriveTypeW(
         LPCWSTR lpRootPathName
 );
 
+static BOOL WINAPI hook_GetDiskFreeSpaceW(
+        LPCWSTR lpRootPathName,
+        LPDWORD lpSectorsPerCluster,
+        LPDWORD lpBytesPerSector,
+        LPDWORD lpNumberOfFreeClusters,
+        LPDWORD lpTotalNumberOfClusters
+);
+
 /* Link pointers */
 
 static BOOL (WINAPI *next_CreateDirectoryA)(
@@ -395,6 +403,14 @@ static UINT (WINAPI *next_GetDriveTypeA)(
         LPCSTR lpRootPathName
 );
 
+static BOOL (WINAPI *next_GetDiskFreeSpaceW)(
+        LPCWSTR lpRootPathName,
+        LPDWORD lpSectorsPerCluster,
+        LPDWORD lpBytesPerSector,
+        LPDWORD lpNumberOfFreeClusters,
+        LPDWORD lpTotalNumberOfClusters
+);
+
 /* Hook table */
 
 static const struct hook_symbol path_hook_syms[] = {
@@ -538,6 +554,10 @@ static const struct hook_symbol path_hook_syms[] = {
         .name   = "GetDriveTypeW",
         .patch  = hook_GetDriveTypeW,
         .link = (void **) &next_GetDriveTypeW,
+    }, {
+        .name   = "GetDiskFreeSpaceW",
+        .patch  = hook_GetDiskFreeSpaceW,
+        .link = (void **) &next_GetDiskFreeSpaceW,
     }
 };
 
@@ -1714,6 +1734,30 @@ static UINT WINAPI hook_GetDriveTypeW(
     }
 
     result = next_GetDriveTypeW(trans ? trans : lpRootPathName);
+
+    free(trans);
+
+    return result;
+}
+
+static BOOL WINAPI hook_GetDiskFreeSpaceW(
+        LPCWSTR lpRootPathName,
+        LPDWORD lpSectorsPerCluster,
+        LPDWORD lpBytesPerSector,
+        LPDWORD lpNumberOfFreeClusters,
+        LPDWORD lpTotalNumberOfClusters
+) {
+    wchar_t *trans;
+    UINT result;
+    BOOL ok;
+
+    ok = path_transform_w(&trans, lpRootPathName);
+
+    if (!ok) {
+      return FALSE;
+    }
+
+    result = next_GetDiskFreeSpaceW(trans ? trans : lpRootPathName, lpSectorsPerCluster, lpBytesPerSector, lpNumberOfFreeClusters, lpTotalNumberOfClusters);
 
     free(trans);
 
