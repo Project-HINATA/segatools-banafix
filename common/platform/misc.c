@@ -22,6 +22,9 @@ static HRESULT misc_read_cpu_temp_error(void *bytes, uint32_t *nbytes);
 static HRESULT misc_read_cpu_temp_warning(void *bytes, uint32_t *nbytes);
 static HRESULT misc_read_platform_id(void *bytes, uint32_t *nbytes);
 static HRESULT misc_read_platform_name(void *bytes, uint32_t *nbytes);
+static HRESULT misc_read_main_nic(void *bytes, uint32_t *nbytes);
+static HRESULT misc_read_extend_nic(void *bytes, uint32_t *nbytes);
+static HRESULT misc_read_downloadui_done(void *bytes, uint32_t *nbytes);
 
 static const struct hook_symbol misc_syms[] = {
     {
@@ -72,6 +75,26 @@ static const struct reg_hook_val misc_static_keys[] = {
         .read   = misc_read_platform_name,
         .type   = REG_SZ,
     }
+};
+
+static const struct reg_hook_val misc_wireless_keys[] = {
+    {
+        .name   = L"main_nic",
+        .read   = misc_read_main_nic,
+        .type   = REG_DWORD,
+    }, {
+        .name   = L"extend_nic",
+        .read   = misc_read_extend_nic,
+        .type   = REG_DWORD,
+    }
+};
+
+static const struct reg_hook_val misc_downloadui_keys[] = {
+    {
+        .name   = L"IsDone",
+        .read   = misc_read_downloadui_done,
+        .type   = REG_DWORD,
+    },
 };
 
 static wchar_t misc_platform_id[5];
@@ -130,6 +153,27 @@ HRESULT misc_hook_init(const struct misc_config *cfg, const char *platform_id)
         return hr;
     }
 
+    hr = reg_hook_push_key(
+            HKEY_LOCAL_MACHINE,
+            L"SYSTEM\\SEGA\\SystemProperty\\wirelessNetwork",
+            misc_wireless_keys,
+            _countof(misc_wireless_keys));
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = reg_hook_push_key(
+            HKEY_LOCAL_MACHINE,
+            L"SYSTEM\\SEGA\\SystemProperty\\downloadui",
+            misc_downloadui_keys,
+            _countof(misc_downloadui_keys));
+
+
+    if (FAILED(hr)) {
+        return hr;
+    }
+
     /* Apply function hooks */
 
     if (!cfg->allowReboot) {
@@ -174,4 +218,19 @@ static HRESULT misc_read_platform_id(void *bytes, uint32_t *nbytes)
 static HRESULT misc_read_platform_name(void *bytes, uint32_t *nbytes)
 {
     return reg_hook_read_wstr(bytes, nbytes, L"ALLS MX2.1"); // TODO: Dynamic
+}
+
+static HRESULT misc_read_main_nic(void *bytes, uint32_t *nbytes)
+{
+    return reg_hook_read_wstr(bytes, nbytes, L"");
+}
+
+static HRESULT misc_read_extend_nic(void *bytes, uint32_t *nbytes)
+{
+    return reg_hook_read_wstr(bytes, nbytes, L"");
+}
+
+static HRESULT misc_read_downloadui_done(void *bytes, uint32_t *nbytes)
+{
+    return reg_hook_read_u32(bytes, nbytes, 1);
 }
