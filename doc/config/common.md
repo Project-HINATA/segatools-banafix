@@ -761,3 +761,13 @@ Allows the game to write to specific registry keys relevant for the boot process
 Default: `0`
 
 Allows the game to reboot the computer. Only intended for owners of real hardware.
+
+### `nextProcessFile`
+
+Default: `DEVICE\NextProcess.txt`
+
+This is a file that will be set to the content of what would be written to the `NextProcess` registry key when the game is terminated.
+
+This allows whatever executed the game process to react what should happen next (System Test Mode selected, network delivery completed, ...) without requiring admin permissions. 
+
+The file is deleted on startup of segatools.

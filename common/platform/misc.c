@@ -12,6 +12,8 @@
 
 #include "platform/misc.h"
 
+#include <shlwapi.h>
+
 #include "util/dprintf.h"
 
 static BOOL WINAPI misc_ExitWindowsEx(unsigned int flags, uint32_t reason);
@@ -25,6 +27,8 @@ static HRESULT misc_read_platform_name(void *bytes, uint32_t *nbytes);
 static HRESULT misc_read_main_nic(void *bytes, uint32_t *nbytes);
 static HRESULT misc_read_extend_nic(void *bytes, uint32_t *nbytes);
 static HRESULT misc_read_downloadui_done(void *bytes, uint32_t *nbytes);
+static HRESULT misc_read_next_process(void *bytes, uint32_t *nbytes);
+static HRESULT misc_write_next_process(const void *bytes, uint32_t nbytes);
 
 static const struct hook_symbol misc_syms[] = {
     {
@@ -47,11 +51,12 @@ static const struct reg_hook_val misc_master_keys[] = {
         .read   = misc_read_app_loader_count,
         .type   = REG_DWORD,
     }, {
-        /* Black-hole val, list it here so we don't get a warning msg */
         .name   = L"NextProcess",
+        .read   = misc_read_next_process,
+        .write  = misc_write_next_process,
         .type   = REG_SZ,
     }, {
-        /* ditto */
+        /* Black-hole val for reading, list it here so we don't get a warning msg */
         .name   = L"SystemError",
         .type   = REG_SZ,
     }
@@ -98,6 +103,7 @@ static const struct reg_hook_val misc_downloadui_keys[] = {
 };
 
 static wchar_t misc_platform_id[5];
+static const struct misc_config *config;
 
 HRESULT misc_hook_init(const struct misc_config *cfg, const char *platform_id)
 {
@@ -105,6 +111,8 @@ HRESULT misc_hook_init(const struct misc_config *cfg, const char *platform_id)
 
     assert(cfg != NULL);
     assert(platform_id != NULL && strlen(platform_id) == 4);
+
+    config = cfg;
 
     if (!cfg->enable) {
         return S_FALSE;
@@ -147,10 +155,10 @@ HRESULT misc_hook_init(const struct misc_config *cfg, const char *platform_id)
                 L"SYSTEM\\SEGA\\SystemProperty\\Master",
                 misc_master_keys,
                 _countof(misc_master_keys));
-    }
 
-    if (FAILED(hr)) {
-        return hr;
+        if (FAILED(hr)) {
+            return hr;
+        }
     }
 
     hr = reg_hook_push_key(
@@ -178,6 +186,10 @@ HRESULT misc_hook_init(const struct misc_config *cfg, const char *platform_id)
 
     if (!cfg->allowReboot) {
         hook_table_apply(NULL, "user32.dll", misc_syms, _countof(misc_syms));
+    }
+
+    if (PathFileExistsW(cfg->nextProcessFile)) {
+        DeleteFileW(cfg->nextProcessFile);
     }
 
     return S_OK;
@@ -233,4 +245,33 @@ static HRESULT misc_read_extend_nic(void *bytes, uint32_t *nbytes)
 static HRESULT misc_read_downloadui_done(void *bytes, uint32_t *nbytes)
 {
     return reg_hook_read_u32(bytes, nbytes, 1);
+}
+
+static HRESULT misc_read_next_process(void *bytes, uint32_t *nbytes)
+{
+    return reg_hook_read_wstr(bytes, nbytes, L"");
+}
+
+static HRESULT misc_write_next_process(const void *bytes, uint32_t nbytes)
+{
+    HRESULT hr;
+    DWORD dwBytesWritten;
+
+    wchar_t* nextProcess = malloc(nbytes);
+    memcpy(nextProcess, bytes, nbytes);
+
+    dprintf("Misc: Next Process: %ls\n", nextProcess);
+
+    HANDLE hFile = CreateFileW(config->nextProcessFile, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE) {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        dprintf("Misc: Error opening %ls for writing: %x\n", config->nextProcessFile, (int) hr);
+        return hr;
+    }
+
+    WriteFile(hFile, nextProcess, nbytes, &dwBytesWritten, NULL);
+
+    CloseHandle(hFile);
+
+    return S_OK;
 }
