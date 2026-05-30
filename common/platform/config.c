@@ -348,6 +348,7 @@ void vfs_config_load(struct vfs_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"vfs", L"enable", 1, filename);
+    cfg->allowAmfsDownloads = GetPrivateProfileIntW(L"vfs", L"allowAmfsDownloads", 0, filename);
 
     GetPrivateProfileStringW(
             L"vfs",

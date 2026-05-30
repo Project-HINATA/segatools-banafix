@@ -685,6 +685,12 @@ redirection0from=\\.\COM5
 redirection0to=\\.\COM10
 ```
 
+### `allowAmfsDownloads`
+
+Default: `0`
+
+Allows network services to download arbitrary files to the AMFS directory specified above. This has security implications, do not enable this, unless you trust your server operator.
+
 ## `[epay]`
 
 Configure Thinca Payment (E-Money) emulation and hooks.
