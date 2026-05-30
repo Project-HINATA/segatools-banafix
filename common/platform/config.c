@@ -172,7 +172,7 @@ void misc_config_load(struct misc_config *cfg, const wchar_t *filename)
     cfg->allowReboot = GetPrivateProfileIntW(L"misc", L"allowReboot", 0, filename);
     GetPrivateProfileStringW(
             L"misc",
-            L"path",
+            L"nextProcessFilePath",
             L"DEVICE\\NextProcess.txt",
             cfg->nextProcessFile,
             _countof(cfg->nextProcessFile),

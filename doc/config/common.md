@@ -762,7 +762,7 @@ Default: `0`
 
 Allows the game to reboot the computer. Only intended for owners of real hardware.
 
-### `nextProcessFile`
+### `nextProcessFilePath`
 
 Default: `DEVICE\NextProcess.txt`
 
