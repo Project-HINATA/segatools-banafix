@@ -170,6 +170,13 @@ void misc_config_load(struct misc_config *cfg, const wchar_t *filename)
     cfg->enable = GetPrivateProfileIntW(L"misc", L"enable", 1, filename);
     cfg->allowMasterKeyWrite = GetPrivateProfileIntW(L"misc", L"allowMasterKeyWrite", 0, filename);
     cfg->allowReboot = GetPrivateProfileIntW(L"misc", L"allowReboot", 0, filename);
+    GetPrivateProfileStringW(
+            L"misc",
+            L"nextProcessFilePath",
+            L"DEVICE\\NextProcess.txt",
+            cfg->nextProcessFile,
+            _countof(cfg->nextProcessFile),
+            filename);
 }
 
 void netenv_config_load(struct netenv_config *cfg, const wchar_t *filename)
@@ -341,6 +348,7 @@ void vfs_config_load(struct vfs_config *cfg, const wchar_t *filename)
     assert(filename != NULL);
 
     cfg->enable = GetPrivateProfileIntW(L"vfs", L"enable", 1, filename);
+    cfg->allowAmfsDownloads = GetPrivateProfileIntW(L"vfs", L"allowAmfsDownloads", 0, filename);
 
     GetPrivateProfileStringW(
             L"vfs",

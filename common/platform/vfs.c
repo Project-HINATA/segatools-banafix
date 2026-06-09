@@ -41,6 +41,10 @@ static HRESULT vfs_custom_path_hook(
         const wchar_t *src,
         wchar_t *dest,
         size_t *count);
+static HRESULT vfs_path_hook_tmp_icf(
+        const wchar_t *src,
+        wchar_t *dest,
+        size_t *count);
 static HRESULT vfs_reg_read_amfs(void *bytes, uint32_t *nbytes);
 static HRESULT vfs_reg_read_appdata(void *bytes, uint32_t *nbytes);
 
@@ -76,6 +80,9 @@ static const size_t vfs_option_len = _countof(vfs_option) - 1;
 
 static const wchar_t vfs_apm3[] = L"C:\\Mount\\Apm";
 static const size_t vfs_apm3_len = _countof(vfs_apm3) - 1;
+
+static const wchar_t vfs_tmp_icf[] = L"E:\\tmpIcf.icf";
+static const size_t vfs_tmp_icf_len = _countof(vfs_tmp_icf) - 1;
 
 static const struct reg_hook_val vfs_reg_vals[] = {
     {
@@ -166,6 +173,12 @@ HRESULT vfs_hook_init(const struct vfs_config *config, const char* game_id)
 
     if (vfs_config.option[0] != L'\0') {
         vfs_fixup_path(vfs_config.option, _countof(vfs_config.option), true);
+    }
+
+    hr = path_hook_push(vfs_path_hook_tmp_icf);
+
+    if (FAILED(hr)) {
+        return hr;
     }
 
     hr = vfs_mkdir_rec(vfs_config.amfs);
@@ -599,6 +612,29 @@ static HRESULT vfs_path_hook_apm(
     *count = required;
 
     return S_OK;
+}
+
+// Block writing of E:\tmpIcf.icf to intentionally break the download process if the user has not enabled it
+static HRESULT vfs_path_hook_tmp_icf(
+        const wchar_t *src,
+        wchar_t *dest,
+        size_t *count)
+{
+    assert(src != NULL);
+    assert(count != NULL);
+
+    /* Case-insensitive check to see if src starts with vfs_tmp_icf */
+
+    if (path_compare_w(src, vfs_tmp_icf, vfs_tmp_icf_len) != 0) {
+        return S_FALSE;
+    }
+
+    if (vfs_config.allowAmfsDownloads) {
+        return S_FALSE;
+    }
+
+    dprintf("Vfs: AMFS downloads are blocked\n");
+    return E_FAIL;
 }
 
 static HRESULT vfs_reg_read_amfs(void *bytes, uint32_t *nbytes)
