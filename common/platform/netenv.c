@@ -165,6 +165,10 @@ static uint32_t netenv_ip_bcast;
 static uint32_t netenv_ip_iface;
 static uint32_t netenv_ip_router;
 static uint8_t netenv_mac_addr[6];
+static bool netenv_redirect_broadcast;
+static uint32_t netenv_last_logged_broadcast_src;
+static uint32_t netenv_last_logged_broadcast_dest;
+static bool netenv_broadcast_logged;
 
 HRESULT netenv_hook_init(
         const struct netenv_config *cfg,
@@ -188,6 +192,7 @@ HRESULT netenv_hook_init(
     netenv_ip_iface = kc_cfg->subnet | cfg->addr_suffix;
     netenv_ip_router = kc_cfg->subnet | cfg->router_suffix;
     memcpy(netenv_mac_addr, cfg->mac_addr, sizeof(netenv_mac_addr));
+    netenv_redirect_broadcast = cfg->redirect_broadcast;
 
     netenv_hook_apply_hooks(NULL);
 
@@ -567,6 +572,10 @@ static int WINAPI hook_sendto(
 
     const struct sockaddr_in* original_to = (struct sockaddr_in*)to;
 
+    if (!netenv_redirect_broadcast) {
+        return next_sendto(s, buf, len, flags, to, tolen);
+    }
+
     uint32_t bc_addr = _byteswap_ulong(netenv_ip_prefix | 0xFF);
 
     if (original_to->sin_addr.S_un.S_addr == bc_addr) {
@@ -574,9 +583,19 @@ static int WINAPI hook_sendto(
         uint32_t src_addr = _byteswap_ulong(original_to->sin_addr.S_un.S_addr);
         uint32_t dest_addr = _byteswap_ulong(netenv_ip_bcast);
 
-        dprintf("Netenv: sendTo broadcast %u.%u.%u.%u -> %u.%u.%u.%u\n",
-                (src_addr >> 24) & 0xff, (src_addr >> 16) & 0xff, (src_addr >> 8) & 0xff, src_addr & 0xff,
-                (dest_addr >> 24) & 0xff, (dest_addr >> 16) & 0xff, (dest_addr >> 8) & 0xff, dest_addr & 0xff);
+        // Only log the first broadcast packet for each unique source/destination pair, 
+        // to avoid spamming the log with ARP packets and such
+        if (!netenv_broadcast_logged ||
+            netenv_last_logged_broadcast_src != src_addr ||
+            netenv_last_logged_broadcast_dest != dest_addr) {
+            dprintf("Netenv: sendTo broadcast %u.%u.%u.%u -> %u.%u.%u.%u\n",
+                    (src_addr >> 24) & 0xff, (src_addr >> 16) & 0xff, (src_addr >> 8) & 0xff, src_addr & 0xff,
+                    (dest_addr >> 24) & 0xff, (dest_addr >> 16) & 0xff, (dest_addr >> 8) & 0xff, dest_addr & 0xff);
+
+            netenv_last_logged_broadcast_src = src_addr;
+            netenv_last_logged_broadcast_dest = dest_addr;
+            netenv_broadcast_logged = true;
+        }
 
         struct sockaddr_in modified_to = {0};
         memcpy(&modified_to, original_to, tolen);
