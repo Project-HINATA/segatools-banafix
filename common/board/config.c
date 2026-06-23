@@ -80,6 +80,7 @@ void aime_config_load_bykey(struct aime_config *cfg, const wchar_t *filename, co
     cfg->high_baudrate = GetPrivateProfileIntW(config_key, L"highBaud", 1, filename);
     cfg->gen = GetPrivateProfileIntW(config_key, L"gen", 0, filename);
     cfg->proxy_flag = GetPrivateProfileIntW(config_key, L"proxyFlag", 2, filename);
+    cfg->mobile_felica = GetPrivateProfileIntW(config_key, L"mobileFelica", 0, filename);
 
     GetPrivateProfileStringW(
             config_key,

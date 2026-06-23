@@ -113,6 +113,12 @@ Default: `DEVICE\authdata.bin`
 
 Path to the binary file containing data for a Thinca authentication card (see `emoney.txt`)
 
+### `mobileFelica`
+
+Default: `0`
+
+Whether to simulate the scanned FeliCa being a mobile device (1) or an IC card (0). Changes behavior of Aime DB and the card registration flow slightly.
+
 ## `[vfd]`
 
 Controls emulation of the VFD GP1232A02A FUTABA assembly.
