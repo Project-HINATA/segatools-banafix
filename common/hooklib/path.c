@@ -2,7 +2,6 @@
 
 #include <assert.h>
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,7 +11,6 @@
 
 #include "hooklib/path.h"
 
-#include <ntdef.h>
 #include <winioctl.h>
 #include <util/dprintf.h>
 
@@ -1810,7 +1808,7 @@ static BOOL WINAPI hook_DeviceIoControl(
         return FALSE;
     }
 
-    REPARSE_DATA_BUFFER* mount = lpInBuffer;
+    REPARSE_DATA_BUFFER* mount = (REPARSE_DATA_BUFFER*)lpInBuffer;
 
     wchar_t *trans;
     wchar_t *src;
