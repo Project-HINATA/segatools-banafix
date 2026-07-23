@@ -21,8 +21,8 @@ inject -w -k apm3hook.dll hwvalue.exe modeltype
 if %ERRORLEVEL% == 5 goto BEGIN
 
 inject -w -k apm3hook.dll hwvalue.exe dipsw
-set AMDAEMON_CONFIG=server.json
-if %ERRORLEVEL% == 1 set AMDAEMON_CONFIG=client.json
+set AMDAEMON_CONFIG=client.json
+if %ERRORLEVEL% == 1 set AMDAEMON_CONFIG=server.json
 
 :BEGIN
 
