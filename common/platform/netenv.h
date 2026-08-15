@@ -9,6 +9,7 @@
 
 struct netenv_config {
     bool enable;
+    bool redirect_broadcast;
     uint8_t addr_suffix;
     uint8_t router_suffix;
     uint8_t mac_addr[6];

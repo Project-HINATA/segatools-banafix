@@ -1,75 +1,166 @@
 #include <windows.h>
 
+#include <assert.h>
 #include <process.h>
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "divaio/divaio.h"
 #include "divaio/config.h"
+#include "divaio/divaio.h"
+#include "divaio/input/backend.h"
+#include "divaio/touch/backend.h"
+#include "divaio/touch/mouse.h"
+#include "divaio/touch/wintouch.h"
+#include "input/di.h"
+#include "input/kb.h"
+#include "input/xi.h"
 
 #include "util/env.h"
 #include "util/dprintf.h"
+#include "util/fg-detect.h"
 #include "util/str.h"
 
-static unsigned int __stdcall diva_io_slider_thread_proc(void *ctx);
-static unsigned int __stdcall diva_io_touch_thread_proc(void *ctx);
+#define DIVA_SLIDER_AUTO_FRAME_DELAY 5
 
-static HRESULT diva_io_touch_config_apply(
-        const struct diva_io_config *cfg);
+static unsigned int __stdcall diva_io_slider_thread_proc(void* ctx);
+static unsigned int __stdcall diva_io_touch_thread_proc(void* ctx);
 
-static const wchar_t app_title[] = L"Hatsune Miku Project DIVA Arcade Future Tone";
+static LARGE_INTEGER performanceFrequency;
 
+static struct diva_io_config diva_io_cfg;
+static const struct diva_io_backend* diva_io_backend;
 static bool diva_io_coin;
 static uint16_t diva_io_coins;
+static struct diva_button_states diva_button_states = {0};
+
 static HANDLE diva_io_slider_thread;
 static bool diva_io_slider_stop_flag;
-static struct diva_io_config diva_io_cfg;
-static bool diva_io_config_initted = false;
-static bool diva_io_window_focus = true;
+static int8_t slider_auto_left_pos = 0;
+static int8_t slider_auto_right_pos = DIVA_SLIDER_CELL_COUNT;
 
+static const struct diva_touch_backend* diva_touch_backend;
 static HANDLE diva_io_touch_thread;
-static int diva_io_m1 = VK_LBUTTON;
-static int diva_io_touch_points = 1;
 static bool diva_io_touch_stop_flag;
 
-uint16_t diva_io_get_api_version(void)
-{
+uint16_t diva_io_get_api_version(void) {
     return 0x0101;
 }
 
-HRESULT diva_io_jvs_init(void)
-{
-    HRESULT hr;
+HRESULT diva_io_jvs_init(void) {
+    assert(diva_io_backend == NULL);
 
-    if(!diva_io_config_initted) {
-        diva_io_config_load(&diva_io_cfg, get_config_path());
-        diva_io_config_initted = true;
+
+    QueryPerformanceFrequency(&performanceFrequency);
+
+    HINSTANCE inst = GetModuleHandleW(NULL);
+
+    if (inst == NULL) {
+        HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+        dprintf("GetModuleHandleW failed: %lx\n", hr);
+
+        return hr;
     }
 
-    hr = diva_io_touch_config_apply(&diva_io_cfg);
+    diva_io_config_load(&diva_io_cfg, get_config_path());
 
-    return hr;
+    dprintf("Diva IO: Touch: --- Begin Configuration ---\n");
+
+    if (wstr_ieq(diva_io_cfg.touch_mode, L"mouse")) {
+        dprintf("Diva IO: Touch: Mouse emulation\n");
+
+        diva_touch_mouse_init(&diva_touch_backend);
+    } else if (wstr_ieq(diva_io_cfg.touch_mode, L"wintouch")) {
+        dprintf("Diva IO: Touch: WinTouch conversion\n");
+
+        diva_touch_wintouch_init(&diva_touch_backend);
+    } else {
+        dprintf("Diva IO: Touch: Invalid touch mode \"%S\". Use 'mouse' or 'keyboard'.\n", diva_io_cfg.touch_mode);
+
+        return E_INVALIDARG;
+    }
+
+    dprintf("Diva IO: Touch: --- End Configuration ---\n");
+
+    if (wstr_ieq(diva_io_cfg.input_mode, L"keyboard")) {
+        dprintf("Diva IO: Using keyboard\n");
+
+        return diva_kb_init(&diva_io_cfg.kb, &diva_io_backend);
+    } else if (wstr_ieq(diva_io_cfg.input_mode, L"dinput")) {
+        dprintf("Diva IO: Using DirectInput\n");
+
+        return diva_di_init(&diva_io_cfg.di, inst, &diva_io_backend);
+    } else if (wstr_ieq(diva_io_cfg.input_mode, L"xinput")) {
+        dprintf("Diva IO: Using XInput\n");
+
+        return diva_xi_init(&diva_io_cfg.xi, &diva_io_backend);
+    } else {
+        dprintf("Diva IO: Invalid input mode \"%S\". Use 'keyboard', 'dinput' or 'xinput'.\n", diva_io_cfg.touch_mode);
+
+        return E_INVALIDARG;
+    }
+
 }
 
-void diva_io_jvs_poll(uint8_t *opbtn_out, uint8_t *gamebtn_out)
-{
-    uint8_t opbtn;
-    uint8_t gamebtn;
-    size_t i;
+inline static void diva_io_reset_hold_timeouts(struct diva_button_state* state) {
+    ULONGLONG ticks = GetTickCount64();
+    state->doubleTapTimeoutBegin = ticks + diva_io_cfg.hold_transfer_time_min;
+    state->doubleTapTimeoutEnd = ticks + diva_io_cfg.hold_transfer_time_max;
+}
 
-    opbtn = 0;
+static void diva_io_set_game_button(uint8_t* gamebtn, int input_bit, struct diva_button_state* state) {
 
-    HWND hwnd = GetForegroundWindow();
-    wchar_t window_title[MAX_PATH];
-    GetWindowTextW(hwnd, window_title, MAX_PATH);
+    if (state->dropFrames > 0) {
+        state->dropFrames--;
+        return;
+    }
 
-    if (!wstr_eq(window_title, app_title)) {
-        if (diva_io_window_focus) {
-            diva_io_window_focus = false;
+    // anything pressed
+    if (state->primary || state->secondary) {
+
+        // just pressed anything
+        if ((state->primary || state->secondary) && !(state->prevPrimary || state->prevSecondary)) {
+            diva_io_reset_hold_timeouts(state);
         }
-    } else if (!diva_io_window_focus) {
-        diva_io_window_focus = true;
+
+        // just pressed both in the same frame
+        // OR if we switched buttons exactly in the same frame, this is also a double-tap!
+        if (
+            (state->primary && state->secondary && !(state->prevPrimary && state->prevSecondary)) ||
+            (!state->primary && state->prevPrimary && state->secondary && !state->prevSecondary) ||
+            (state->primary && !state->prevPrimary && !state->secondary && state->prevSecondary)
+            ) {
+
+            // if we are outside the takeover range, add dropped frame(s) to simulate re-press
+            ULONGLONG ticks = GetTickCount64();
+            if (ticks < state->doubleTapTimeoutBegin || ticks > state->doubleTapTimeoutEnd) {
+                state->dropFrames = diva_io_cfg.dropped_input_frames;
+
+                // also reset double-tap timer for quick alternations
+                diva_io_reset_hold_timeouts(state);
+            }
+
+            // otherwise it's a hold-takeover, do nothing special
+        }
+
+        if (state->dropFrames == 0) {
+            *gamebtn |= input_bit;
+        }
+    }
+
+    state->prevPrimary = state->primary;
+    state->prevSecondary = state->secondary;
+}
+
+void diva_io_jvs_poll(uint8_t* opbtn_out, uint8_t* gamebtn_out) {
+    assert(opbtn_out != NULL);
+    assert(gamebtn_out != NULL);
+    assert(diva_io_backend != NULL);
+
+    uint8_t opbtn = 0;
+    uint8_t gamebtn = 0;
+
+    if (diva_io_backend->get_opbtns != NULL) {
+        diva_io_backend->get_opbtns(&opbtn);
     }
 
     if (GetAsyncKeyState(diva_io_cfg.vk_test) & 0x8000) {
@@ -80,18 +171,24 @@ void diva_io_jvs_poll(uint8_t *opbtn_out, uint8_t *gamebtn_out)
         opbtn |= DIVA_IO_OPBTN_SERVICE;
     }
 
-    for (i = 0 ; i < _countof(diva_io_cfg.vk_buttons) ; i++) {
-        if (GetAsyncKeyState(diva_io_cfg.vk_buttons[i]) & 0x8000) {
-            gamebtn |= 1 << i;
-        }
+    if (diva_io_backend->get_gamebtns != NULL) {
+        diva_io_backend->get_gamebtns(&diva_button_states);
     }
+
+    if (diva_button_states.start) {
+        gamebtn |= DIVA_IO_GAMEBTN_START;
+    }
+
+    diva_io_set_game_button(&gamebtn, DIVA_IO_GAMEBTN_CIRCLE, &diva_button_states.circle);
+    diva_io_set_game_button(&gamebtn, DIVA_IO_GAMEBTN_CROSS, &diva_button_states.cross);
+    diva_io_set_game_button(&gamebtn, DIVA_IO_GAMEBTN_TRIANGLE, &diva_button_states.triangle);
+    diva_io_set_game_button(&gamebtn, DIVA_IO_GAMEBTN_SQUARE, &diva_button_states.square);
 
     *opbtn_out = opbtn;
     *gamebtn_out = gamebtn;
 }
 
-void diva_io_jvs_read_coin_counter(uint16_t *out)
-{
+void diva_io_jvs_read_coin_counter(uint16_t* out) {
     if (out == NULL) {
         return;
     }
@@ -108,28 +205,29 @@ void diva_io_jvs_read_coin_counter(uint16_t *out)
     *out = diva_io_coins;
 }
 
-HRESULT diva_io_slider_init(void)
-{
+HRESULT diva_io_slider_init(void) {
     return S_OK;
 }
 
-void diva_io_slider_start(diva_io_slider_callback_t callback)
-{
+void diva_io_slider_start(diva_io_slider_callback_t callback) {
     if (diva_io_slider_thread != NULL) {
         return;
     }
 
-    diva_io_slider_thread = (HANDLE) _beginthreadex(
-            NULL,
-            0,
-            diva_io_slider_thread_proc,
-            callback,
-            0,
-            NULL);
+    if (diva_io_backend == NULL) {
+        return;
+    }
+
+    diva_io_slider_thread = (HANDLE)_beginthreadex(
+        NULL,
+        0,
+        diva_io_slider_thread_proc,
+        callback,
+        0,
+        NULL);
 }
 
-void diva_io_slider_stop(void)
-{
+void diva_io_slider_stop(void) {
     diva_io_slider_stop_flag = true;
 
     WaitForSingleObject(diva_io_slider_thread, INFINITE);
@@ -138,27 +236,67 @@ void diva_io_slider_stop(void)
     diva_io_slider_stop_flag = false;
 }
 
-void diva_io_slider_set_leds(const uint8_t *rgb)
-{}
+void diva_io_slider_set_leds(const uint8_t* rgb) {
+}
 
-static unsigned int __stdcall diva_io_slider_thread_proc(void *ctx)
-{
-    diva_io_slider_callback_t callback;
-    uint8_t pressure_val;
-    uint8_t pressure[32];
-    size_t i;
+static unsigned int __stdcall diva_io_slider_thread_proc(void* ctx) {
+    uint8_t pressure[DIVA_SLIDER_CELL_COUNT];
+    uint32_t slider_status = 0;
+    LARGE_INTEGER last_auto_time, current_auto_time;
 
-    callback = ctx;
+    const diva_io_slider_callback_t callback = ctx;
+
+    QueryPerformanceCounter(&last_auto_time);
 
     while (!diva_io_slider_stop_flag) {
-        for (i = 0 ; i < 8 ; i++) {
-            if (GetAsyncKeyState(diva_io_cfg.vk_slider[i]) & 0x8000) {
-                pressure_val = 20;
-            } else {
-                pressure_val = 0;
+
+        // Move the auto-slider every 30 ms to simulate constant movement. It's only actually
+        // sent to the game if the IO backend returns true for either left or right hand.
+        QueryPerformanceCounter(&current_auto_time);
+        if ((double)(current_auto_time.QuadPart - last_auto_time.QuadPart) / ((double)performanceFrequency.QuadPart / 1000) > 30) {
+            // Wrap around the 32 cells whenever we hit the edges.
+            // Ensure we have a few frames of no-touch when wrapping around, otherwise
+            // the game misdetects this as a very far swipe into the other direction,
+            // causing the menu to scroll back and forth.
+            // Unsure if there's a better solution.
+            if (++slider_auto_right_pos >= DIVA_SLIDER_CELL_COUNT + DIVA_SLIDER_AUTO_FRAME_DELAY) {
+                slider_auto_right_pos = DIVA_SLIDER_CELL_COUNT / 2;
+            }
+            if (--slider_auto_left_pos < -DIVA_SLIDER_AUTO_FRAME_DELAY) {
+                slider_auto_left_pos = DIVA_SLIDER_CELL_COUNT / 2 - 1;
             }
 
-            memset(&pressure[4 * i], pressure_val, 4);
+            last_auto_time = current_auto_time;
+        }
+
+        slider_status = 0;
+
+        if (diva_io_backend->get_slider != NULL) {
+            diva_io_backend->get_slider(&slider_status);
+        }
+
+        if (diva_io_backend->get_auto_status != NULL) {
+            bool l;
+            bool r;
+
+            diva_io_backend->get_auto_status(&l, &r);
+
+            if (l && slider_auto_left_pos > -1 && slider_auto_left_pos < DIVA_SLIDER_CELL_COUNT) {
+                slider_status |= 1 << slider_auto_left_pos;
+            }
+            if (r && slider_auto_right_pos > -1 && slider_auto_right_pos < DIVA_SLIDER_CELL_COUNT) {
+                slider_status |= 1 << slider_auto_right_pos;
+            }
+
+            // Reset auto-sliders to center if they aren't moved
+            if (!l && !r) {
+                slider_auto_left_pos = DIVA_SLIDER_CELL_COUNT / 2 - 1;
+                slider_auto_right_pos = DIVA_SLIDER_CELL_COUNT / 2;
+            }
+        }
+
+        for (int i = 0; i < DIVA_SLIDER_CELL_COUNT; i++) {
+            pressure[i] = ((slider_status >> i) & 1) != 0 ? 20 : 0;
         }
 
         callback(pressure);
@@ -168,13 +306,11 @@ static unsigned int __stdcall diva_io_slider_thread_proc(void *ctx)
     return 0;
 }
 
-HRESULT diva_io_led_init(void)
-{
+HRESULT diva_io_led_init(void) {
     return S_OK;
 }
 
-void diva_io_led_set_leds(uint8_t board, const uint8_t *rgb)
-{
+void diva_io_led_set_leds(uint8_t board, const uint8_t* rgb) {
 #if 0
     dprintf("DIVA LED: LEFT PARTITION RED:    %02X\n", rgb[0]);
     dprintf("DIVA LED: LEFT PARTITION GREEN:  %02X\n", rgb[1]);
@@ -187,56 +323,31 @@ void diva_io_led_set_leds(uint8_t board, const uint8_t *rgb)
     dprintf("DIVA LED: BTN SQUARE:            %02X\n", rgb[8]);
     dprintf("DIVA LED: BTN CIRCLE:            %02X\n", rgb[9]);
 #endif
-
-    return;
 }
 
-HRESULT diva_io_touch_init()
-{
-    return S_OK;
-}
-
-static HRESULT diva_io_touch_config_apply(
-        const struct diva_io_config *cfg
-    )
-{
-    dprintf("Diva IO: Touch: --- Begin Configuration ---\n");
-
-    if (wstr_ieq(cfg->touch_mode, L"mouse")) {
-        dprintf("Diva IO: Touch: Mouse emulation\n");
-
-        /* Work around GetAsyncKeyState returning physical mouse button states
-           instead of logical */
-        diva_io_m1 = GetSystemMetrics(SM_SWAPBUTTON) ? VK_RBUTTON : VK_LBUTTON;
-
-    } else {
-        dprintf("Diva IO: Touch: Invalid touch mode \"%S\". Use 'mouse'."
-                "\n", cfg->touch_mode);
-
-        return E_INVALIDARG;
+HRESULT diva_io_touch_init() {
+    if (diva_touch_backend->init != NULL) {
+        return diva_touch_backend->init();
     }
 
-    dprintf("Diva IO: Touch: --- End Configuration ---\n");
     return S_OK;
 }
 
-void diva_io_touch_start(diva_io_touch_callback_t callback)
-{
+void diva_io_touch_start(diva_io_touch_callback_t callback) {
     if (diva_io_touch_thread != NULL) {
         return;
     }
 
-    diva_io_touch_thread = (HANDLE) _beginthreadex(
-            NULL,
-            0,
-            diva_io_touch_thread_proc,
-            callback,
-            0,
-            NULL);
+    diva_io_touch_thread = (HANDLE)_beginthreadex(
+        NULL,
+        0,
+        diva_io_touch_thread_proc,
+        callback,
+        0,
+        NULL);
 }
 
-void diva_io_touch_stop(void)
-{
+void diva_io_touch_stop(void) {
     diva_io_touch_stop_flag = true;
 
     WaitForSingleObject(diva_io_touch_thread, INFINITE);
@@ -245,100 +356,15 @@ void diva_io_touch_stop(void)
     diva_io_touch_stop_flag = false;
 }
 
-static unsigned int __stdcall diva_io_touch_thread_proc(void *ctx)
-{
-    diva_io_touch_callback_t callback;
-    HWND hwnd;
-    POINT point;
-    BOOL ok;
-
-    uint8_t status = 0;
-    uint16_t x = 0;
-    uint16_t y = 0;
-    uint16_t last_x = 0;
-    uint16_t last_y = 0;
-    uint8_t id = 0;
-    bool touch = false;
-
-    callback = ctx;
+static unsigned int __stdcall diva_io_touch_thread_proc(void* ctx) {
+    const diva_io_touch_callback_t callback = ctx;
 
     while (!diva_io_touch_stop_flag) {
 
-        if (!diva_io_window_focus) {
-            status = 0;
-            x = 0;
-            y = 0;
-            id = 0;
-            touch = false;
-            goto end;
+        if (diva_touch_backend->update != NULL) {
+            diva_touch_backend->update(callback);
         }
 
-        if (wstr_ieq(diva_io_cfg.touch_mode, L"mouse"))
-        {
-            if (GetAsyncKeyState(diva_io_m1) & 0x8000)
-            {
-                /* Get cursor location and map to window size */
-                ok = GetCursorPos(&point);
-
-                if (!ok) {
-                    status = 0;
-                    x = 0;
-                    y = 0;
-                    id = 0;
-                    touch = false;
-                    goto end;
-                }
-
-                hwnd = GetForegroundWindow();
-
-                ok = ScreenToClient(hwnd, &point);
-
-                if (!ok) {
-                    status = 0;
-                    x = 0;
-                    y = 0;
-                    id = 0;
-                    touch = false;
-                    goto end;
-                }
-
-                /* Set status */
-                if (!touch) {
-                    status = DIVA_IO_TOUCH_DOWN;
-                    touch = true;
-                } else {
-                    status = DIVA_IO_TOUCH_STREAM;
-                }
-
-                /* Set coordinates */
-                if (point.x < 0) point.x = 0;
-                if (point.y < 0) point.y = 0;
-                x = (uint16_t)point.x;
-                y = (uint16_t)point.y;
-                last_x = x;
-                last_y = y;
-            }
-            else
-            {
-                if (touch) {
-                    status = DIVA_IO_TOUCH_LIFTOFF;
-                    x = last_x;
-                    y = last_y;
-                    touch = false;
-                } else {
-                    /* No touch event */
-                    status = 0;
-                    x = 0;
-                    y = 0;
-                }
-            }
-
-            /* Mouse always acts as single-touch */
-            id = 1;
-        }
-
-end:
-        callback(status, x, y, id);
         Sleep(1);
     }
 

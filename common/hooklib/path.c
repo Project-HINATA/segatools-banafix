@@ -2,7 +2,7 @@
 
 #include <assert.h>
 #include <stdbool.h>
-#include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -11,6 +11,7 @@
 
 #include "hooklib/path.h"
 
+#include <winioctl.h>
 #include <util/dprintf.h>
 
 /* Helpers */
@@ -199,6 +200,24 @@ static UINT WINAPI hook_GetDriveTypeA(
 static UINT WINAPI hook_GetDriveTypeW(
         LPCWSTR lpRootPathName
 );
+
+static BOOL WINAPI hook_GetDiskFreeSpaceW(
+        LPCWSTR lpRootPathName,
+        LPDWORD lpSectorsPerCluster,
+        LPDWORD lpBytesPerSector,
+        LPDWORD lpNumberOfFreeClusters,
+        LPDWORD lpTotalNumberOfClusters
+);
+
+static BOOL WINAPI hook_DeviceIoControl(
+        HANDLE hFile,
+        uint32_t dwIoControlCode,
+        void *lpInBuffer,
+        uint32_t nInBufferSize,
+        void *lpOutBuffer,
+        uint32_t nOutBufferSize,
+        uint32_t *lpBytesReturned,
+        OVERLAPPED *lpOverlapped);
 
 /* Link pointers */
 
@@ -395,6 +414,24 @@ static UINT (WINAPI *next_GetDriveTypeA)(
         LPCSTR lpRootPathName
 );
 
+static BOOL (WINAPI *next_GetDiskFreeSpaceW)(
+        LPCWSTR lpRootPathName,
+        LPDWORD lpSectorsPerCluster,
+        LPDWORD lpBytesPerSector,
+        LPDWORD lpNumberOfFreeClusters,
+        LPDWORD lpTotalNumberOfClusters
+);
+
+static BOOL (WINAPI *next_DeviceIoControl)(
+        HANDLE hFile,
+        uint32_t dwIoControlCode,
+        void *lpInBuffer,
+        uint32_t nInBufferSize,
+        void *lpOutBuffer,
+        uint32_t nOutBufferSize,
+        uint32_t *lpBytesReturned,
+        OVERLAPPED *lpOverlapped);
+
 /* Hook table */
 
 static const struct hook_symbol path_hook_syms[] = {
@@ -538,6 +575,14 @@ static const struct hook_symbol path_hook_syms[] = {
         .name   = "GetDriveTypeW",
         .patch  = hook_GetDriveTypeW,
         .link = (void **) &next_GetDriveTypeW,
+    }, {
+        .name   = "GetDiskFreeSpaceW",
+        .patch  = hook_GetDiskFreeSpaceW,
+        .link = (void **) &next_GetDiskFreeSpaceW,
+    }, {
+        .name   = "DeviceIoControl",
+        .patch  = hook_DeviceIoControl,
+        .link = (void **) &next_DeviceIoControl,
     }
 };
 
@@ -1714,6 +1759,89 @@ static UINT WINAPI hook_GetDriveTypeW(
     }
 
     result = next_GetDriveTypeW(trans ? trans : lpRootPathName);
+
+    free(trans);
+
+    return result;
+}
+
+static BOOL WINAPI hook_GetDiskFreeSpaceW(
+        LPCWSTR lpRootPathName,
+        LPDWORD lpSectorsPerCluster,
+        LPDWORD lpBytesPerSector,
+        LPDWORD lpNumberOfFreeClusters,
+        LPDWORD lpTotalNumberOfClusters
+) {
+    wchar_t *trans;
+    UINT result;
+    BOOL ok;
+
+    ok = path_transform_w(&trans, lpRootPathName);
+
+    if (!ok) {
+      return FALSE;
+    }
+
+    result = next_GetDiskFreeSpaceW(trans ? trans : lpRootPathName, lpSectorsPerCluster, lpBytesPerSector, lpNumberOfFreeClusters, lpTotalNumberOfClusters);
+
+    free(trans);
+
+    return result;
+}
+
+static BOOL WINAPI hook_DeviceIoControl(
+        HANDLE hFile,
+        uint32_t dwIoControlCode,
+        void *lpInBuffer,
+        uint32_t nInBufferSize,
+        void *lpOutBuffer,
+        uint32_t nOutBufferSize,
+        uint32_t *lpBytesReturned,
+        OVERLAPPED *lpOverlapped) {
+
+    if (dwIoControlCode != FSCTL_SET_REPARSE_POINT) {
+        return next_DeviceIoControl(hFile, dwIoControlCode, lpInBuffer, nInBufferSize, lpOutBuffer, nOutBufferSize, lpBytesReturned, lpOverlapped);
+    }
+
+    if (hFile == INVALID_HANDLE_VALUE || nInBufferSize == 0 || nInBufferSize > MAXIMUM_REPARSE_DATA_BUFFER_SIZE) {
+        SetLastError(ERROR_INVALID_PARAMETER);
+        return FALSE;
+    }
+
+    REPARSE_DATA_BUFFER* mount = (REPARSE_DATA_BUFFER*)lpInBuffer;
+
+    wchar_t *trans;
+    wchar_t *src;
+
+    if (wcsstr(mount->SymbolicLinkReparseBuffer.PathBuffer, L"?\\") != NULL) { // strip prefix
+        src = mount->SymbolicLinkReparseBuffer.PathBuffer + 2;
+    } else {
+        src = mount->SymbolicLinkReparseBuffer.PathBuffer;
+    }
+
+    BOOL ok = path_transform_w(&trans, src);
+
+    if (!ok || trans == NULL) {
+        return next_DeviceIoControl(hFile, dwIoControlCode, lpInBuffer, nInBufferSize, lpOutBuffer, nOutBufferSize, lpBytesReturned, lpOverlapped);
+    }
+
+    wchar_t tmp[MAX_PATH];
+    swprintf_s(tmp, MAX_PATH, L"\\??\\%ls", trans);
+
+    size_t pathLen = wcslen(tmp);
+    size_t pathByteLen = pathLen * sizeof(wchar_t);
+
+    REPARSE_DATA_BUFFER* newMount = malloc(sizeof(REPARSE_DATA_BUFFER) + pathByteLen);
+    newMount->Reserved = mount->Reserved;
+    newMount->ReparseTag = IO_REPARSE_TAG_MOUNT_POINT;
+    newMount->ReparseDataLength = 12 + pathByteLen;
+    newMount->MountPointReparseBuffer.SubstituteNameOffset = 0;
+    newMount->MountPointReparseBuffer.SubstituteNameLength = pathByteLen;
+    newMount->MountPointReparseBuffer.PrintNameOffset = pathByteLen + 2;
+    newMount->MountPointReparseBuffer.PrintNameLength = 0;
+    memcpy(newMount->MountPointReparseBuffer.PathBuffer, tmp, pathByteLen);
+
+    BOOL result = next_DeviceIoControl(hFile, dwIoControlCode, newMount, 8 + 12 + pathByteLen, lpOutBuffer, nOutBufferSize, lpBytesReturned, lpOverlapped);
 
     free(trans);
 
