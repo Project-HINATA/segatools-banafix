@@ -59,6 +59,8 @@ jobs:
 
           cp build/build32/games/chusanhook/chusanhook.dll release-dlls/chusanhook_x86.dll
           cp build/build64/games/chusanhook/chusanhook.dll release-dlls/chusanhook_x64.dll
+          cp build/build32/games/chusanhook/chusanhook.dll release-dlls/chusanhook.dll
+          cp build/build64/games/chusanhook/chusanhook.dll release-dlls/chusanamhook.dll
           cp build/build32/games/kemonohook/kemonohook.dll release-dlls/kemonohook_x86.dll
           cp build/build64/games/kemonohook/kemonohook.dll release-dlls/kemonohook_x64.dll
           cp build/build32/games/ekthook/ekthook.dll release-dlls/ekthook_x86.dll
